@@ -15,7 +15,7 @@ const API_CONFIG = {
  */
 function getToken() {
   try {
-    return wx.getStorageSync('token') || ''
+    return wx.getStorageSync('accessToken') || ''
   } catch (error) {
     console.error('获取token失败:', error)
     return ''
@@ -27,7 +27,7 @@ function getToken() {
  */
 function setToken(token) {
   try {
-    wx.setStorageSync('token', token)
+    wx.setStorageSync('accessToken', token)
   } catch (error) {
     console.error('保存token失败:', error)
   }
@@ -38,7 +38,7 @@ function setToken(token) {
  */
 function clearToken() {
   try {
-    wx.removeStorageSync('token')
+    wx.removeStorageSync('accessToken')
   } catch (error) {
     console.error('清除token失败:', error)
   }
@@ -87,7 +87,9 @@ function hideLoadingToast() {
  * 处理响应数据
  */
 function handleResponse(response) {
+  console.log('API响应原始数据:', response.data)
   const { success, code, message, data } = response.data || {}
+  console.log('解析后的数据:', { success, code, message, data })
   
   // 根据规范文档处理不同的状态码
   switch (code) {
@@ -125,6 +127,15 @@ function handleResponse(response) {
         success: false,
         error: '服务器内部错误',
         code: 500
+      }
+    case 3002:
+      // 微信小程序登录需要手机号授权
+      console.log('处理3002错误码')
+      return {
+        success: false,
+        code: 3002,
+        message: message || '需要手机号授权',
+        data: data
       }
     default:
       return {
@@ -197,8 +208,8 @@ function request(options) {
           }
           resolve(result)
         } else {
-          // 显示错误提示
-          if (showError) {
+          // 显示错误提示（3002错误码不显示错误提示）
+          if (showError && result.code !== 3002) {
             wx.showToast({
               title: result.error || '请求失败',
               icon: 'none',
@@ -293,8 +304,8 @@ function getPageList(url, pageNum = 1, pageSize = 10, params = {}, options = {})
 /**
  * 微信小程序登录
  */
-function wechatLogin(code, userInfo) {
-  return post('/login/wechat-miniprogram', userInfo, {
+function wechatLogin(loginData, code) {
+  return post('/login/wechat-miniprogram', loginData, {
     url: `/login/wechat-miniprogram?code=${code}`,
     showSuccess: true,
     successMessage: '微信登录成功'
@@ -303,6 +314,17 @@ function wechatLogin(code, userInfo) {
       setToken(result.data.accessToken)
     }
     return result
+  })
+}
+
+/**
+ * 解密手机号
+ */
+function decryptPhoneNumber(encryptedData, iv, code) {
+  return post('/user/decrypt-phone', {
+    encryptedData: encryptedData,
+    iv: iv,
+    code: code
   })
 }
 
@@ -408,6 +430,7 @@ module.exports = {
   bindPhone,
   getUserInfo,
   getLoginMethods,
+  decryptPhoneNumber,
   logout,
   checkLogin,
   getToken,

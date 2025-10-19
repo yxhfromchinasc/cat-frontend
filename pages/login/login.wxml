@@ -87,4 +87,20 @@
   <view class="back-btn" bindtap="goHome">
     ←
   </view>
+
+  <!-- 手机号授权按钮 -->
+  <view class="phone-auth-modal" wx:if="{{showPhoneAuth}}">
+    <view class="phone-auth-content">
+      <view class="phone-auth-title">授权手机号</view>
+      <view class="phone-auth-desc">为了完成登录，需要获取您的手机号</view>
+      <button 
+        class="phone-auth-btn" 
+        open-type="getPhoneNumber" 
+        bindgetphonenumber="onPhoneNumberGet"
+      >
+        授权手机号
+      </button>
+      <button class="phone-auth-cancel" bindtap="cancelPhoneAuth">取消</button>
+    </view>
+  </view>
 </view>
