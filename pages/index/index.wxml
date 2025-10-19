@@ -1,0 +1,74 @@
+<!--index.wxml-->
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="container">
+    <!-- 用户信息区域 -->
+    <view class="userinfo">
+      <block wx:if="{{isLogin && userInfo}}">
+        <!-- 已登录状态 -->
+        <view class="user-card">
+          <view class="card-header">
+            <image class="user-avatar" src="{{userInfo.avatarUrl || 'https://img.yzcdn.cn/vant/cat.jpeg'}}" />
+            <view class="user-info">
+              <text class="user-name">{{userInfo.nickname || userInfo.username}}</text>
+              <text class="user-phone" wx:if="{{userInfo.phone}}">{{userInfo.phone}}</text>
+              <text class="user-email" wx:if="{{userInfo.email}}">{{userInfo.email}}</text>
+            </view>
+          </view>
+          <view class="card-footer">
+            <button class="logout-btn" bindtap="logout">退出</button>
+          </view>
+        </view>
+      </block>
+      <block wx:else>
+        <!-- 未登录状态 -->
+        <view class="welcome-card">
+          <view class="card-header">
+            <image class="welcome-avatar" src="https://img.yzcdn.cn/vant/cat.jpeg" />
+            <view class="welcome-info">
+              <text class="welcome-title">欢迎来到猫社区</text>
+              <text class="welcome-desc">请先登录以享受完整服务</text>
+            </view>
+          </view>
+          <view class="card-footer">
+            <button class="login-btn" bindtap="showLogin">立即登录</button>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 功能区域 -->
+    <view class="function-group">
+      <view class="group-title">功能菜单</view>
+      <view class="function-item" bindtap="bindViewTap">
+        <text class="function-icon">📝</text>
+        <text class="function-text">日志</text>
+        <text class="function-arrow">></text>
+      </view>
+      <view class="function-item" bindtap="{{isLogin ? 'goToProfile' : 'showLogin'}}">
+        <text class="function-icon">👤</text>
+        <text class="function-text">个人中心</text>
+        <text class="function-arrow">></text>
+      </view>
+    </view>
+  </view>
+</scroll-view>
+
+<!-- 登录弹窗 -->
+<view class="login-modal" wx:if="{{showLoginModal}}" bindtap="closeLoginModal">
+  <view class="login-popup" catchtap="">
+    <view class="login-header">
+      <text class="login-title">登录</text>
+      <text class="close-btn" bindtap="closeLoginModal">×</text>
+    </view>
+    
+    <view class="login-content">
+      <button class="wechat-login-btn" bindtap="wechatLogin">
+        微信授权登录
+      </button>
+      
+      <button class="phone-login-btn" bindtap="goToPhoneLogin">
+        手机号登录
+      </button>
+    </view>
+  </view>
+</view>

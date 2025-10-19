@@ -1,0 +1,52 @@
+<!--pages/bind-phone/bind-phone.wxml-->
+<view class="bind-container">
+  <!-- 头部 -->
+  <view class="header">
+    <view class="title">绑定手机号</view>
+    <view class="subtitle">为了更好的服务体验，请绑定您的手机号</view>
+  </view>
+
+  <!-- 表单 -->
+  <view class="form-container">
+    <view class="form-group">
+      <view class="label">手机号</view>
+      <input 
+        class="phone-input"
+        type="number"
+        placeholder="请输入手机号"
+        value="{{phone}}"
+        bindinput="onPhoneInput"
+        maxlength="11"
+      />
+    </view>
+
+    <view class="form-group">
+      <view class="label">验证码</view>
+      <view class="code-wrapper">
+        <input 
+          class="code-input"
+          type="number"
+          placeholder="请输入验证码"
+          value="{{code}}"
+          bindinput="onCodeInput"
+          maxlength="6"
+        />
+        <button 
+          class="send-code-btn {{countdown > 0 ? 'disabled' : ''}}"
+          bindtap="sendCode"
+          disabled="{{countdown > 0}}"
+        >
+          {{countdown > 0 ? countdown + 's' : '发送验证码'}}
+        </button>
+      </view>
+    </view>
+
+    <button class="bind-btn" bindtap="bindPhone">
+      确认绑定
+    </button>
+
+    <button class="skip-btn" bindtap="skipBind">
+      暂时跳过
+    </button>
+  </view>
+</view>

@@ -1,0 +1,90 @@
+<!--pages/login/login.wxml-->
+<view class="login-container">
+  <!-- 头部Logo -->
+  <view class="header">
+    <view class="logo">🐱</view>
+    <view class="title">猫社区</view>
+    <view class="subtitle">欢迎回来</view>
+  </view>
+
+  <!-- 登录卡片 -->
+  <view class="login-card">
+    <!-- 登录方式切换 -->
+    <view class="tabs">
+      <view 
+        class="tab {{loginType === 'wechat' ? 'active' : ''}}"
+        data-type="wechat"
+        bindtap="switchLoginType"
+      >
+        微信登录
+      </view>
+      <view 
+        class="tab {{loginType === 'phone' ? 'active' : ''}}"
+        data-type="phone"
+        bindtap="switchLoginType"
+      >
+        手机登录
+      </view>
+    </view>
+
+    <!-- 微信登录 -->
+    <view class="content" wx:if="{{loginType === 'wechat'}}">
+      <view class="wechat-info">
+        <view class="wechat-icon">💬</view>
+        <view class="wechat-text">使用微信账号快速登录</view>
+      </view>
+      <button class="wechat-btn" bindtap="wechatLogin">
+        微信授权登录
+      </button>
+    </view>
+
+    <!-- 手机号登录 -->
+    <view class="content" wx:if="{{loginType === 'phone'}}">
+      <view class="form-group">
+        <view class="label">手机号</view>
+        <input 
+          class="input"
+          type="number"
+          placeholder="请输入手机号"
+          maxlength="11"
+          value="{{phone}}"
+          bindinput="onPhoneInput"
+        />
+      </view>
+      
+      <view class="form-group">
+        <view class="label">验证码</view>
+        <view class="code-row">
+          <input 
+            class="input code-input"
+            type="number"
+            placeholder="请输入验证码"
+            maxlength="6"
+            value="{{code}}"
+            bindinput="onCodeInput"
+          />
+          <button 
+            class="send-btn {{countdown > 0 ? 'disabled' : ''}}"
+            disabled="{{countdown > 0 || !phone}}"
+            bindtap="sendCode"
+          >
+            {{countdown > 0 ? countdown + 's' : '发送验证码'}}
+          </button>
+        </view>
+      </view>
+      
+      <button 
+        class="login-btn {{!phone || !code ? 'disabled' : ''}}"
+        disabled="{{!phone || !code}}"
+        bindtap="phoneLogin"
+      >
+        登录
+      </button>
+    </view>
+  </view>
+
+  <!-- 返回按钮 -->
+  <view class="back-btn" bindtap="goHome">
+    ←
+  </view>
+</view>

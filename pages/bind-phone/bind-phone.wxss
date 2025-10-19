@@ -1,0 +1,210 @@
+/* pages/bind-phone/bind-phone.wxss */
+.bind-container {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 40rpx;
+}
+
+/* 头部 */
+.header {
+  text-align: center;
+  margin-bottom: 80rpx;
+  padding-top: 60rpx;
+}
+
+.title {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 20rpx;
+}
+
+.subtitle {
+  font-size: 28rpx;
+  color: #666666;
+  line-height: 1.5;
+}
+
+/* 表单容器 */
+.form-container {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 60rpx 40rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+/* 表单组 */
+.form-group {
+  margin-bottom: 40rpx;
+}
+
+.label {
+  font-size: 28rpx;
+  color: #333333;
+  margin-bottom: 20rpx;
+  font-weight: 500;
+}
+
+.phone-input {
+  width: 100%;
+  height: 88rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 0 30rpx;
+  font-size: 28rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.3s ease;
+}
+
+.phone-input:focus {
+  border-color: #667eea;
+  background: #ffffff;
+}
+
+/* 验证码输入 */
+.code-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 20rpx;
+  margin-bottom: 40rpx;
+}
+
+/* 验证码输入框特殊样式 */
+.code-wrapper .base-input-container {
+  flex: 1;
+  margin-bottom: 0 !important;
+}
+
+.code-wrapper .input-wrapper {
+  height: 88rpx !important;
+  display: flex;
+  align-items: center;
+}
+
+.code-wrapper .base-input {
+  height: 88rpx !important;
+  line-height: 88rpx !important;
+  padding: 0 30rpx !important;
+}
+
+/* 发送验证码按钮特殊样式 */
+.code-wrapper .send-code-btn {
+  height: 88rpx !important;
+  min-width: 160rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.code-input {
+  flex: 1;
+  height: 88rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 0 30rpx;
+  font-size: 28rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.3s ease;
+}
+
+.code-input:focus {
+  border-color: #667eea;
+  background: #ffffff;
+}
+
+.send-code-btn {
+  height: 88rpx;
+  padding: 0 24rpx;
+  background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+  color: #ffffff;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  border: none;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  min-width: 160rpx;
+  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
+}
+
+.send-code-btn.disabled {
+  background: #e2e8f0;
+  color: #a0aec0;
+  box-shadow: none;
+}
+
+/* 按钮 */
+.bind-btn {
+  width: 100%;
+  height: 88rpx;
+  background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+  color: #ffffff;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  border: none;
+  margin-bottom: 30rpx;
+  box-shadow: 0 8rpx 20rpx rgba(102, 126, 234, 0.4);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bind-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.bind-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.5);
+}
+
+.bind-btn:active::before {
+  left: 100%;
+}
+
+.skip-btn {
+  width: 100%;
+  height: 88rpx;
+  background: transparent;
+  color: #999999;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  border: 2rpx solid #e0e0e0;
+}
+
+/* 按钮点击效果 */
+button::after {
+  border: none;
+}
+
+button {
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+}
+
+button:active::before {
+  width: 200%;
+  height: 200%;
+}
