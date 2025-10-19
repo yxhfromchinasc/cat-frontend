@@ -56,6 +56,34 @@ function showError(message) {
 }
 
 /**
+ * 显示成功提示
+ */
+function showSuccess(message) {
+  wx.showToast({
+    title: message || '操作成功',
+    icon: 'success',
+    duration: 1500
+  })
+}
+
+/**
+ * 显示加载提示
+ */
+function showLoadingToast(title = '加载中...') {
+  wx.showLoading({
+    title: title,
+    mask: true
+  })
+}
+
+/**
+ * 隐藏加载提示
+ */
+function hideLoadingToast() {
+  wx.hideLoading()
+}
+
+/**
  * 处理响应数据
  */
 function handleResponse(response) {
@@ -118,15 +146,14 @@ function request(options) {
       data = {},
       header = {},
       showLoading = true,
-      showError = true
+      showError = true,
+      showSuccess = false,
+      successMessage = '操作成功'
     } = options
 
     // 显示加载提示
     if (showLoading) {
-      wx.showLoading({
-        title: '加载中...',
-        mask: true
-      })
+      showLoadingToast('加载中...')
     }
 
     // 构建完整URL
@@ -153,29 +180,46 @@ function request(options) {
       timeout: API_CONFIG.timeout,
       success: (res) => {
         if (showLoading) {
-          wx.hideLoading()
+          hideLoadingToast()
         }
 
         // 处理响应
         const result = handleResponse(res)
         
         if (result.success) {
+          // 显示成功提示
+          if (showSuccess) {
+            wx.showToast({
+              title: successMessage,
+              icon: 'success',
+              duration: 1500
+            })
+          }
           resolve(result)
         } else {
+          // 显示错误提示
           if (showError) {
-            showError(result.error)
+            wx.showToast({
+              title: result.error || '请求失败',
+              icon: 'none',
+              duration: 2000
+            })
           }
           reject(result)
         }
       },
       fail: (error) => {
         if (showLoading) {
-          wx.hideLoading()
+          hideLoadingToast()
         }
 
         const errorMsg = '网络请求失败，请检查网络连接'
         if (showError) {
-          showError(errorMsg)
+          wx.showToast({
+            title: errorMsg,
+            icon: 'none',
+            duration: 2000
+          })
         }
         reject({
           success: false,
@@ -251,7 +295,9 @@ function getPageList(url, pageNum = 1, pageSize = 10, params = {}, options = {})
  */
 function wechatLogin(code, userInfo) {
   return post('/login/wechat-miniprogram', userInfo, {
-    url: `/login/wechat-miniprogram?code=${code}`
+    url: `/login/wechat-miniprogram?code=${code}`,
+    showSuccess: true,
+    successMessage: '微信登录成功'
   }).then(result => {
     if (result.success && result.data.accessToken) {
       setToken(result.data.accessToken)
@@ -265,7 +311,9 @@ function wechatLogin(code, userInfo) {
  */
 function phoneSmsLogin(phone, verificationCode) {
   return post('/login/phone-sms', {}, {
-    url: `/login/phone-sms?phone=${phone}&verificationCode=${verificationCode}`
+    url: `/login/phone-sms?phone=${phone}&verificationCode=${verificationCode}`,
+    showSuccess: true,
+    successMessage: '登录成功'
   }).then(result => {
     if (result.success && result.data.accessToken) {
       setToken(result.data.accessToken)
@@ -292,7 +340,10 @@ function phonePasswordLogin(phone, password) {
  * 发送短信验证码
  */
 function sendSmsCode(phone) {
-  return post('/user/send-sms-code', { phone })
+  return post('/user/send-sms-code', { phone }, {
+    showSuccess: true,
+    successMessage: '验证码已发送'
+  })
 }
 
 /**
@@ -362,6 +413,12 @@ module.exports = {
   getToken,
   setToken,
   clearToken,
+  
+  // 提示相关
+  showError,
+  showSuccess,
+  showLoadingToast,
+  hideLoadingToast,
   
   // 配置
   API_CONFIG

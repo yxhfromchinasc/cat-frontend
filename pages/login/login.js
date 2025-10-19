@@ -1,5 +1,5 @@
 // pages/login/login.js
-const { api } = require('../../utils/util.js')
+const api = require('../../utils/api.js')
 
 Page({
   data: {
@@ -76,16 +76,15 @@ Page({
     }
 
     try {
-      await api.post('/user/send-sms-code', { phone })
-      wx.showToast({
-        title: '验证码已发送',
-        icon: 'success'
-      })
+      const result = await api.sendSmsCode(phone)
       
-      // 开始倒计时
-      this.startCountdown()
+      if (result.success) {
+        // 开始倒计时
+        this.startCountdown()
+      }
     } catch (error) {
       console.error('发送验证码失败:', error)
+      // 错误提示已在API工具中处理，这里不需要重复处理
     }
   },
 
@@ -110,67 +109,65 @@ Page({
       const loginRes = await wx.login()
       const code = loginRes.code
 
-      // 获取用户信息
-      const userInfo = await this.getUserInfo()
-      
-      // 调用后端登录接口
-      const result = await api.post('/login/wechat-miniprogram', userInfo, {
-        url: `/login/wechat-miniprogram?code=${code}`
-      })
+      // 获取用户信息 - 必须在用户点击事件中调用
+      wx.getUserProfile({
+        desc: '用于完善用户资料',
+        success: async (res) => {
+          try {
+            const userInfo = {
+              nickname: res.userInfo.nickName,
+              avatarUrl: res.userInfo.avatarUrl,
+              gender: res.userInfo.gender,
+              country: res.userInfo.country,
+              province: res.userInfo.province,
+              city: res.userInfo.city,
+              language: res.userInfo.language
+            }
+            
+            // 调用后端登录接口
+            const result = await api.wechatLogin(code, userInfo)
 
-      if (result.success) {
-        // 保存token
-        api.setToken(result.data.accessToken)
-        
-        // 检查是否需要绑定手机号
-        if (result.data.needBindPhone) {
-          wx.showModal({
-            title: '提示',
-            content: '首次登录需要绑定手机号，是否立即绑定？',
-            success: (res) => {
-              if (res.confirm) {
-                this.bindPhone()
+            if (result.success) {
+              // 保存token
+              api.setToken(result.data.accessToken)
+              
+              // 检查是否需要绑定手机号
+              if (result.data.needBindPhone) {
+                wx.showModal({
+                  title: '提示',
+                  content: '首次登录需要绑定手机号，是否立即绑定？',
+                  success: (res) => {
+                    if (res.confirm) {
+                      this.bindPhone()
+                    } else {
+                      // 用户取消绑定，跳转到首页
+                      this.loginSuccess()
+                    }
+                  }
+                })
               } else {
-                // 用户取消绑定，跳转到首页
                 this.loginSuccess()
               }
             }
+          } catch (error) {
+            console.error('微信登录失败:', error)
+            // 错误提示已在API工具中处理，这里不需要重复处理
+          }
+        },
+        fail: (error) => {
+          console.error('获取用户信息失败:', error)
+          wx.showToast({
+            title: '获取用户信息失败',
+            icon: 'none'
           })
-        } else {
-          this.loginSuccess()
         }
-      }
+      })
     } catch (error) {
       console.error('微信登录失败:', error)
-      wx.showToast({
-        title: '登录失败，请重试',
-        icon: 'none'
-      })
+      // 错误提示已在API工具中处理，这里不需要重复处理
     }
   },
 
-  // 获取用户信息
-  getUserInfo() {
-    return new Promise((resolve, reject) => {
-      wx.getUserProfile({
-        desc: '用于完善用户资料',
-        success: (res) => {
-          resolve({
-            nickname: res.userInfo.nickName,
-            avatarUrl: res.userInfo.avatarUrl,
-            gender: res.userInfo.gender,
-            country: res.userInfo.country,
-            province: res.userInfo.province,
-            city: res.userInfo.city,
-            language: res.userInfo.language
-          })
-        },
-        fail: (error) => {
-          reject(error)
-        }
-      })
-    })
-  },
 
   // 绑定手机号
   bindPhone() {
@@ -199,10 +196,17 @@ Page({
       return
     }
 
-    try {
-      const result = await api.post('/login/phone-sms', {}, {
-        url: `/login/phone-sms?phone=${phone}&verificationCode=${code}`
+    // 验证验证码格式
+    if (!/^\d{6}$/.test(code)) {
+      wx.showToast({
+        title: '请输入6位数字验证码',
+        icon: 'none'
       })
+      return
+    }
+
+    try {
+      const result = await api.phoneSmsLogin(phone, code)
 
       if (result.success) {
         // 保存token
@@ -211,21 +215,18 @@ Page({
       }
     } catch (error) {
       console.error('手机号登录失败:', error)
+      // 错误提示已在API工具中处理，这里不需要重复处理
     }
   },
 
   // 登录成功处理
   loginSuccess() {
-    wx.showToast({
-      title: '登录成功',
-      icon: 'success'
-    })
-    
+    // 成功提示已在API工具中处理，这里直接跳转
     setTimeout(() => {
       wx.switchTab({
         url: '/pages/index/index'
       })
-    }, 1500)
+    }, 1000)
   },
 
   // 返回首页
