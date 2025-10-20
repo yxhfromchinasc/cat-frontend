@@ -113,5 +113,12 @@ Page({
     wx.navigateTo({
       url: '../login/login'
     })
+  },
+
+  // 跳转到充值页面
+  goToRecharge() {
+    wx.navigateTo({
+      url: '/pages/recharge/recharge'
+    })
   }
 })

@@ -49,6 +49,11 @@
         <text class="function-text">个人中心</text>
         <text class="function-arrow">></text>
       </view>
+      <view class="function-item" bindtap="goToRecharge">
+        <text class="function-icon">💳</text>
+        <text class="function-text">余额充值</text>
+        <text class="function-arrow">></text>
+      </view>
     </view>
   </view>
 </scroll-view>

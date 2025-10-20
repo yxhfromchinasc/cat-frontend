@@ -100,20 +100,17 @@ function handleResponse(response) {
         message: message || '操作成功'
       }
     case 401:
-      // Token无效，清除本地token并跳转到登录页
+      // Token无效，清理并提示（跳转由request内统一提示节流后处理）
       clearToken()
-      wx.navigateTo({
-        url: '/pages/login/login'
-      })
       return {
         success: false,
-        error: '未授权，请重新登录',
+        error: '未授权',
         code: 401
       }
     case 403:
       return {
         success: false,
-        error: '权限不足',
+        error: '无权限',
         code: 403
       }
     case 404:
@@ -208,8 +205,19 @@ function request(options) {
           }
           resolve(result)
         } else {
-          // 显示错误提示（3002错误码不显示错误提示）
-          if (showError && result.code !== 3002) {
+          // 401/403 统一提示
+          if (result.code === 401) {
+            wx.showToast({ title: '请先登录', icon: 'none' })
+            // 跳转登录页
+            setTimeout(() => {
+              try {
+                wx.navigateTo({ url: '/pages/login/login' })
+              } catch (_) {}
+            }, 500)
+          } else if (result.code === 403) {
+            wx.showToast({ title: '无权限访问', icon: 'none' })
+          } else if (showError && result.code !== 3002) {
+            // 其他错误（排除3002手机号授权）
             wx.showToast({
               title: result.error || '请求失败',
               icon: 'none',
@@ -379,6 +387,35 @@ function bindPhone(phone, verificationCode) {
 }
 
 /**
+ * 创建充值订单
+ * 返回包含 orderNo、formData、expireTime 的结构
+ */
+function createRecharge(amount) {
+  console.log('创建充值订单，金额:', amount, '支付方式: 2 (微信小程序支付)')
+  return post('/recharge/create', {
+    amount: amount,
+    paymentMethod: 2  // 微信小程序支付
+  }, {
+    showSuccess: false,
+    showError: true
+  })
+}
+
+/**
+ * 查询充值状态
+ */
+function getRechargeStatus(orderNo) {
+  return get(`/recharge/status`, { orderNo }, { showSuccess: false })
+}
+
+/**
+ * 取消充值订单（可选）
+ */
+function cancelRecharge(orderNo) {
+  return post(`/recharge/cancel`, {}, { url: `/recharge/cancel?orderNo=${orderNo}`, showSuccess: false })
+}
+
+/**
  * 获取用户信息
  */
 function getUserInfo() {
@@ -436,6 +473,11 @@ module.exports = {
   getToken,
   setToken,
   clearToken,
+  
+  // 支付相关（充值）
+  createRecharge,
+  getRechargeStatus,
+  cancelRecharge,
   
   // 提示相关
   showError,

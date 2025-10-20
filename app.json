@@ -3,7 +3,8 @@
     "pages/index/index",
     "pages/logs/logs",
     "pages/login/login",
-    "pages/bind-phone/bind-phone"
+    "pages/bind-phone/bind-phone",
+    "pages/recharge/recharge"
   ],
   "window": {
     "navigationBarTextStyle": "black",
