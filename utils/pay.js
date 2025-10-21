@@ -31,7 +31,7 @@ async function createOrder(amount) {
     throw { code: res?.code || 400, message: res?.message || '创建订单失败' }
   }
   
-  return res.data // { orderNo, formData, expireTime }
+  return res.data 
 }
 
 /**
@@ -69,12 +69,6 @@ function requestPayment(formData) {
   return new Promise((resolve, reject) => {
     try {
       const payParams = typeof formData === 'string' ? JSON.parse(formData) : formData
-      
-      // 检查是否是微信小程序支付参数
-      if (payParams.qrCode || payParams.codeUrl) {
-        reject(new Error('后端返回了扫码支付参数，请检查支付方式配置'))
-        return
-      }
       
       // 验证小程序支付必要参数
       const requiredParams = ['timeStamp', 'nonceStr', 'package', 'signType', 'paySign']
@@ -134,27 +128,8 @@ async function pay(amount) {
   try {
     const order = await createOrder(amount)
     
-    // 检查支付方式是否正确
-    if (order.paymentMethod !== 2) {
-      wx.showModal({
-        title: '支付方式错误',
-        content: `后端返回了错误的支付方式(${order.paymentMethod})，期望微信小程序支付(2)`,
-        showCancel: false
-      })
-      return { success: false, message: '支付方式配置错误' }
-    }
-    
-    if (!order || !order.formData) {
-      wx.showModal({
-        title: '支付配置问题',
-        content: '后端微信支付配置未完成，请联系管理员检查支付服务配置',
-        showCancel: false
-      })
-      return { success: false, message: '后端支付配置问题' }
-    }
-    
     try {
-      await requestPayment(order.formData)
+      await requestPayment(order.param)
     } catch (err) {
       // 用户取消或拉起失败
       if (err && err.errMsg && err.errMsg.includes('cancel')) {
