@@ -167,6 +167,9 @@ Page({
     const expiredText = (item.expiredAt || '').replace('T', ' ').slice(0, 19) // Format to seconds
 
     // 使用服务端提供的状态信息
+    // 类型样式
+    const typeClass = type === 1 ? 'type-fixed' : (type === 2 ? 'type-discount' : 'type-fullreduce')
+
     let cardClass = 'available' // Default to available
     if (item.used) {
       cardClass = 'used'
@@ -174,14 +177,19 @@ Page({
       cardClass = 'expired'
     }
 
+    // 折扣券附加文案（最高减）
+    const extraText = type === 2 && Number.isFinite(discount) && Number.isFinite(toNumber(item.maxDiscount, 0)) && toNumber(item.maxDiscount, 0) > 0
+      ? `最高减¥${toNumber(item.maxDiscount, 0).toFixed(0)}` : ''
+
     return Object.assign({}, item, {
       typeText: typeMap[type] || '优惠',
       valuePrefix,
       valueDisplay,
       conditionText,
       expiredText,
-      cardClass, // Add cardClass for styling
-      statusText: item.statusText || '未使用' // Use server-provided status text
+      cardClass: `${cardClass} ${typeClass}`.trim(), // Add cardClass for styling
+      statusText: item.statusText || '未使用', // Use server-provided status text
+      extraText
     })
   },
 
@@ -230,6 +238,12 @@ Page({
       cardClass = 'max-reached'
     }
     
+    // 类型样式
+    const typeClass = type === 1 ? 'type-fixed' : (type === 2 ? 'type-discount' : 'type-fullreduce')
+    // 折扣券附加文案
+    const extraText = type === 2 && Number.isFinite(discount) && Number.isFinite(toNumber(item.maxDiscount, 0)) && toNumber(item.maxDiscount, 0) > 0
+      ? `最高减¥${toNumber(item.maxDiscount, 0).toFixed(0)}` : ''
+
     return Object.assign({}, item, {
       typeText: typeMap[type] || '优惠',
       valuePrefix,
@@ -238,9 +252,10 @@ Page({
       validToText,
       buttonText,
       buttonDisabled,
-      cardClass,
+      cardClass: `${cardClass} ${typeClass}`.trim(),
       userReceivedCount,
-      maxReceivePerUser
+      maxReceivePerUser,
+      extraText
     })
   }
 })

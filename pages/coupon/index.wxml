@@ -40,6 +40,7 @@
               <view class="coupon-condition">
                 <text>{{item.conditionText}}</text>
               </view>
+              <view wx:if="{{item.extraText}}" class="coupon-extra">{{item.extraText}}</view>
             </view>
             <view class="divider"></view>
             <view class="coupon-right">
@@ -81,13 +82,14 @@
               <view class="coupon-condition">
                 <text>{{item.conditionText}}</text>
               </view>
+              <view wx:if="{{item.extraText}}" class="coupon-extra">{{item.extraText}}</view>
             </view>
             <view class="divider"></view>
             <view class="coupon-right">
               <view class="coupon-name">{{item.name}}</view>
               <view class="coupon-desc">{{item.description}}</view>
               <view class="coupon-time">
-                <text>有效期至：{{item.validToText}}</text>
+                <text>领取后有效期：{{item.validDaysAfterReceive || 0}}天</text>
               </view>
               <view class="coupon-action">
                 <button class="receive-btn" bindtap="receiveCoupon" data-id="{{item.id}}" disabled="{{item.buttonDisabled}}">

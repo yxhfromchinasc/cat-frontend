@@ -159,6 +159,17 @@
   position: relative;
 }
 
+/* 类型配色 */
+.coupon-card.type-fixed .coupon-left {
+  background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%);
+}
+.coupon-card.type-discount .coupon-left {
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+}
+.coupon-card.type-fullreduce .coupon-left {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+}
+
 .coupon-card.used .coupon-left {
   background: #ccc;
 }
@@ -187,6 +198,14 @@
 .coupon-condition {
   font-size: 20rpx;
   opacity: 0.9;
+}
+
+.coupon-extra {
+  margin-top: 6rpx;
+  font-size: 20rpx;
+  background: rgba(255,255,255,0.18);
+  padding: 6rpx 12rpx;
+  border-radius: 999rpx;
 }
 
 /* 卡券右侧 */
