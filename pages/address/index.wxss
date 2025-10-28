@@ -1,0 +1,30 @@
+.page{min-height:100vh;background:#f7f8fa}
+
+.address-list{padding:24rpx;padding-bottom:200rpx}
+
+.address-item{background:#fff;border-radius:16rpx;margin-bottom:20rpx;padding:28rpx;display:flex;align-items:flex-start;box-shadow:0 8rpx 24rpx rgba(0,0,0,0.06)}
+.address-content{flex:1;margin-right:16rpx}
+
+.address-region{font-size:26rpx;color:#8a8a8e;margin-bottom:10rpx;line-height:1.4}
+.address-detail{font-size:30rpx;color:#111;font-weight:700;margin-bottom:10rpx;line-height:1.5}
+.contact-info{display:flex;align-items:center;gap:16rpx}
+.contact-name{font-size:28rpx;color:#111}
+.contact-phone{font-size:28rpx;color:#111}
+.address-tag{font-size:22rpx;padding:6rpx 10rpx;border-radius:8rpx;margin-left:8rpx}
+.address-tag.default{color:#ff7a45;background:#fff2ed}
+.address-tag.common{color:#ff7a45;background:#fff2ed}
+
+.address-actions{display:flex;align-items:center;margin-top:8rpx}
+.edit-btn{width:64rpx;height:64rpx;border-radius:32rpx;background:#f5f5f5;display:flex;align-items:center;justify-content:center}
+.edit-icon{font-size:26rpx}
+
+.empty-state{text-align:center;padding:120rpx 0}
+.empty-icon{font-size:88rpx;display:block;margin-bottom:18rpx}
+.empty-text{font-size:30rpx;color:#111;margin-bottom:10rpx}
+.empty-desc{font-size:26rpx;color:#8a8a8e}
+
+.bottom-actions{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:20rpx 24rpx calc(24rpx + constant(safe-area-inset-bottom));padding-bottom: calc(24rpx + env(safe-area-inset-bottom));display:flex;gap:20rpx;box-shadow:0 -6rpx 18rpx rgba(0,0,0,0.08)}
+.action-btn{flex:1;height:92rpx;border-radius:999rpx;display:flex;align-items:center;justify-content:center;font-size:30rpx}
+.action-btn.primary{background:#667eea;color:#fff}
+.action-btn.secondary{background:#f2f3f5;color:#111;border:1px solid #e5e6eb}
+.btn-text{font-size:30rpx}

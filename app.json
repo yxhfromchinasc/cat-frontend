@@ -1,6 +1,12 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/orders/index",
+    "pages/profile/index",
+    "pages/wallet/index",
+    "pages/address/index",
+    "pages/address/edit",
+    "pages/placeholder/index",
     "pages/logs/logs",
     "pages/login/login",
     "pages/bind-phone/bind-phone",
@@ -9,11 +15,39 @@
   "window": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "猫社区",
-    "navigationBarBackgroundColor": "#667eea"
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#8A8A8E",
+    "selectedColor": "#667eea",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/tabbar/home.png",
+        "selectedIconPath": "assets/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/orders/index",
+        "text": "订单",
+        "iconPath": "assets/tabbar/order.png",
+        "selectedIconPath": "assets/tabbar/order-active.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "assets/tabbar/profile.png",
+        "selectedIconPath": "assets/tabbar/profile-active.png"
+      }
+    ]
   },
   "style": "v2",
   "componentFramework": "glass-easel",
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents",
-  "usingComponents": {}
+  "usingComponents": {},
+  "requiredPrivateInfos": ["chooseAddress", "chooseLocation"]
 }

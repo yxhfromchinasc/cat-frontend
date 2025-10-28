@@ -8,4 +8,13 @@
   justify-content: space-between;
   padding: 200rpx 0;
   box-sizing: border-box;
-} 
+}
+
+/* Global theme */
+:root{--primary:#667eea;--text:#111;--muted:#8a8a8e;--bg:#f7f8fa}
+.page-bg{background: var(--bg)}
+.primary{color: var(--primary)}
+.text{color: var(--text)}
+.muted{color: var(--muted)}
+.card{background:#fff;border-radius:16rpx}
+.shadow{box-shadow:0 8rpx 24rpx rgba(0,0,0,0.06)} 

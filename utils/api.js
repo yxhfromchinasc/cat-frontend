@@ -10,6 +10,52 @@ const API_CONFIG = {
   retryCount: 3, // 重试次数
 }
 
+// 401 弹窗节流标记
+let isLoginPromptShown = false
+
+function getCurrentFullPath() {
+  try {
+    const pages = getCurrentPages()
+    const current = pages[pages.length - 1]
+    if (!current || !current.route) return '/pages/index/index'
+    const route = `/${current.route}`
+    const query = current.options || {}
+    const queryStr = Object.keys(query).length
+      ? '?' + Object.keys(query).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(query[k])}`).join('&')
+      : ''
+    return route + queryStr
+  } catch (_) {
+    return '/pages/index/index'
+  }
+}
+
+function goLoginWithRedirect() {
+  if (isLoginPromptShown) return
+  isLoginPromptShown = true
+  const redirect = encodeURIComponent(getCurrentFullPath())
+  wx.showModal({
+    title: '未登录',
+    content: '当前操作需要登录，是否前往登录？',
+    confirmText: '去登录',
+    cancelText: '取消',
+    success: (res) => {
+      if (res.confirm) {
+        try {
+          wx.navigateTo({ url: `/pages/login/login?redirect=${redirect}` })
+        } catch (_) {
+          wx.navigateTo({ url: '/pages/login/login' })
+        }
+      }
+    },
+    complete: () => { isLoginPromptShown = false }
+  })
+}
+
+/** 逆地理编码：调用后端接口 */
+function reverseGeocode(latitude, longitude) {
+  return get('/map/reverse-geocode', { latitude, longitude }, { showSuccess: false })
+}
+
 /**
  * 获取存储的token
  */
@@ -100,12 +146,13 @@ function handleResponse(response) {
         message: message || '操作成功'
       }
     case 401:
-      // Token无效，清理并提示（跳转由request内统一提示节流后处理）
+      // Token无效，清理并统一弹窗引导登录
       clearToken()
       return {
         success: false,
         error: '未授权',
-        code: 401
+        code: 401,
+        _needLogin: true
       }
     case 403:
       return {
@@ -205,15 +252,9 @@ function request(options) {
           }
           resolve(result)
         } else {
-          // 401/403 统一提示
+          // 401 未登录弹窗引导
           if (result.code === 401) {
-            wx.showToast({ title: '请先登录', icon: 'none' })
-            // 跳转登录页
-            setTimeout(() => {
-              try {
-                wx.navigateTo({ url: '/pages/login/login' })
-              } catch (_) {}
-            }, 500)
+            goLoginWithRedirect()
           } else if (result.code === 403) {
             wx.showToast({ title: '无权限访问', icon: 'none' })
           } else if (showError && result.code !== 3002) {
@@ -313,8 +354,14 @@ function getPageList(url, pageNum = 1, pageSize = 10, params = {}, options = {})
  * 微信小程序登录
  */
 function wechatLogin(loginData, code) {
-  return post('/login/wechat-miniprogram', loginData, {
-    url: `/login/wechat-miniprogram?code=${code}`,
+  // 将 code 和用户信息都放在 body 中发送
+  const requestData = {
+    loginMethod: '1', // 微信小程序登录方式
+    wechatCode: code,
+    wechatUserInfo: loginData
+  }
+  
+  return post('/login/wechat-miniprogram', requestData, {
     showSuccess: true,
     successMessage: '微信登录成功'
   }).then(result => {
@@ -384,6 +431,37 @@ function bindPhone(phone, verificationCode) {
     phone,
     verificationCode
   })
+}
+
+/**
+ * 地址管理 API
+ */
+function getAddressList(pageNum = 1, pageSize = 100) {
+  return post('/user-address/list', { pageNum, pageSize }, { showSuccess: false })
+}
+
+function getAddressDetail(addressId) {
+  return get('/user-address/detail', { addressId }, { showSuccess: false })
+}
+
+function createAddress(data) {
+  return post('/user-address/create', data, { showSuccess: true, successMessage: '保存成功' })
+}
+
+function updateAddress(addressId, data) {
+  return post('/user-address/update', { addressId, ...data }, { showSuccess: true, successMessage: '保存成功' })
+}
+
+function deleteAddress(addressId) {
+  return get('/user-address/delete', { addressId }, { showSuccess: true, successMessage: '删除成功' })
+}
+
+function setDefaultAddress(addressId) {
+  return post('/user-address/set-default', {}, { url: `/user-address/set-default?addressId=${addressId}`, showSuccess: true, successMessage: '设置成功' })
+}
+
+function getDefaultAddress() {
+  return get('/user-address/default', {}, { showSuccess: false })
 }
 
 /**
@@ -473,6 +551,18 @@ module.exports = {
   getToken,
   setToken,
   clearToken,
+
+  // 地图相关
+  reverseGeocode,
+  
+  // 地址管理
+  getAddressList,
+  getAddressDetail,
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
+  getDefaultAddress,
   
   // 支付相关（充值）
   createRecharge,

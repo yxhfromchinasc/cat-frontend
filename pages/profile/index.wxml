@@ -1,0 +1,68 @@
+<view class="page">
+  <!-- 顶部用户卡片 -->
+  <view class="card header-card shadow" bindtap="{{isLogin ? '' : 'goLogin'}}">
+    <image class="avatar" src="/assets/tabbar/profile.png" mode="aspectFill"></image>
+    <view class="header-meta">
+      <text class="name">{{ isLogin ? (userInfo.nickname || userInfo.username || '用户') : '未登录' }}</text>
+      <text class="phone muted">{{ isLogin ? (userInfo.phone || '') : '点击登录以享受完整服务' }}</text>
+    </view>
+    <view class="login-hint" wx:if="{{!isLogin}}">
+      <text class="login-text">登录</text>
+    </view>
+  </view>
+
+  <!-- 快捷统计栅格 -->
+  <view class="card quick-grid">
+    <view class="qcell" bindtap="goWallet">
+      <text class="qnum">{{userInfo.balance || 0}}</text>
+      <text class="qlabel">余额</text>
+    </view>
+    <view class="qcell">
+      <text class="qnum">{{userInfo.couponCount || 0}}</text>
+      <text class="qlabel">卡券</text>
+    </view>
+    <view class="qcell">
+      <text class="qnum">{{userInfo.addressCount || 0}}</text>
+      <text class="qlabel">地址</text>
+    </view>
+  </view>
+
+  <!-- 推荐工具 -->
+  <view class="card tools-card">
+    <view class="section-title">推荐工具</view>
+    <view class="tool-grid">
+      <view class="tool" bindtap="goAddress">
+        <view class="icon">📍</view>
+        <text class="tlabel">地址管理</text>
+      </view>
+      <view class="tool" bindtap="goCouponCenter">
+        <view class="icon">🎟️</view>
+        <text class="tlabel">领券中心</text>
+      </view>
+      <view class="tool" bindtap="goMyCoupons">
+        <view class="icon">🎫</view>
+        <text class="tlabel">我的卡券</text>
+      </view>
+      <view class="tool" bindtap="goFeedback">
+        <view class="icon">✏️</view>
+        <text class="tlabel">意见反馈</text>
+      </view>
+      <view class="tool" bindtap="goService">
+        <view class="icon">☎️</view>
+        <text class="tlabel">联系客服</text>
+      </view>
+      <view class="tool" bindtap="goInvite">
+        <view class="icon">👥</view>
+        <text class="tlabel">邀请好友</text>
+      </view>
+      <view class="tool" bindtap="goOrders">
+        <view class="icon">🗂️</view>
+        <text class="tlabel">我的订单</text>
+      </view>
+      <view class="tool" bindtap="goSettings">
+        <view class="icon">⚙️</view>
+        <text class="tlabel">系统设置</text>
+      </view>
+    </view>
+  </view>
+</view>

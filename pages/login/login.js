@@ -9,10 +9,15 @@ Page({
     countdown: 0,
     isLogin: false,
     showPhoneAuth: false,
-    phoneAuthData: null
+    phoneAuthData: null,
+    redirect: ''
   },
 
-  onLoad() {
+  onLoad(options) {
+    // 读取 redirect 参数
+    if (options && options.redirect) {
+      this.setData({ redirect: decodeURIComponent(options.redirect) })
+    }
     // 检查是否已登录
     this.checkLoginStatus()
   },
@@ -22,12 +27,8 @@ Page({
     const isLogin = api.checkLogin()
     if (isLogin) {
       this.setData({ isLogin: true })
-      // 已登录，跳转到首页
-      setTimeout(() => {
-        wx.switchTab({
-          url: '/pages/index/index'
-        })
-      }, 1000)
+      // 已登录，直接回跳
+      this.loginSuccess()
     }
   },
 
@@ -436,20 +437,25 @@ Page({
     })
   },
 
-  // 登录成功处理
+  // 登录成功处理：有 redirect 则跳转回原页，否则回首页
   loginSuccess() {
-    // 成功提示已在API工具中处理，这里直接跳转
+    const { redirect } = this.data
     setTimeout(() => {
-      wx.switchTab({
-        url: '/pages/index/index'
-      })
-    }, 1000)
+      if (redirect) {
+        // 若是 tabBar 页面只能使用 switchTab
+        if (redirect.startsWith('/pages/index/index') || redirect.startsWith('/pages/orders/index') || redirect.startsWith('/pages/profile/index')) {
+          try { wx.switchTab({ url: redirect }) } catch (_) { wx.switchTab({ url: '/pages/index/index' }) }
+        } else {
+          try { wx.redirectTo({ url: redirect }) } catch (_) { wx.switchTab({ url: '/pages/index/index' }) }
+        }
+      } else {
+        wx.switchTab({ url: '/pages/index/index' })
+      }
+    }, 600)
   },
 
   // 返回首页
   goHome() {
-    wx.switchTab({
-      url: '/pages/index/index'
-    })
+    wx.switchTab({ url: '/pages/index/index' })
   }
 })
