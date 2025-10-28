@@ -38,7 +38,7 @@ async function createOrder(amount) {
  * 轮询查询订单状态（直到非待支付或超时）
  */
 function pollStatus(orderNo, expireTimeIso) {
-  const deadline = new Date(expireTimeIso).getTime()
+  const deadline = new Date(expireTimeIso || Date.now() + 15*60*1000).getTime()
   return new Promise((resolve) => {
     const timer = setInterval(async () => {
       const now = Date.now()
@@ -109,7 +109,7 @@ function requestPayment(formData) {
 }
 
 /**
- * 主流程：创建 → 支付 → 轮询
+ * 主流程：创建 → 拉起支付 → 轮询
  */
 async function pay(amount) {
   if (isPaying()) {
@@ -126,25 +126,23 @@ async function pay(amount) {
   api.showLoadingToast('发起支付...')
   
   try {
-    const order = await createOrder(amount)
-    
+    const order = await createOrder(amount) // 返回 { orderNo }
+
+    // 调用后端 /pay/create 获取小程序支付参数
+    const payResp = await api.createPayment(order.orderNo, 2)
+    if (!payResp || !payResp.success || !payResp.data || !payResp.data.paymentParams) {
+      throw new Error('获取支付参数失败')
+    }
+
     try {
-      await requestPayment(order.param)
+      await requestPayment(payResp.data.paymentParams)
     } catch (err) {
       // 用户取消或拉起失败
       if (err && err.errMsg && err.errMsg.includes('cancel')) {
-        wx.showToast({ 
-          title: '支付已取消', 
-          icon: 'none',
-          duration: 2000
-        })
+        wx.showToast({ title: '支付已取消', icon: 'none', duration: 2000 })
         return { success: false, cancelled: true, orderNo: order.orderNo }
       } else {
-        wx.showToast({ 
-          title: '支付未完成，请重试', 
-          icon: 'none',
-          duration: 2000
-        })
+        wx.showToast({ title: '支付未完成，请重试', icon: 'none', duration: 2000 })
         return { success: false, cancelled: false, orderNo: order.orderNo, error: err }
       }
     }

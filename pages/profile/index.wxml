@@ -17,11 +17,11 @@
       <text class="qnum">{{userInfo.balance || 0}}</text>
       <text class="qlabel">余额</text>
     </view>
-    <view class="qcell">
+    <view class="qcell" bindtap="goMyCoupons">
       <text class="qnum">{{userInfo.couponCount || 0}}</text>
       <text class="qlabel">卡券</text>
     </view>
-    <view class="qcell">
+    <view class="qcell" bindtap="goAddress">
       <text class="qnum">{{userInfo.addressCount || 0}}</text>
       <text class="qlabel">地址</text>
     </view>

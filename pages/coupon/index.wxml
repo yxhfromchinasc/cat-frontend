@@ -1,0 +1,109 @@
+<view class="coupon-page">
+  <!-- 顶部标签栏 -->
+  <view class="tab-bar">
+    <view class="tab-item {{currentTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">
+      <text>我的卡券</text>
+    </view>
+    <view class="tab-item {{currentTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">
+      <text>可领取</text>
+    </view>
+  </view>
+
+  <!-- 我的卡券 -->
+  <view class="tab-content" wx:if="{{currentTab === 0}}">
+    <!-- 状态筛选 -->
+    <view class="status-filter">
+      <view class="filter-item {{couponStatus === 1 ? 'active' : ''}}" bindtap="filterCoupons" data-status="1">
+        <text>未使用</text>
+      </view>
+      <view class="filter-item {{couponStatus === 2 ? 'active' : ''}}" bindtap="filterCoupons" data-status="2">
+        <text>已使用</text>
+      </view>
+      <view class="filter-item {{couponStatus === 3 ? 'active' : ''}}" bindtap="filterCoupons" data-status="3">
+        <text>已过期</text>
+      </view>
+    </view>
+
+    <!-- 卡券列表 -->
+    <view class="coupon-list">
+      <block wx:if="{{userCoupons.length > 0}}">
+        <view class="coupon-item" wx:for="{{userCoupons}}" wx:key="id">
+          <view class="coupon-card {{item.cardClass}}">
+            <view class="perforation perforation-left"></view>
+            <view class="perforation perforation-right"></view>
+            <view class="coupon-badge">{{item.typeText}}</view>
+            <view class="coupon-left">
+              <view class="coupon-value">
+                <text class="value-symbol">{{item.valuePrefix}}</text>
+                <text class="value-amount">{{item.valueDisplay}}</text>
+              </view>
+              <view class="coupon-condition">
+                <text>{{item.conditionText}}</text>
+              </view>
+            </view>
+            <view class="divider"></view>
+            <view class="coupon-right">
+              <view class="coupon-name">{{item.name}}</view>
+              <view class="coupon-desc">{{item.description}}</view>
+              <view class="coupon-time">
+                <text>有效期至：{{item.expiredText}}</text>
+              </view>
+              <view class="coupon-action">
+                <text class="coupon-status-text">{{item.statusText}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
+      
+      <view class="empty-state" wx:else>
+        <text class="empty-icon">🎫</text>
+        <text class="empty-text">暂无卡券</text>
+        <text class="empty-desc">快去领取优惠券吧</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 可领取 -->
+  <view class="tab-content" wx:if="{{currentTab === 1}}">
+    <view class="coupon-list">
+      <block wx:if="{{couponTemplates.length > 0}}">
+        <view class="coupon-item" wx:for="{{couponTemplates}}" wx:key="id">
+          <view class="coupon-card {{item.cardClass}}">
+            <view class="perforation perforation-left"></view>
+            <view class="perforation perforation-right"></view>
+            <view class="coupon-badge">{{item.typeText}}</view>
+            <view class="coupon-left">
+              <view class="coupon-value">
+                <text class="value-symbol">{{item.valuePrefix}}</text>
+                <text class="value-amount">{{item.valueDisplay}}</text>
+              </view>
+              <view class="coupon-condition">
+                <text>{{item.conditionText}}</text>
+              </view>
+            </view>
+            <view class="divider"></view>
+            <view class="coupon-right">
+              <view class="coupon-name">{{item.name}}</view>
+              <view class="coupon-desc">{{item.description}}</view>
+              <view class="coupon-time">
+                <text>有效期至：{{item.validToText}}</text>
+              </view>
+              <view class="coupon-action">
+                <button class="receive-btn" bindtap="receiveCoupon" data-id="{{item.id}}" disabled="{{item.buttonDisabled}}">
+                  {{item.buttonText}}
+                </button>
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
+      
+      <view class="empty-state" wx:else>
+        <text class="empty-icon">🎁</text>
+        <text class="empty-text">暂无可领取的卡券</text>
+        <text class="empty-desc">敬请期待更多优惠</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -487,10 +487,71 @@ function getRechargeStatus(orderNo) {
 }
 
 /**
+ * 创建第三方支付订单，获取小程序支付参数
+ */
+function createPayment(orderNo, paymentMethod = 2) {
+  return post('/pay/create', {
+    orderNo,
+    paymentMethod
+  }, { showSuccess: false })
+}
+
+/**
  * 取消充值订单（可选）
  */
 function cancelRecharge(orderNo) {
   return post(`/recharge/cancel`, {}, { url: `/recharge/cancel?orderNo=${orderNo}`, showSuccess: false })
+}
+
+/**
+ * 获取代金券模板列表
+ */
+function getCouponTemplates(page = 1, pageSize = 10) {
+  return post('/coupon/templates', {
+    page,
+    pageSize
+  }, { showSuccess: false })
+}
+
+/**
+ * 领取代金券
+ */
+function receiveCoupon(couponTemplateId) {
+  return post('/coupon/receive', {
+    couponTemplateId: String(couponTemplateId)
+  }, { showSuccess: true, successMessage: '领取成功' })
+}
+
+/**
+ * 获取用户代金券列表
+ */
+function getUserCoupons(status = 1, page = 1, pageSize = 10) {
+  return post('/coupon/user-coupons', {
+    status: String(status),
+    page,
+    pageSize
+  }, { showSuccess: false })
+}
+
+/**
+ * 获取可用代金券列表
+ */
+function getAvailableCoupons(orderAmount) {
+  return get('/coupon/available', { orderAmount }, { showSuccess: false })
+}
+
+/**
+ * 计算代金券优惠金额
+ */
+function calculateCouponDiscount(couponTemplateId, orderAmount) {
+  return get('/coupon/calculate', { couponTemplateId, orderAmount }, { showSuccess: false })
+}
+
+/**
+ * 获取用户对指定代金券的领取次数
+ */
+function getUserCouponReceiveCount(couponTemplateId) {
+  return get('/coupon/user-receive-count', { couponTemplateId }, { showSuccess: false })
 }
 
 /**
@@ -568,6 +629,15 @@ module.exports = {
   createRecharge,
   getRechargeStatus,
   cancelRecharge,
+  createPayment,
+  
+  // 代金券相关
+  getCouponTemplates,
+  receiveCoupon,
+  getUserCoupons,
+  getAvailableCoupons,
+  calculateCouponDiscount,
+  getUserCouponReceiveCount,
   
   // 提示相关
   showError,

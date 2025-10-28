@@ -6,6 +6,7 @@
     "pages/wallet/index",
     "pages/address/index",
     "pages/address/edit",
+    "pages/coupon/index",
     "pages/placeholder/index",
     "pages/logs/logs",
     "pages/login/login",

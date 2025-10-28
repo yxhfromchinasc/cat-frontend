@@ -35,8 +35,10 @@ Page({
 
   // 地址管理已实现
   goAddress(){ wx.navigateTo({ url: '/pages/address/index' }) },
-  goCouponCenter(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
-  goMyCoupons(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
+  
+  // 卡券相关
+  goCouponCenter(){ wx.navigateTo({ url: '/pages/coupon/index' }) },
+  goMyCoupons(){ wx.navigateTo({ url: '/pages/coupon/index' }) },
   goFeedback(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
   goService(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
   goInvite(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
