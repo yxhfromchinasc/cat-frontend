@@ -120,5 +120,44 @@ Page({
     wx.navigateTo({
       url: '/pages/recharge/recharge'
     })
+  },
+
+  // 进入取快递占位页
+  goToPickup() {
+    wx.navigateTo({
+      url: '/pages/pickup/index'
+    })
+  },
+
+  // 进入上门回收占位页
+  goToRecycle() {
+    wx.navigateTo({
+      url: '/pages/recycle/index'
+    })
+  },
+
+  // 跳转到地址管理
+  goToAddress() {
+    wx.navigateTo({
+      url: '/pages/address/index'
+    })
+  },
+
+  // 跳转到卡券
+  goToCoupon() {
+    wx.navigateTo({
+      url: '/pages/coupon/index'
+    })
+  },
+
+  // 跳转到个人中心
+  goToProfile() {
+    if (!this.data.isLogin) {
+      this.showLogin()
+      return
+    }
+    wx.switchTab({
+      url: '/pages/profile/index'
+    })
   }
 })

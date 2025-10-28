@@ -1,6 +1,8 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/pickup/index",
+    "pages/recycle/index",
     "pages/orders/index",
     "pages/profile/index",
     "pages/wallet/index",

@@ -9,7 +9,66 @@ page {
 }
 
 .container {
-  padding: 40rpx;
+  border: #007aff solid 1px;
+  padding: 40rpx 0;
+}
+
+.biz-section {
+  margin-bottom: 32rpx;
+  padding: 0 50rpx;
+}
+
+.biz-grid {
+  display: flex;
+  gap: 60rpx;
+}
+
+.biz-card {
+  flex: 1;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 24rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24rpx;
+  color: white;
+  box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.biz-card:first-child {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.biz-card:last-child {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 8rpx 32rpx rgba(240, 147, 251, 0.3);
+}
+
+.biz-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.biz-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  margin-bottom: 12rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0,0,0,0.2);
+}
+
+.biz-desc {
+  font-size: 26rpx;
+  opacity: 0.9;
+  text-shadow: 0 1rpx 4rpx rgba(0,0,0,0.2);
 }
 
 /* 用户信息区域 */
@@ -82,6 +141,46 @@ page {
   border-radius: 12rpx;
   overflow: hidden;
   box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+}
+
+/* 新增：常用功能网格 */
+.feature-group {
+  background: #ffffff;
+  border-radius: 12rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+  margin-bottom: 24rpx;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20rpx;
+  padding: 24rpx;
+}
+
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 0;
+  border-radius: 12rpx;
+}
+
+.feature-item:active {
+  background: #f8f9fa;
+}
+
+.feature-icon {
+  font-size: 40rpx;
+  line-height: 1;
+  margin-bottom: 12rpx;
+}
+
+.feature-text {
+  font-size: 24rpx;
+  color: #333333;
 }
 
 .group-title {
