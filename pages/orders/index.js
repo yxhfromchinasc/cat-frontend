@@ -176,6 +176,11 @@ Page({
       wx.navigateTo({
         url: `/pages/express-detail/index?orderNo=${orderNo}`
       })
+    } else if (serviceType === 3) {
+      // 上门回收订单跳转到回收订单详情页
+      wx.navigateTo({
+        url: `/pages/recycling-detail/index?orderNo=${orderNo}`
+      })
     } else {
       // 其他订单类型暂时不处理
       console.log('订单类型:', serviceType, '订单号:', orderNo)

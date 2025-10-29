@@ -1,0 +1,139 @@
+<!-- pages/recycling-detail/index.wxml -->
+<view class="page" wx:if="{{!loading && orderDetail}}">
+  <!-- 进度条 -->
+  <view class="progress-section">
+    <view class="progress-bar">
+      <view class="progress-item {{step.status === 'completed' ? 'completed' : step.status === 'waiting' ? 'waiting' : 'disabled'}}" 
+            wx:for="{{orderDetail.progressSteps}}" 
+            wx:key="key"
+            wx:for-index="idx"
+            wx:for-item="step"
+            wx:if="{{step.show}}">
+        <view class="progress-dot"></view>
+        <view class="progress-line {{step.lineStatus === 'completed' ? 'completed' : 'disabled'}}" 
+              wx:if="{{idx < orderDetail.progressSteps.length - 1}}"></view>
+      </view>
+    </view>
+    <view class="progress-labels">
+      <view class="progress-label {{step.status === 'completed' ? 'completed' : step.status === 'waiting' ? 'waiting' : 'disabled'}}"
+            wx:for="{{orderDetail.progressSteps}}" 
+            wx:key="key"
+            wx:for-item="step"
+            wx:if="{{step.show}}">
+        <text>{{step.title}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 回收员信息（进度条下方） -->
+  <view class="courier-section" wx:if="{{orderDetail.recyclerNickname}}">
+    <view class="courier-info">
+      <image class="courier-avatar" src="{{orderDetail.recyclerAvatarUrl || '/assets/tabbar/profile.png'}}" mode="aspectFill"></image>
+      <view class="courier-text">
+        <view class="courier-row">
+          <text class="courier-name">{{orderDetail.recyclerNickname}}</text>
+          <view class="courier-rating">
+            <text class="star" wx:for="{{orderDetail.recyclerRatingArray}}" wx:key="*this">★</text>
+          </view>
+        </view>
+        <text class="courier-desc">回收员</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 时间线 -->
+  <view class="timeline-section">
+    <!-- 已预约 -->
+    <view class="timeline-item">
+      <view class="timeline-node">
+        <view class="timeline-dot completed"></view>
+        <view class="timeline-line"></view>
+      </view>
+      <view class="timeline-content">
+        <view class="timeline-header">
+          <text class="timeline-title">已预约</text>
+          <text class="timeline-time" wx:if="{{orderDetail.createdAtFormatted}}">{{orderDetail.createdAtFormatted}}</text>
+        </view>
+        <view class="timeline-info">
+          <view class="info-item" wx:if="{{orderDetail.addressDetail}}">
+            <text class="info-label">回收地址：</text>
+            <text class="info-value">{{orderDetail.addressDetail}}</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.startTimeFormatted && orderDetail.endTimeFormatted}}">
+            <text class="info-label">预约时间：</text>
+            <text class="info-value">{{orderDetail.startTimeFormatted}} - {{orderDetail.endTimeFormatted}}</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.estWeight}}">
+            <text class="info-label">预估重量：</text>
+            <text class="info-value">{{orderDetail.estWeight}}kg</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.itemDescription}}">
+            <text class="info-label">物品描述：</text>
+            <text class="info-value">{{orderDetail.itemDescription}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 待上门 -->
+    <view class="timeline-item" wx:if="{{orderDetail.recyclingStatus >= 2}}">
+      <view class="timeline-node">
+        <view class="timeline-dot completed"></view>
+        <view class="timeline-line" wx:if="{{orderDetail.recyclingStatus >= 3}}"></view>
+      </view>
+      <view class="timeline-content">
+        <view class="timeline-header">
+          <text class="timeline-title">待上门</text>
+          <text class="timeline-time" wx:if="{{orderDetail.bandingTimeFormatted}}">{{orderDetail.bandingTimeFormatted}}</text>
+        </view>
+        <view class="timeline-info">
+          <view class="info-item" wx:if="{{orderDetail.recyclerNickname}}">
+            <text class="info-label">回收员：</text>
+            <text class="info-value">{{orderDetail.recyclerNickname}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 已完成 -->
+    <view class="timeline-item" wx:if="{{orderDetail.recyclingStatus >= 3}}">
+      <view class="timeline-node">
+        <view class="timeline-dot completed"></view>
+      </view>
+      <view class="timeline-content">
+        <view class="timeline-header">
+          <text class="timeline-title">已完成</text>
+          <text class="timeline-time" wx:if="{{orderDetail.actualTimeFormatted}}">{{orderDetail.actualTimeFormatted}}</text>
+        </view>
+        <view class="timeline-info">
+          <view class="info-item" wx:if="{{orderDetail.weight}}">
+            <text class="info-label">实际重量：</text>
+            <text class="info-value">{{orderDetail.weight}}kg</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.price}}">
+            <text class="info-label">回收价格：</text>
+            <text class="info-value price">￥{{orderDetail.price}}</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.images && orderDetail.images.length > 0}}">
+            <text class="info-label">回收照片：</text>
+            <view class="image-list">
+              <image class="info-image" 
+                     wx:for="{{orderDetail.images}}" 
+                     wx:key="*this"
+                     src="{{item}}" 
+                     mode="aspectFill"
+                     bindtap="previewImage"
+                     data-url="{{item}}"
+                     data-urls="{{orderDetail.images}}"></image>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="loading" wx:if="{{loading}}">
+  <text>加载中...</text>
+</view>
+

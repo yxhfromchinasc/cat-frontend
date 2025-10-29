@@ -1,5 +1,103 @@
-<view class="placeholder">
-  <view class="title">上门回收</view>
-  <view class="desc">这里将用于发起上门回收订单的页面（占位）。</view>
-</view>
+<!-- pages/recycle/index.wxml -->
+<view class="recycle-page">
+  <scroll-view class="scroll-area" scroll-y>
+    <!-- 收货地址选择 -->
+    <view class="card">
+      <view class="card-title">收货地址</view>
+      <view class="address-list" wx:if="{{deliveryAddressList.length > 0}}">
+        <view 
+          class="address-item {{selectedAddressId === item.id ? 'selected' : ''}}" 
+          wx:for="{{deliveryAddressList}}" 
+          wx:key="id"
+          bindtap="selectDeliveryAddress" 
+          data-id="{{item.id}}">
+          <view class="address-content">
+            <view class="address-line">
+              <text class="contact-name">{{item.contactName}}</text>
+              <text class="contact-phone">{{item.contactPhone}}</text>
+            </view>
+            <view class="address-detail">
+              {{item.province}}{{item.city}}{{item.district}}{{item.street}} {{item.detailAddress}}
+            </view>
+            <view class="address-tags" wx:if="{{item.isDefault}}">
+              <text class="tag default">默认</text>
+            </view>
+          </view>
+          <view class="address-check" wx:if="{{selectedAddressId === item.id}}">✓</view>
+        </view>
+      </view>
+      <view class="empty-tip" wx:else>
+        <text>暂无地址，请先添加收货地址</text>
+      </view>
+      
+      <!-- 回收点提示 -->
+      <view class="recycling-point-tip" wx:if="{{selectedAddressId}}">
+        <text class="tip-text success" wx:if="{{recyclingPointName}}">{{recyclingPointName}}将为您服务</text>
+        <text class="tip-text error" wx:else>该地址不在服务范围内</text>
+      </view>
+    </view>
 
+    <!-- 回收信息 -->
+    <view class="card">
+      <view class="card-title">回收信息</view>
+      
+      <!-- 预估重量 -->
+      <view class="form-item">
+        <view class="label">预估重量（kg）</view>
+        <input class="input" type="digit" placeholder="请输入预估重量（可选）" value="{{form.estWeight}}" bindinput="onInputEstWeight" />
+      </view>
+
+      <!-- 物品描述 -->
+      <view class="form-item">
+        <view class="label required">物品描述</view>
+        <textarea class="textarea item-description-textarea" placeholder="请填写回收物品描述" value="{{form.itemDescription}}" bindinput="onInputItemDescription" maxlength="1000"></textarea>
+        
+        <!-- 快捷选项 -->
+        <view class="quick-options">
+          <view class="quick-option-item" wx:for="{{quickOptions}}" wx:key="index" bindtap="addQuickOption" data-text="{{item}}">
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 上门时间范围 -->
+    <view class="card">
+      <view class="card-title">上门时间范围</view>
+      
+      <view class="time-selector-row">
+        <!-- 日期选择 -->
+        <view class="time-selector-item">
+          <view class="label required">日期</view>
+          <picker mode="selector" range="{{dateOptions}}" range-key="label" value="{{selectedDateIndex}}" bindchange="onDateChange">
+            <view class="picker-field">
+              <text wx:if="{{selectedDateIndex >= 0}}">{{dateOptions[selectedDateIndex].label}}</text>
+              <text wx:else class="placeholder-text">请选择日期</text>
+            </view>
+          </picker>
+        </view>
+        
+        <!-- 时间段选择 -->
+        <view class="time-selector-item">
+          <view class="label required">时间</view>
+          <picker mode="selector" range="{{timeSlotOptions}}" range-key="label" value="{{selectedTimeSlotIndex}}" bindchange="onTimeSlotChange">
+            <view class="picker-field">
+              <text wx:if="{{selectedTimeSlotIndex >= 0}}">{{timeSlotOptions[selectedTimeSlotIndex].label}}</text>
+              <text wx:else class="placeholder-text">请选择时间</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+      
+      <!-- 显示选中的时间范围 -->
+      <view class="selected-time-display" wx:if="{{form.startTimeStr}}">
+        <text class="selected-time-text">{{form.startTimeStr}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-bar">
+    <button class="submit-btn" bindtap="submitOrder" disabled="{{!canSubmitData}}">提交订单</button>
+  </view>
+</view>

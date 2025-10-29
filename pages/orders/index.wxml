@@ -61,7 +61,13 @@
               <text class="label">送达时间：</text>
               <text class="value">{{item.startTimeStr}}</text>
             </view>
-            <view class="order-info-item" wx:if="{{item.expressPrice}}">
+            <!-- 已取件后显示取件信息 -->
+            <view class="order-info-item" wx:if="{{item.expressStatus >= 3 && item.expressCount}}">
+              <text class="label">取件数量：</text>
+              <text class="value">{{item.expressCount}}件</text>
+            </view>
+            <!-- 已送达后显示费用 -->
+            <view class="order-info-item" wx:if="{{item.expressStatus >= 4 && item.expressPrice}}">
               <text class="label">快递费用：</text>
               <text class="value price">￥{{item.expressPrice}}</text>
             </view>
@@ -84,17 +90,24 @@
               <text class="label">物品描述：</text>
               <text class="value">{{item.itemDescription}}</text>
             </view>
-            <view class="order-info-item" wx:if="{{item.estWeight}}">
+            <!-- 已预约状态：显示预估重量和预约时间 -->
+            <view class="order-info-item" wx:if="{{item.recyclingStatus === 1 && item.estWeight}}">
               <text class="label">预估重量：</text>
               <text class="value">{{item.estWeight}}kg</text>
             </view>
-            <view class="order-info-item" wx:if="{{item.weight}}">
+            <view class="order-info-item" wx:if="{{item.recyclingStatus === 1 && item.recyclingTimeStr}}">
+              <text class="label">预约时间：</text>
+              <text class="value">{{item.recyclingTimeStr}}</text>
+            </view>
+            <!-- 待上门/已完成状态：显示实际重量 -->
+            <view class="order-info-item" wx:if="{{item.recyclingStatus >= 2 && item.weight}}">
               <text class="label">实际重量：</text>
               <text class="value">{{item.weight}}kg</text>
             </view>
-            <view class="order-info-item" wx:if="{{item.recyclingTimeStr}}">
-              <text class="label">预约时间：</text>
-              <text class="value">{{item.recyclingTimeStr}}</text>
+            <!-- 已完成状态：显示回收价格 -->
+            <view class="order-info-item" wx:if="{{item.recyclingStatus === 3 && item.price}}">
+              <text class="label">回收价格：</text>
+              <text class="value price">￥{{item.price}}</text>
             </view>
             <view class="order-info-item" wx:if="{{item.recyclingStatusDesc}}">
               <text class="label">回收状态：</text>

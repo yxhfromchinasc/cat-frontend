@@ -192,10 +192,19 @@ Page({
   },
 
   // 进入上门回收占位页
+  // 进入上门回收页面
   goToRecycle() {
-    wx.navigateTo({
-      url: '/pages/recycle/index'
-    })
+    // 传递当前地址ID
+    const currentAddressId = this.data.currentAddress ? this.data.currentAddress.id : null
+    if (currentAddressId) {
+      wx.navigateTo({
+        url: `/pages/recycle/index?addressId=${currentAddressId}`
+      })
+    } else {
+      wx.navigateTo({
+        url: '/pages/recycle/index'
+      })
+    }
   },
 
   // 跳转到地址选择页面

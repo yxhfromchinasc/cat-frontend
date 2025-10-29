@@ -641,6 +641,34 @@ function cancelExpressOrder(orderNo) {
 }
 
 /**
+ * 根据地址ID获取回收点列表
+ */
+function getRecyclingPointsByAddress(addressId) {
+  return get('/recycling-point/points-by-address', { addressId }, { showSuccess: false })
+}
+
+/**
+ * 创建上门回收订单
+ */
+function createRecyclingOrder(payload) {
+  return post('/recycling/create', payload, { showSuccess: true, successMessage: '提交成功' })
+}
+
+/**
+ * 取消上门回收订单
+ */
+function cancelRecyclingOrder(orderNo) {
+  return post('/recycling/cancel', {}, { url: `/recycling/cancel?orderNo=${orderNo}`, showSuccess: true, successMessage: '已取消' })
+}
+
+/**
+ * 获取回收订单详情
+ */
+function getRecyclingOrderDetail(orderNo) {
+  return get('/recycling/detail', { orderNo }, { showSuccess: false })
+}
+
+/**
  * 上传图片
  * @param {string} filePath 图片临时路径
  * @param {string} category 图片分类，默认为 'express'
@@ -749,6 +777,12 @@ module.exports = {
   getNearbyStations,
   createExpressOrder,
   cancelExpressOrder,
+  
+  // 回收相关
+  getRecyclingPointsByAddress,
+  createRecyclingOrder,
+  cancelRecyclingOrder,
+  getRecyclingOrderDetail,
   
   // 地址管理
   getAddressList,

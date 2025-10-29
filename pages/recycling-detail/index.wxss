@@ -1,0 +1,273 @@
+/* pages/recycling-detail/index.wxss */
+.page {
+  min-height: 100vh;
+  background: #f7f8fa;
+  padding-bottom: 40rpx;
+}
+
+/* 进度条区域 */
+.progress-section {
+  background: #fff;
+  padding: 48rpx 24rpx 40rpx;
+  margin-bottom: 24rpx;
+}
+
+.progress-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32rpx;
+  position: relative;
+  padding: 0 20rpx;
+  height: 40rpx;
+}
+
+.progress-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.progress-dot {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  background: #e5e6eb;
+  border: 4rpx solid #e5e6eb;
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
+}
+
+.progress-item.completed .progress-dot {
+  background: #667eea;
+  border-color: #667eea;
+}
+
+.progress-item.waiting .progress-dot {
+  background: #fff;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4rpx rgba(102, 126, 234, 0.1);
+}
+
+.progress-item.disabled .progress-dot {
+  background: #e5e6eb;
+  border-color: #e5e6eb;
+}
+
+.progress-line {
+  flex: 1;
+  height: 4rpx;
+  background: #e5e6eb;
+  margin-left: -12rpx;
+  margin-right: -12rpx;
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+}
+
+.progress-line.completed {
+  background: #667eea;
+}
+
+.progress-line.disabled {
+  background: #e5e6eb;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20rpx;
+}
+
+.progress-label {
+  flex: 1;
+  text-align: center;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.progress-label.completed {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.progress-label.waiting {
+  color: #667eea;
+}
+
+/* 回收员信息 */
+.courier-section {
+  background: #fff;
+  padding: 32rpx 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.courier-info {
+  display: flex;
+  align-items: center;
+}
+
+.courier-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 24rpx;
+}
+
+.courier-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.courier-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.courier-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 8rpx;
+}
+
+.courier-desc {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.courier-rating {
+  display: flex;
+  gap: 4rpx;
+  transform: translateY(2rpx);
+}
+
+.courier-rating .star {
+  font-size: 26rpx;
+  color: #ffcc00;
+}
+
+/* 时间线 */
+.timeline-section {
+  background: #fff;
+  padding: 0 24rpx;
+}
+
+.timeline-item {
+  display: flex;
+  padding: 32rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.timeline-item:last-child {
+  border-bottom: none;
+}
+
+.timeline-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 24rpx;
+  min-width: 40rpx;
+}
+
+.timeline-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: #e5e6eb;
+  border: 4rpx solid #e5e6eb;
+  z-index: 2;
+}
+
+.timeline-dot.completed {
+  background: #667eea;
+  border-color: #667eea;
+}
+
+.timeline-line {
+  width: 2rpx;
+  flex: 1;
+  background: #e5e6eb;
+  margin-top: 8rpx;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.timeline-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #111;
+  flex-shrink: 0;
+}
+
+.timeline-time {
+  font-size: 24rpx;
+  color: #999;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.timeline-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+.info-label {
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.info-value {
+  color: #333;
+}
+
+.info-value.price {
+  color: #ff4757;
+  font-weight: 600;
+}
+
+.image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 8rpx;
+}
+
+.info-image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 8rpx;
+}
+
+/* 加载中 */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 28rpx;
+  color: #999;
+}
+
