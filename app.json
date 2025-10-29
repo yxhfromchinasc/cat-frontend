@@ -8,6 +8,7 @@
     "pages/wallet/index",
     "pages/address/index",
     "pages/address/edit",
+    "pages/address/select",
     "pages/coupon/index",
     "pages/placeholder/index",
     "pages/logs/logs",
@@ -52,5 +53,10 @@
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents",
   "usingComponents": {},
-  "requiredPrivateInfos": ["chooseAddress", "chooseLocation"]
+  "requiredPrivateInfos": ["chooseAddress", "chooseLocation", "getLocation"],
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置信息将用于为你推荐附近的地址"
+    }
+  }
 }

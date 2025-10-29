@@ -1,0 +1,39 @@
+<!-- pages/address/select.wxml -->
+<view class="page">
+  <!-- 地址列表 -->
+  <view class="address-list">
+    <block wx:if="{{addressList.length > 0}}">
+      <view class="address-item" wx:for="{{addressList}}" wx:key="id" bindtap="selectAddress" data-id="{{item.id}}">
+        <view class="address-content">
+          <!-- 省市区街道 -->
+          <view class="address-region">
+            {{item.province}} {{item.city}} {{item.district}} {{item.street}}
+          </view>
+          <!-- 详细地址 -->
+          <view class="address-detail">{{item.detailAddress}}</view>
+          <!-- 联系人信息 -->
+          <view class="contact-info">
+            <text class="contact-name">{{item.contactName}}</text>
+            <text class="contact-phone">{{item.contactPhone}}</text>
+            <text class="address-tag default" wx:if="{{item.isDefault}}">默认</text>
+          </view>
+        </view>
+        <view class="select-icon" wx:if="{{selectedId === item.id}}">✓</view>
+      </view>
+    </block>
+    
+    <view class="empty-state" wx:else>
+      <text class="empty-icon">📍</text>
+      <text class="empty-text">暂无地址</text>
+      <text class="empty-desc">请先添加地址</text>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-actions">
+    <button class="action-btn primary" bindtap="goToAddressManage">
+      <text class="btn-text">管理地址</text>
+    </button>
+  </view>
+</view>
+

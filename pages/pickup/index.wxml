@@ -1,5 +1,54 @@
-<view class="placeholder">
-  <view class="title">取快递</view>
-  <view class="desc">这里将用于发起取快递订单的页面（占位）。</view>
+<view class="pickup-page">
+  <!-- 地址选择 -->
+  <view class="card">
+    <view class="card-title">送件地址</view>
+    <view class="addr" bindtap="chooseAddress">
+      <view class="addr-main" wx:if="{{address}}">
+        <view class="addr-name">{{address.contactName}} {{address.contactPhone}}</view>
+        <view class="addr-detail">{{address.province}}{{address.city}}{{address.district}}{{address.street}} {{address.detailAddress}}</view>
+      </view>
+      <view class="addr-empty" wx:else>请选择送达地址</view>
+    </view>
+  </view>
+
+  <!-- 驿站选择 -->
+  <view class="card">
+    <view class="card-title">取件驿站</view>
+    <picker mode="selector" range="{{stationNames}}" value="{{stationIndex}}" bindchange="onStationChange">
+      <view class="picker-field">{{ selectedStationName || '请选择驿站' }}</view>
+    </picker>
+  </view>
+
+  <!-- 包裹信息 -->
+  <view class="card">
+    <view class="card-title">包裹信息</view>
+    <view class="form-item">
+      <view class="label">取件手机号后四位</view>
+      <input class="input" maxlength="4" placeholder="请输入后四位" value="{{form.phoneTail}}" bindinput="onInputPhoneTail" />
+    </view>
+    <view class="form-item">
+      <view class="label">取件码</view>
+      <input class="input" placeholder="可填写多个，逗号分隔" value="{{form.pickCodesStr}}" bindinput="onInputPickCodes" />
+    </view>
+    <view class="form-item">
+      <view class="label">物品描述</view>
+      <input class="input" placeholder="如：2件小箱子" value="{{form.itemDescription}}" bindinput="onInputDesc" />
+    </view>
+    <view class="form-item">
+      <view class="label">预约时间</view>
+      <view class="time-row">
+        <picker mode="time" value="{{form.startTimeStr}}" start="06:00" end="23:00" bindchange="onStartTimeChange">
+          <view class="picker-field">开始 {{form.startTimeStr}}</view>
+        </picker>
+        <picker mode="time" value="{{form.endTimeStr}}" start="06:00" end="23:59" bindchange="onEndTimeChange">
+          <view class="picker-field">结束 {{form.endTimeStr}}</view>
+        </picker>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="submit-btn" bindtap="onSubmit">提交订单</button>
+  </view>
 </view>
 

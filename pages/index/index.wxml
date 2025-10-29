@@ -1,6 +1,18 @@
 <!--index.wxml-->
 <scroll-view class="scrollarea" scroll-y type="list">
   <view class="container">
+    <!-- 顶部地址选择 -->
+    <view class="address-bar">
+      <view class="address-selector" bindtap="goToAddress">
+        <view class="address-icon">📍</view>
+        <view class="address-text">
+          <text wx:if="{{currentAddress}}">{{currentAddress.street || '请选择地址'}}</text>
+          <text wx:else class="empty-text">去添加地址</text>
+        </view>
+        <view class="address-arrow">›</view>
+      </view>
+    </view>
+    
     <!-- 顶部：业务入口双卡片 -->
     <view class="biz-section">
       <view class="biz-grid">

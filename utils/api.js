@@ -464,6 +464,13 @@ function getDefaultAddress() {
   return get('/user-address/default', {}, { showSuccess: false })
 }
 
+function getNearestAddress(latitude, longitude) {
+  const params = {}
+  if (latitude != null) params.latitude = latitude
+  if (longitude != null) params.longitude = longitude
+  return get('/user-address/nearest', params, { showSuccess: false })
+}
+
 /**
  * 创建充值订单
  * 返回包含 orderNo、formData、expireTime 的结构
@@ -616,6 +623,20 @@ module.exports = {
   // 地图相关
   reverseGeocode,
   
+  // 驿站/取件相关
+  getStationsByAddress(addressId) {
+    return get('/station/stations-by-address', { addressId }, { showSuccess: false })
+  },
+  getNearbyStations(latitude, longitude, radius = 3) {
+    return post('/station/nearby', { latitude, longitude, radius }, { showSuccess: false })
+  },
+  createExpressOrder(payload) {
+    return post('/express/create', payload, { showSuccess: true, successMessage: '提交成功' })
+  },
+  cancelExpressOrder(orderNo) {
+    return post('/express/cancel', {}, { url: `/express/cancel?orderNo=${orderNo}`, showSuccess: true, successMessage: '已取消' })
+  },
+  
   // 地址管理
   getAddressList,
   getAddressDetail,
@@ -624,6 +645,7 @@ module.exports = {
   deleteAddress,
   setDefaultAddress,
   getDefaultAddress,
+  getNearestAddress,
   
   // 支付相关（充值）
   createRecharge,
