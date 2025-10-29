@@ -562,6 +562,17 @@ function getUserCouponReceiveCount(couponTemplateId) {
 }
 
 /**
+ * 获取用户订单列表
+ * @param {Object} params 查询参数
+ * @param {number} params.status 订单状态：1-进行中，2-已完成，3-已取消，null-全部
+ * @param {number} params.pageNum 页码，从1开始
+ * @param {number} params.pageSize 页大小
+ */
+function getOrderList(params) {
+  return post('/order/list', params, { showSuccess: false })
+}
+
+/**
  * 获取用户信息
  */
 function getUserInfo() {
@@ -583,6 +594,104 @@ function logout() {
   return Promise.resolve({
     success: true,
     message: '登出成功'
+  })
+}
+
+/**
+ * 根据地址ID获取驿站列表
+ */
+function getStationsByAddress(addressId) {
+  return get('/station/stations-by-address', { addressId }, { showSuccess: false })
+}
+
+/**
+ * 根据驿站ID获取地址列表（带服务范围标识）
+ */
+function getAddressesByStation(stationId) {
+  return get('/station/addresses-by-station', { stationId }, { showSuccess: false })
+}
+
+/**
+ * 获取附近驿站
+ */
+function getNearbyStations(latitude, longitude, radius = 3) {
+  return post('/station/nearby', { latitude, longitude, radius }, { showSuccess: false })
+}
+
+/**
+ * 创建快递代取订单
+ */
+function createExpressOrder(payload) {
+  return post('/express/create', payload, { showSuccess: true, successMessage: '提交成功' })
+}
+
+/**
+ * 取消快递代取订单
+ */
+function cancelExpressOrder(orderNo) {
+  return post('/express/cancel', {}, { url: `/express/cancel?orderNo=${orderNo}`, showSuccess: true, successMessage: '已取消' })
+}
+
+/**
+ * 上传图片
+ * @param {string} filePath 图片临时路径
+ * @param {string} category 图片分类，默认为 'express'
+ * @returns {Promise} 返回上传结果，包含图片URL
+ */
+function uploadImage(filePath, category = 'express') {
+  return new Promise((resolve, reject) => {
+    const token = getToken()
+    
+    wx.uploadFile({
+      url: `${API_CONFIG.baseURL}/media/upload/image`,
+      filePath: filePath,
+      name: 'file',
+      formData: {
+        category: category
+      },
+      header: {
+        'Authorization': token ? `Bearer ${token}` : ''
+      },
+      success: (res) => {
+        try {
+          const data = JSON.parse(res.data)
+          if (data.code === 200) {
+            resolve({
+              success: true,
+              data: data.data,
+              message: '上传成功'
+            })
+          } else if (data.code === 401) {
+            clearToken()
+            goLoginWithRedirect()
+            reject({
+              success: false,
+              error: '未授权',
+              code: 401
+            })
+          } else {
+            reject({
+              success: false,
+              error: data.message || '上传失败',
+              code: data.code
+            })
+          }
+        } catch (e) {
+          reject({
+            success: false,
+            error: '解析响应失败',
+            code: -1
+          })
+        }
+      },
+      fail: (error) => {
+        reject({
+          success: false,
+          error: '上传失败，请检查网络',
+          code: -1
+        })
+      }
+    })
   })
 }
 
@@ -623,19 +732,15 @@ module.exports = {
   // 地图相关
   reverseGeocode,
   
+  // 图片上传
+  uploadImage,
+  
   // 驿站/取件相关
-  getStationsByAddress(addressId) {
-    return get('/station/stations-by-address', { addressId }, { showSuccess: false })
-  },
-  getNearbyStations(latitude, longitude, radius = 3) {
-    return post('/station/nearby', { latitude, longitude, radius }, { showSuccess: false })
-  },
-  createExpressOrder(payload) {
-    return post('/express/create', payload, { showSuccess: true, successMessage: '提交成功' })
-  },
-  cancelExpressOrder(orderNo) {
-    return post('/express/cancel', {}, { url: `/express/cancel?orderNo=${orderNo}`, showSuccess: true, successMessage: '已取消' })
-  },
+  getStationsByAddress,
+  getAddressesByStation,
+  getNearbyStations,
+  createExpressOrder,
+  cancelExpressOrder,
   
   // 地址管理
   getAddressList,
@@ -660,6 +765,9 @@ module.exports = {
   getAvailableCoupons,
   calculateCouponDiscount,
   getUserCouponReceiveCount,
+  
+  // 订单相关
+  getOrderList,
   
   // 提示相关
   showError,

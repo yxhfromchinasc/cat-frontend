@@ -180,8 +180,14 @@ Page({
 
   // 进入取快递占位页
   goToPickup() {
+    // 传递当前地址ID
+    const currentAddressId = this.data.currentAddress ? this.data.currentAddress.id : null
+    if (!currentAddressId) {
+      wx.showToast({ title: '请先选择地址', icon: 'none' })
+      return
+    }
     wx.navigateTo({
-      url: '/pages/pickup/index'
+      url: `/pages/pickup/index?addressId=${currentAddressId}`
     })
   },
 

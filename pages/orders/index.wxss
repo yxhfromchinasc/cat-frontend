@@ -1,18 +1,180 @@
+/* pages/orders/index.wxss */
 .page {
   min-height: 100vh;
   background: #f7f8fa;
 }
-.header {
-  padding: 32rpx 24rpx 16rpx;
+
+/* 状态筛选栏 */
+.status-filter {
+  display: flex;
+  background: #fff;
+  padding: 0 24rpx;
+  border-bottom: 1rpx solid #e5e6eb;
 }
-.title {
-  font-size: 36rpx;
+
+.filter-item {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 28rpx;
+  color: #666;
+  position: relative;
+}
+
+.filter-item.active {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.filter-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 4rpx;
+  background: #667eea;
+  border-radius: 2rpx;
+}
+
+/* 订单列表 */
+.order-list {
+  height: calc(100vh - 100rpx);
+}
+
+.order-item {
+  background: #fff;
+  margin: 24rpx;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+/* 订单头部 */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  margin-bottom: 20rpx;
+}
+
+.order-no {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.order-status {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.order-status.status-progress {
+  color: #667eea;
+}
+
+.order-status.status-completed {
+  color: #52c41a;
+}
+
+.order-status.status-canceled {
+  color: #999;
+}
+
+/* 订单内容 */
+.order-content {
+  margin-bottom: 20rpx;
+}
+
+.order-type-title {
+  font-size: 30rpx;
   font-weight: 600;
   color: #111;
+  margin-bottom: 16rpx;
 }
+
+.order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.order-info-item {
+  display: flex;
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+.order-info-item .label {
+  color: #999;
+  min-width: 140rpx;
+}
+
+.order-info-item .value {
+  color: #333;
+  flex: 1;
+}
+
+.order-info-item .value.price {
+  color: #ff4757;
+  font-weight: 600;
+}
+
+/* 充值订单特殊样式 */
+.order-type-recharge .order-info {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.order-amount {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #ff4757;
+}
+
+.order-status-text {
+  font-size: 26rpx;
+  color: #667eea;
+}
+
+/* 订单底部 */
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.order-time {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.order-amount-total {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #ff4757;
+}
+
+/* 加载更多 */
+.loading-more,
+.no-more {
+  text-align: center;
+  padding: 40rpx 0;
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* 空状态 */
 .empty {
   margin: 120rpx auto 0;
   width: 80%;
   text-align: center;
   color: #8a8a8e;
+  font-size: 28rpx;
 }

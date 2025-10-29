@@ -1,8 +1,129 @@
+<!-- pages/orders/index.wxml -->
 <view class="page">
-  <view class="header">
-    <text class="title">我的订单</text>
+  <!-- 状态筛选栏 -->
+  <view class="status-filter">
+    <view 
+      class="filter-item {{currentStatus === item.value ? 'active' : ''}}"
+      wx:for="{{statusOptions}}" 
+      wx:key="value"
+      bindtap="onStatusChange"
+      data-index="{{index}}">
+      <text>{{item.label}}</text>
+    </view>
   </view>
-  <view class="empty">
-    <text>还没有订单，去首页看看吧</text>
-  </view>
+
+  <!-- 订单列表 -->
+  <scroll-view 
+    class="order-list" 
+    scroll-y 
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{false}}"
+    bindrefresherrefresh="onPullDownRefresh"
+    bindscrolltolower="onReachBottom">
+    
+    <view class="order-item" wx:for="{{orderList}}" wx:key="orderNo" bindtap="onOrderTap" data-orderno="{{item.orderNo}}">
+      <!-- 订单头部 -->
+      <view class="order-header">
+        <text class="order-no">订单号：{{item.orderNo}}</text>
+        <text class="order-status {{item.orderStatus === 1 ? 'status-progress' : item.orderStatus === 2 ? 'status-completed' : 'status-canceled'}}">
+          {{item.orderStatusDesc}}
+        </text>
+      </view>
+
+      <!-- 订单内容 - 根据订单类型显示不同内容 -->
+      <view class="order-content">
+        <!-- 充值订单 -->
+        <view wx:if="{{item.serviceType === 1}}" class="order-type-recharge">
+          <view class="order-type-title">用户充值</view>
+          <view class="order-info">
+            <text class="order-amount">￥{{item.totalAmount}}</text>
+            <text class="order-status-text" wx:if="{{item.rechargeOrderStatusDesc}}">{{item.rechargeOrderStatusDesc}}</text>
+          </view>
+        </view>
+
+        <!-- 快递代取订单 -->
+        <view wx:if="{{item.serviceType === 2}}" class="order-type-express">
+          <view class="order-type-title">快递代取</view>
+          <view class="order-info">
+            <view class="order-info-item" wx:if="{{item.stationName}}">
+              <text class="label">取件驿站：</text>
+              <text class="value">{{item.stationName}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.addressDetail}}">
+              <text class="label">送达地址：</text>
+              <text class="value">{{item.addressDetail}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.itemDescription}}">
+              <text class="label">物品备注：</text>
+              <text class="value">{{item.itemDescription}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.startTimeStr}}">
+              <text class="label">送达时间：</text>
+              <text class="value">{{item.startTimeStr}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.expressPrice}}">
+              <text class="label">快递费用：</text>
+              <text class="value price">￥{{item.expressPrice}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.expressStatusDesc}}">
+              <text class="label">快递状态：</text>
+              <text class="value">{{item.expressStatusDesc}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 回收预约订单 -->
+        <view wx:if="{{item.serviceType === 3}}" class="order-type-recycling">
+          <view class="order-type-title">上门回收</view>
+          <view class="order-info">
+            <view class="order-info-item" wx:if="{{item.recyclingAddressDetail}}">
+              <text class="label">回收地址：</text>
+              <text class="value">{{item.recyclingAddressDetail}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.itemDescription}}">
+              <text class="label">物品描述：</text>
+              <text class="value">{{item.itemDescription}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.estWeight}}">
+              <text class="label">预估重量：</text>
+              <text class="value">{{item.estWeight}}kg</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.weight}}">
+              <text class="label">实际重量：</text>
+              <text class="value">{{item.weight}}kg</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.recyclingTimeStr}}">
+              <text class="label">预约时间：</text>
+              <text class="value">{{item.recyclingTimeStr}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.recyclingStatusDesc}}">
+              <text class="label">回收状态：</text>
+              <text class="value">{{item.recyclingStatusDesc}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 订单底部 -->
+      <view class="order-footer">
+        <text class="order-time">{{item.createdAtStr}}</text>
+        <text class="order-amount-total" wx:if="{{item.totalAmount}}">￥{{item.totalAmount}}</text>
+      </view>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading-more" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 没有更多数据 -->
+    <view class="no-more" wx:if="{{!hasMore && orderList.length > 0}}">
+      <text>没有更多订单了</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty" wx:if="{{!loading && orderList.length === 0}}">
+      <text>还没有订单，去首页看看吧</text>
+    </view>
+  </scroll-view>
 </view>
