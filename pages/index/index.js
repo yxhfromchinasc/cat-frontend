@@ -5,8 +5,7 @@ Page({
   data: {
     userInfo: null,
     isLogin: false,
-    showLoginModal: false,
-    currentAddress: null // 当前显示的地址
+    showLoginModal: false
   },
 
   onLoad() {
@@ -16,10 +15,6 @@ Page({
   onShow() {
     // 每次显示页面时检查登录状态
     this.checkLoginStatus()
-    // 刷新地址信息
-    if (this.data.isLogin) {
-      this.loadCurrentAddress()
-    }
   },
 
   // 检查登录状态
@@ -29,58 +24,7 @@ Page({
     
     if (isLogin) {
       this.getUserInfo()
-      this.loadCurrentAddress()
-    } else {
-      this.setData({ currentAddress: null })
     }
-  },
-
-  // 加载当前地址
-  async loadCurrentAddress() {
-    try {
-      // 1. 先获取用户位置
-      let userLocation = null
-      try {
-        userLocation = await this.getUserLocation()
-      } catch (error) {
-        console.log('获取用户位置失败:', error)
-      }
-
-      // 2. 调用后端接口获取最近的地址
-      const result = await api.getNearestAddress(
-        userLocation ? userLocation.latitude : null,
-        userLocation ? userLocation.longitude : null
-      )
-
-      if (result.success && result.data) {
-        this.setData({ currentAddress: result.data })
-      } else {
-        this.setData({ currentAddress: null })
-      }
-
-    } catch (error) {
-      console.error('加载地址失败:', error)
-      this.setData({ currentAddress: null })
-    }
-  },
-
-  // 获取用户位置
-  getUserLocation() {
-    return new Promise((resolve, reject) => {
-      wx.getLocation({
-        type: 'gcj02', // 返回可以用于微信地图的坐标类型
-        success: (res) => {
-          resolve({
-            latitude: res.latitude,
-            longitude: res.longitude
-          })
-        },
-        fail: (error) => {
-          console.error('获取位置失败:', error)
-          reject(error)
-        }
-      })
-    })
   },
 
   // 获取用户信息
@@ -180,38 +124,15 @@ Page({
 
   // 进入取快递占位页
   goToPickup() {
-    // 传递当前地址ID
-    const currentAddressId = this.data.currentAddress ? this.data.currentAddress.id : null
-    if (!currentAddressId) {
-      wx.showToast({ title: '请先选择地址', icon: 'none' })
-      return
-    }
     wx.navigateTo({
-      url: `/pages/pickup/index?addressId=${currentAddressId}`
+      url: '/pages/pickup/index'
     })
   },
 
-  // 进入上门回收占位页
   // 进入上门回收页面
   goToRecycle() {
-    // 传递当前地址ID
-    const currentAddressId = this.data.currentAddress ? this.data.currentAddress.id : null
-    if (currentAddressId) {
-      wx.navigateTo({
-        url: `/pages/recycle/index?addressId=${currentAddressId}`
-      })
-    } else {
-      wx.navigateTo({
-        url: '/pages/recycle/index'
-      })
-    }
-  },
-
-  // 跳转到地址选择页面
-  goToAddress() {
-    const currentAddressId = this.data.currentAddress ? this.data.currentAddress.id : null
-    wx.navigateTo({ 
-      url: `/pages/address/select${currentAddressId ? `?currentAddressId=${currentAddressId}` : ''}` 
+    wx.navigateTo({
+      url: '/pages/recycle/index'
     })
   },
 
