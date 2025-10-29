@@ -1,0 +1,205 @@
+<!-- pages/express-detail/index.wxml -->
+<view class="page" wx:if="{{!loading && orderDetail}}">
+  <!-- 进度条 -->
+  <view class="progress-section">
+    <view class="progress-bar">
+      <view class="progress-item {{step.status === 'completed' ? 'completed' : step.status === 'waiting' ? 'waiting' : 'disabled'}}" 
+            wx:for="{{orderDetail.progressSteps}}" 
+            wx:key="key"
+            wx:for-index="idx"
+            wx:for-item="step"
+            wx:if="{{step.show}}">
+        <view class="progress-dot"></view>
+        <view class="progress-line {{step.lineStatus === 'completed' ? 'completed' : 'disabled'}}" 
+              wx:if="{{idx < orderDetail.progressSteps.length - 1}}"></view>
+      </view>
+    </view>
+    <view class="progress-labels">
+      <view class="progress-label {{step.status === 'completed' ? 'completed' : step.status === 'waiting' ? 'waiting' : 'disabled'}}"
+            wx:for="{{orderDetail.progressSteps}}" 
+            wx:key="key"
+            wx:for-item="step"
+            wx:if="{{step.show}}">
+        <text>{{step.title}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 业务员信息（进度条下方） -->
+  <view class="courier-section" wx:if="{{orderDetail.courierNickname}}">
+    <view class="courier-info">
+      <image class="courier-avatar" src="{{orderDetail.courierAvatarUrl || '/assets/tabbar/profile.png'}}" mode="aspectFill"></image>
+      <view class="courier-text">
+        <view class="courier-row">
+          <text class="courier-name">{{orderDetail.courierNickname}}</text>
+          <view class="courier-rating">
+            <text class="star" wx:for="{{orderDetail.courierRatingArray}}" wx:key="*this">★</text>
+          </view>
+        </view>
+        <text class="courier-desc">业务员</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 时间线 -->
+  <view class="timeline-section">
+    <!-- 已预约 -->
+    <view class="timeline-item">
+      <view class="timeline-node">
+        <view class="timeline-dot completed"></view>
+        <view class="timeline-line"></view>
+      </view>
+      <view class="timeline-content">
+        <view class="timeline-header">
+          <text class="timeline-title">已预约</text>
+          <text class="timeline-time" wx:if="{{orderDetail.createdAtFormatted}}">{{orderDetail.createdAtFormatted}}</text>
+        </view>
+        <view class="timeline-info">
+          <view class="info-item" wx:if="{{orderDetail.stationName}}">
+            <text class="info-label">取件驿站：</text>
+            <text class="info-value">{{orderDetail.stationName}}</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.phoneTail}}">
+            <text class="info-label">取件手机尾号：</text>
+            <text class="info-value">{{orderDetail.phoneTail}}</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.pickCodes && orderDetail.pickCodes.length > 0}}">
+            <text class="info-label">取件码：</text>
+            <text class="info-value">{{orderDetail.pickCodes.join('、')}}</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.pickPics && orderDetail.pickPics.length > 0}}">
+            <text class="info-label">取件图片：</text>
+            <view class="image-list">
+              <image class="info-image" 
+                     wx:for="{{orderDetail.pickPics}}" 
+                     wx:key="*this"
+                     src="{{item}}" 
+                     mode="aspectFill"
+                     bindtap="previewImage"
+                     data-url="{{item}}"
+                     data-urls="{{orderDetail.pickPics}}"></image>
+            </view>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.itemDescription}}">
+            <text class="info-label">物品备注：</text>
+            <text class="info-value">{{orderDetail.itemDescription}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 待取件 -->
+    <view class="timeline-item" wx:if="{{orderDetail.expressStatus >= 2}}">
+      <view class="timeline-node">
+        <view class="timeline-dot completed"></view>
+        <view class="timeline-line" wx:if="{{orderDetail.expressStatus >= 3}}"></view>
+      </view>
+      <view class="timeline-content">
+        <view class="timeline-header">
+          <text class="timeline-title">待取件</text>
+          <text class="timeline-time" wx:if="{{orderDetail.bandingTimeFormatted}}">{{orderDetail.bandingTimeFormatted}}</text>
+        </view>
+        <view class="timeline-info">
+          <view class="info-item" wx:if="{{orderDetail.courierNickname}}">
+            <text class="info-label">业务员：</text>
+            <text class="info-value">{{orderDetail.courierNickname}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 取件成功 -->
+    <view class="timeline-item" wx:if="{{orderDetail.expressStatus >= 3}}">
+      <view class="timeline-node">
+        <view class="timeline-dot completed"></view>
+        <view class="timeline-line" wx:if="{{orderDetail.expressStatus >= 4}}"></view>
+      </view>
+      <view class="timeline-content">
+        <view class="timeline-header">
+          <text class="timeline-title">取件成功</text>
+          <text class="timeline-time" wx:if="{{orderDetail.actPickTimeFormatted}}">{{orderDetail.actPickTimeFormatted}}</text>
+        </view>
+        <view class="timeline-info">
+          <view class="info-item" wx:if="{{orderDetail.expressCount}}">
+            <text class="info-label">取件数量：</text>
+            <text class="info-value">{{orderDetail.expressCount}}件</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.expressPrice}}">
+            <text class="info-label">快递费用：</text>
+            <text class="info-value price">￥{{orderDetail.expressPrice}}</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.expressPics && orderDetail.expressPics.length > 0}}">
+            <text class="info-label">取件照片：</text>
+            <view class="image-list">
+              <image class="info-image" 
+                     wx:for="{{orderDetail.expressPics}}" 
+                     wx:key="*this"
+                     src="{{item}}" 
+                     mode="aspectFill"
+                     bindtap="previewImage"
+                     data-url="{{item}}"
+                     data-urls="{{orderDetail.expressPics}}"></image>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 送达 -->
+    <view class="timeline-item" wx:if="{{orderDetail.expressStatus >= 4}}">
+      <view class="timeline-node">
+        <view class="timeline-dot completed"></view>
+        <view class="timeline-line" wx:if="{{orderDetail.expressStatus >= 5}}"></view>
+      </view>
+      <view class="timeline-content">
+        <view class="timeline-header">
+          <text class="timeline-title">送达</text>
+          <text class="timeline-time" wx:if="{{orderDetail.sendSucTimeFormatted}}">{{orderDetail.sendSucTimeFormatted}}</text>
+        </view>
+        <view class="timeline-info">
+          <view class="info-item" wx:if="{{orderDetail.addressDetail}}">
+            <text class="info-label">送达地址：</text>
+            <text class="info-value">{{orderDetail.addressDetail}}</text>
+          </view>
+          <view class="info-item" wx:if="{{orderDetail.sendSucPics && orderDetail.sendSucPics.length > 0}}">
+            <text class="info-label">送达照片：</text>
+            <view class="image-list">
+              <image class="info-image" 
+                     wx:for="{{orderDetail.sendSucPics}}" 
+                     wx:key="*this"
+                     src="{{item}}" 
+                     mode="aspectFill"
+                     bindtap="previewImage"
+                     data-url="{{item}}"
+                     data-urls="{{orderDetail.sendSucPics}}"></image>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 已支付 -->
+    <view class="timeline-item" wx:if="{{orderDetail.expressStatus >= 5}}">
+      <view class="timeline-node">
+        <view class="timeline-dot completed"></view>
+      </view>
+      <view class="timeline-content">
+        <view class="timeline-header">
+          <text class="timeline-title">已支付</text>
+          <text class="timeline-time" wx:if="{{orderDetail.paidAtFormatted}}">{{orderDetail.paidAtFormatted}}</text>
+        </view>
+        <view class="timeline-info">
+          <view class="info-item" wx:if="{{orderDetail.totalAmount}}">
+            <text class="info-label">支付金额：</text>
+            <text class="info-value price">￥{{orderDetail.totalAmount}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="loading" wx:if="{{loading}}">
+  <text>加载中...</text>
+</view>
+

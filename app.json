@@ -4,6 +4,7 @@
     "pages/pickup/index",
     "pages/recycle/index",
     "pages/orders/index",
+    "pages/express-detail/index",
     "pages/profile/index",
     "pages/wallet/index",
     "pages/address/index",

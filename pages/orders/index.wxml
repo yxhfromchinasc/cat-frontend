@@ -21,7 +21,7 @@
     bindrefresherrefresh="onPullDownRefresh"
     bindscrolltolower="onReachBottom">
     
-    <view class="order-item" wx:for="{{orderList}}" wx:key="orderNo" bindtap="onOrderTap" data-orderno="{{item.orderNo}}">
+    <view class="order-item" wx:for="{{orderList}}" wx:key="orderNo" bindtap="onOrderTap" data-orderno="{{item.orderNo}}" data-servicetype="{{item.serviceType}}">
       <!-- 订单头部 -->
       <view class="order-header">
         <text class="order-no">订单号：{{item.orderNo}}</text>

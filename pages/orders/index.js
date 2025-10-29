@@ -132,12 +132,29 @@ Page({
   // 格式化时间
   formatTime(timeStr) {
     if (!timeStr) return ''
-    const date = new Date(timeStr)
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-    return `${month}-${day} ${hours}:${minutes}`
+    // 处理 "yyyy-MM-dd HH:mm:ss" 格式的时间字符串
+    // 直接提取 MM-dd HH:mm 部分，避免 iOS 兼容性问题
+    if (typeof timeStr === 'string') {
+      // 格式: "2025-10-28 20:05:18"
+      // 提取: "10-28 20:05"
+      const match = timeStr.match(/^\d{4}-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/)
+      if (match) {
+        return `${match[1]}-${match[2]} ${match[3]}:${match[4]}`
+      }
+      // 如果格式不匹配，尝试其他格式
+      const spaceIndex = timeStr.indexOf(' ')
+      if (spaceIndex > 0) {
+        const datePart = timeStr.substring(0, spaceIndex)
+        const timePart = timeStr.substring(spaceIndex + 1)
+        const dateMatch = datePart.match(/\d{4}-(\d{2})-(\d{2})/)
+        const timeMatch = timePart.match(/(\d{2}):(\d{2})/)
+        if (dateMatch && timeMatch) {
+          return `${dateMatch[1]}-${dateMatch[2]} ${timeMatch[1]}:${timeMatch[2]}`
+        }
+      }
+    }
+    // 如果都解析失败，返回原字符串的一部分
+    return timeStr.length > 16 ? timeStr.substring(5, 16) : timeStr
   },
 
   // 格式化日期时间范围
@@ -151,7 +168,17 @@ Page({
   // 点击订单项
   onOrderTap(e) {
     const orderNo = e.currentTarget.dataset.orderno
-    // TODO: 跳转到订单详情页
-    console.log('点击订单:', orderNo)
+    const serviceType = e.currentTarget.dataset.servicetype
+    
+    // 根据订单类型跳转到不同的详情页
+    if (serviceType === 2) {
+      // 快递代取订单跳转到快递订单详情页
+      wx.navigateTo({
+        url: `/pages/express-detail/index?orderNo=${orderNo}`
+      })
+    } else {
+      // 其他订单类型暂时不处理
+      console.log('订单类型:', serviceType, '订单号:', orderNo)
+    }
   }
 })

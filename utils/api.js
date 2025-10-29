@@ -573,6 +573,14 @@ function getOrderList(params) {
 }
 
 /**
+ * 获取快递订单详情
+ * @param {string} orderNo 订单号
+ */
+function getExpressOrderDetail(orderNo) {
+  return get('/express/detail', { orderNo }, { showSuccess: false })
+}
+
+/**
  * 获取用户信息
  */
 function getUserInfo() {
@@ -768,6 +776,7 @@ module.exports = {
   
   // 订单相关
   getOrderList,
+  getExpressOrderDetail,
   
   // 提示相关
   showError,
