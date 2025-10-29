@@ -25,6 +25,6 @@ Page({
     wx.navigateTo({ url: '/pages/recharge/recharge' })
   },
   goWithdraw(){
-    wx.showToast({ title: '提现即将开通', icon: 'none' })
+    wx.navigateTo({ url: '/pages/withdraw/index' })
   }
 })

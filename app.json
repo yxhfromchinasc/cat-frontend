@@ -16,7 +16,8 @@
     "pages/logs/logs",
     "pages/login/login",
     "pages/bind-phone/bind-phone",
-    "pages/recharge/recharge"
+    "pages/recharge/recharge",
+    "pages/withdraw/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

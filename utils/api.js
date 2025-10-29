@@ -134,6 +134,7 @@ function hideLoadingToast() {
  */
 function handleResponse(response) {
   console.log('API响应原始数据:', response.data)
+  console.log('HTTP状态码:', response.statusCode)
   const { success, code, message, data } = response.data || {}
   console.log('解析后的数据:', { success, code, message, data })
   
@@ -169,8 +170,9 @@ function handleResponse(response) {
     case 500:
       return {
         success: false,
-        error: '服务器内部错误',
-        code: 500
+        error: message || '服务器内部错误',
+        code: 500,
+        message: message  // 保留原始message，方便后续使用
       }
     case 3002:
       // 微信小程序登录需要手机号授权
@@ -240,6 +242,7 @@ function request(options) {
 
         // 处理响应
         const result = handleResponse(res)
+        console.log('handleResponse返回的结果:', result)
         
         if (result.success) {
           // 显示成功提示
@@ -259,8 +262,10 @@ function request(options) {
             wx.showToast({ title: '无权限访问', icon: 'none' })
           } else if (showError && result.code !== 3002) {
             // 其他错误（排除3002手机号授权）
+            // 优先使用 message，然后是 error，最后是默认提示
+            const errorMsg = result.message || result.error || '请求失败'
             wx.showToast({
-              title: result.error || '请求失败',
+              title: errorMsg,
               icon: 'none',
               duration: 2000
             })
@@ -508,6 +513,33 @@ function createPayment(orderNo, paymentMethod = 2) {
  */
 function cancelRecharge(orderNo) {
   return post(`/recharge/cancel`, {}, { url: `/recharge/cancel?orderNo=${orderNo}`, showSuccess: false })
+}
+
+/**
+ * 创建提现订单（仅创建本地订单，不扣除余额）
+ */
+function createWithdraw(amount, withdrawMethod) {
+  console.log('创建提现订单，金额:', amount, '提现方式:', withdrawMethod)
+  return post('/withdraw/create', {
+    amount: amount,
+    withdrawMethod: withdrawMethod || 1  // 默认微信零钱
+  }, {
+    showSuccess: false,
+    showError: false  // 不在通用请求中显示错误，让页面自己处理错误信息
+  })
+}
+
+/**
+ * 发起提现转账（扣除余额、调用第三方API）
+ */
+function initiateWithdraw(orderNo) {
+  console.log('发起提现转账，订单号:', orderNo)
+  return post('/withdraw/initiate', {
+    orderNo: orderNo
+  }, {
+    showSuccess: false,
+    showError: false  // 不在通用请求中显示错误，让页面自己处理错误信息
+  })
 }
 
 /**
@@ -799,6 +831,10 @@ module.exports = {
   getRechargeStatus,
   cancelRecharge,
   createPayment,
+  
+  // 提现相关
+  createWithdraw,
+  initiateWithdraw,
   
   // 代金券相关
   getCouponTemplates,
