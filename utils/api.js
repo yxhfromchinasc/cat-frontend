@@ -5,7 +5,7 @@
 
 // 基础配置
 const API_CONFIG = {
-  baseURL: 'http://localhost:8080/api', // 根据API文档，使用本地开发环境
+  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
 }
@@ -442,38 +442,38 @@ function bindPhone(phone, verificationCode) {
  * 地址管理 API
  */
 function getAddressList(pageNum = 1, pageSize = 100) {
-  return post('/user-address/list', { pageNum, pageSize }, { showSuccess: false })
+  return post('/address/list', { pageNum, pageSize }, { showSuccess: false })
 }
 
 function getAddressDetail(addressId) {
-  return get('/user-address/detail', { addressId }, { showSuccess: false })
+  return get('/address/detail', { addressId }, { showSuccess: false })
 }
 
 function createAddress(data) {
-  return post('/user-address/create', data, { showSuccess: true, successMessage: '保存成功' })
+  return post('/address/create', data, { showSuccess: true, successMessage: '保存成功' })
 }
 
 function updateAddress(addressId, data) {
-  return post('/user-address/update', { addressId, ...data }, { showSuccess: true, successMessage: '保存成功' })
+  return post('/address/update', { addressId, ...data }, { showSuccess: true, successMessage: '保存成功' })
 }
 
 function deleteAddress(addressId) {
-  return get('/user-address/delete', { addressId }, { showSuccess: true, successMessage: '删除成功' })
+  return get('/address/delete', { addressId }, { showSuccess: true, successMessage: '删除成功' })
 }
 
 function setDefaultAddress(addressId) {
-  return post('/user-address/set-default', {}, { url: `/user-address/set-default?addressId=${addressId}`, showSuccess: true, successMessage: '设置成功' })
+  return post('/address/set-default', {}, { url: `/address/set-default?addressId=${addressId}`, showSuccess: true, successMessage: '设置成功' })
 }
 
 function getDefaultAddress() {
-  return get('/user-address/default', {}, { showSuccess: false })
+  return get('/address/default', {}, { showSuccess: false })
 }
 
 function getNearestAddress(latitude, longitude) {
   const params = {}
   if (latitude != null) params.latitude = latitude
   if (longitude != null) params.longitude = longitude
-  return get('/user-address/nearest', params, { showSuccess: false })
+  return get('/address/nearest', params, { showSuccess: false })
 }
 
 /**
