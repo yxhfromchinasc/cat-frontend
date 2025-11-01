@@ -17,7 +17,8 @@
     "pages/login/login",
     "pages/bind-phone/bind-phone",
     "pages/recharge/recharge",
-    "pages/withdraw/index"
+    "pages/withdraw/index",
+    "pages/payment/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

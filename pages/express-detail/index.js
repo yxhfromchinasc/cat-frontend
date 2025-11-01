@@ -203,6 +203,60 @@ Page({
       current,
       urls
     })
+  },
+
+  // 处理操作按钮点击
+  async handleAction(e) {
+    const action = e.currentTarget.dataset.action
+    if (action === 'PAY') {
+      await this.handlePay()
+    } else if (action === 'CANCEL') {
+      await this.handleCancel()
+    }
+  },
+
+  // 处理支付
+  async handlePay() {
+    // 跳转到支付页面（不再需要传递 orderType，后端会自动识别）
+    wx.navigateTo({
+      url: `/pages/payment/index?orderNo=${this.data.orderNo}`
+    })
+  },
+
+  // 处理取消订单
+  async handleCancel() {
+    try {
+      wx.showModal({
+        title: '确认取消',
+        content: '确定要取消该订单吗？',
+        success: async (res) => {
+          if (res.confirm) {
+            wx.showLoading({ title: '取消中...' })
+            try {
+              const { api } = require('../../utils/util.js')
+              const result = await api.cancelExpressOrder(this.data.orderNo)
+              
+              wx.hideLoading()
+              if (result.success) {
+                wx.showToast({ title: '已取消', icon: 'success' })
+                // 重新加载订单详情，刷新状态
+                setTimeout(() => {
+                  this.loadOrderDetail()
+                }, 1500)
+              } else {
+                wx.showToast({ title: result.message || '取消失败', icon: 'none' })
+              }
+            } catch (e) {
+              wx.hideLoading()
+              console.error('取消订单异常:', e)
+              wx.showToast({ title: '取消失败', icon: 'none' })
+            }
+          }
+        }
+      })
+    } catch (e) {
+      console.error('取消订单异常:', e)
+    }
   }
 })
 

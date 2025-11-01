@@ -197,6 +197,19 @@
       </view>
     </view>
   </view>
+
+  <!-- 操作按钮区域 -->
+  <view class="actions-bar" wx:if="{{orderDetail.allowedActions && orderDetail.allowedActions.length > 0}}">
+    <button 
+      wx:for="{{orderDetail.allowedActions}}" 
+      wx:key="*this"
+      class="action-btn {{item === 'PAY' ? 'pay-btn' : 'cancel-btn'}}"
+      bindtap="handleAction"
+      data-action="{{item}}"
+    >
+      {{item === 'PAY' ? '立即支付' : item === 'CANCEL' ? '取消订单' : item}}
+    </button>
+  </view>
 </view>
 
 <view class="loading" wx:if="{{loading}}">

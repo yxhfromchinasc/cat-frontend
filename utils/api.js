@@ -580,10 +580,17 @@ function getAvailableCoupons(orderAmount) {
 }
 
 /**
- * 计算代金券优惠金额
+ * 计算代金券优惠金额（根据模板ID和订单金额）
  */
 function calculateCouponDiscount(couponTemplateId, orderAmount) {
   return get('/coupon/calculate', { couponTemplateId, orderAmount }, { showSuccess: false })
+}
+
+/**
+ * 根据订单号和用户代金券ID计算优惠金额
+ */
+function calculateCouponDiscountByOrder(orderNo, userCouponId) {
+  return get('/coupon/calculate-by-order', { orderNo, userCouponId }, { showSuccess: false })
 }
 
 /**
@@ -698,6 +705,14 @@ function cancelRecyclingOrder(orderNo) {
  */
 function getRecyclingOrderDetail(orderNo) {
   return get('/recycling/detail', { orderNo }, { showSuccess: false })
+}
+
+/**
+ * 获取订单支付详情
+ * @param {string} orderNo 订单号
+ */
+function getPaymentDetail(orderNo) {
+  return get('/pay/detail', { orderNo }, { showSuccess: false })
 }
 
 /**
@@ -842,11 +857,16 @@ module.exports = {
   getUserCoupons,
   getAvailableCoupons,
   calculateCouponDiscount,
+  calculateCouponDiscountByOrder,
   getUserCouponReceiveCount,
   
   // 订单相关
   getOrderList,
   getExpressOrderDetail,
+  getRecyclingOrderDetail,
+  
+  // 支付相关
+  getPaymentDetail,
   
   // 提示相关
   showError,

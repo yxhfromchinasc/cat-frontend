@@ -261,6 +261,43 @@
   border-radius: 8rpx;
 }
 
+/* 操作按钮区域 */
+.actions-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1rpx solid #f0f0f0;
+  padding: 24rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 32rpx rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  display: flex;
+  gap: 24rpx;
+}
+
+.action-btn {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 500;
+  border-radius: 44rpx;
+  border: none;
+}
+
+.cancel-btn {
+  background: #f7f8fa;
+  color: #666;
+}
+
+/* 页面底部留出空间，避免内容被按钮遮挡 */
+.page {
+  padding-bottom: 160rpx;
+}
+
 /* 加载中 */
 .loading {
   display: flex;
