@@ -14,15 +14,15 @@
   <!-- 快捷统计栅格 -->
   <view class="card quick-grid">
     <view class="qcell" bindtap="goWallet">
-      <text class="qnum">{{userInfo.balance || 0}}</text>
+      <text class="qnum">{{isLogin ? balance : 0}}</text>
       <text class="qlabel">余额</text>
     </view>
     <view class="qcell" bindtap="goMyCoupons">
-      <text class="qnum">{{userInfo.couponCount || 0}}</text>
+      <text class="qnum">{{isLogin ? couponCount : 0}}</text>
       <text class="qlabel">卡券</text>
     </view>
     <view class="qcell" bindtap="goAddress">
-      <text class="qnum">{{userInfo.addressCount || 0}}</text>
+      <text class="qnum">{{isLogin ? addressCount : 0}}</text>
       <text class="qlabel">地址</text>
     </view>
   </view>

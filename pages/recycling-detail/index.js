@@ -5,7 +5,8 @@ Page({
   data: {
     orderNo: '',
     orderDetail: null,
-    loading: true
+    loading: true,
+    isFirstLoad: true // 标记是否是首次加载
   },
 
   onLoad(options) {

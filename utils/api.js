@@ -500,12 +500,20 @@ function getRechargeStatus(orderNo) {
 
 /**
  * 创建第三方支付订单，获取小程序支付参数
+ * @param {string} orderNo 订单号
+ * @param {number} paymentMethod 支付方式（2=微信小程序支付, 4=钱包支付）
+ * @param {number} couponId 优惠券ID（可选）
  */
-function createPayment(orderNo, paymentMethod = 2) {
-  return post('/pay/create', {
+function createPayment(orderNo, paymentMethod = 2, couponId = null) {
+  const params = {
     orderNo,
     paymentMethod
-  }, { showSuccess: false })
+  }
+  // 如果提供了优惠券ID，添加到请求参数中
+  if (couponId) {
+    params.couponId = couponId
+  }
+  return post('/pay/create', params, { showSuccess: false })
 }
 
 /**
@@ -563,11 +571,14 @@ function receiveCoupon(couponTemplateId) {
 
 /**
  * 获取用户代金券列表
+ * @param {number} status 代金券状态（1=未使用，2=已使用，3=已过期）
+ * @param {number} pageNum 页码（从1开始）
+ * @param {number} pageSize 页大小
  */
-function getUserCoupons(status = 1, page = 1, pageSize = 10) {
+function getUserCoupons(status = 1, pageNum = 1, pageSize = 10) {
   return post('/coupon/user-coupons', {
-    status: String(status),
-    page,
+    status: status,
+    pageNum,
     pageSize
   }, { showSuccess: false })
 }
@@ -624,6 +635,28 @@ function getExpressOrderDetail(orderNo) {
  */
 function getUserInfo() {
   return get('/user/info')
+}
+
+/**
+ * 获取用户钱包余额
+ */
+function getWalletBalance() {
+  return get('/wallet/balance', {}, { showSuccess: false })
+}
+
+/**
+ * 获取钱包交易记录
+ * @param {Object} params 分页参数 { pageNum: 1, pageSize: 10, transactionType: null, startTime: null, endTime: null }
+ */
+function getWalletTransactions(params = {}) {
+  const { pageNum = 1, pageSize = 10, transactionType = null, startTime = null, endTime = null } = params
+  return post('/wallet/transactions', {
+    pageNum,
+    pageSize,
+    transactionType,
+    startTime,
+    endTime
+  }, { showSuccess: false })
 }
 
 /**
@@ -846,6 +879,10 @@ module.exports = {
   getRechargeStatus,
   cancelRecharge,
   createPayment,
+  
+  // 钱包相关
+  getWalletBalance,
+  getWalletTransactions,
   
   // 提现相关
   createWithdraw,

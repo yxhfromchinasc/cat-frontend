@@ -5,18 +5,31 @@ Page({
   data: {
     orderNo: '',
     orderDetail: null,
-    loading: true
+    loading: true,
+    isFirstLoad: true // 标记是否是首次加载
   },
 
   onLoad(options) {
     if (options.orderNo) {
-      this.setData({ orderNo: options.orderNo })
+      this.setData({ 
+        orderNo: options.orderNo,
+        isFirstLoad: false // 设置标志，表示已经完成首次加载
+      })
       this.loadOrderDetail()
     } else {
       wx.showToast({ title: '订单号不能为空', icon: 'none' })
       setTimeout(() => {
         wx.navigateBack()
       }, 1500)
+    }
+  },
+
+  // 页面显示时刷新订单详情（从支付页面返回时会触发）
+  onShow() {
+    // 如果不是首次加载（说明是从其他页面返回的），则刷新订单详情
+    // 这样可以确保从支付页面返回后能看到最新的订单状态
+    if (this.data.orderNo && !this.data.isFirstLoad) {
+      this.loadOrderDetail()
     }
   },
 

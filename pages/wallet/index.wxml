@@ -23,9 +23,49 @@
 
   <view class="card">
     <view class="section-title">交易记录</view>
-    <view class="empty-state">
+    
+    <!-- 交易记录列表 -->
+    <view class="transaction-list" wx:if="{{transactions.length > 0}}">
+      <view 
+        class="transaction-item" 
+        wx:for="{{transactions}}" 
+        wx:key="id"
+      >
+        <view class="transaction-left">
+          <view class="transaction-icon" style="background: {{item.typeColor}}22; color: {{item.typeColor}}">
+            <text>{{item.typeIcon}}</text>
+          </view>
+          <view class="transaction-info">
+            <view class="transaction-type">{{item.typeName}}</view>
+            <view class="transaction-desc">{{item.description || '交易'}}</view>
+            <view class="transaction-time">{{item.timeStr}}</view>
+          </view>
+        </view>
+        <view class="transaction-right">
+          <view class="transaction-amount {{item.isIncome ? 'income' : 'expense'}}">
+            {{item.amountStr}}
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{transactions.length === 0 && !loading}}">
       <text class="empty-icon">📋</text>
       <text class="empty-text">暂无交易记录</text>
+    </view>
+    
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{transactions.length > 0}}">
+      <view class="load-more-btn" wx:if="{{hasMore && !loading}}" bindtap="loadMore">
+        <text>加载更多</text>
+      </view>
+      <view class="load-more-text" wx:if="{{!hasMore}}">
+        <text>没有更多了</text>
+      </view>
+      <view class="load-more-loading" wx:if="{{loading}}">
+        <text>加载中...</text>
+      </view>
     </view>
   </view>
 </view>
