@@ -162,12 +162,12 @@
   transition: left 0.5s ease;
 }
 
-.bind-btn:active {
+.bind-btn-hover {
   transform: scale(0.98);
   box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.5);
 }
 
-.bind-btn:active::before {
+.bind-btn-hover::before {
   left: 100%;
 }
 
@@ -202,9 +202,4 @@ button::before {
   border-radius: 50%;
   transform: translate(-50%, -50%);
   transition: all 0.3s ease;
-}
-
-button:active::before {
-  width: 200%;
-  height: 200%;
 }

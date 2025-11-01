@@ -28,11 +28,11 @@
     </view>
     
     <view class="login-content">
-      <button class="wechat-login-btn" bindtap="wechatLogin">
+      <button class="wechat-login-btn" hover-class="wechat-login-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="wechatLogin">
         微信授权登录
       </button>
       
-      <button class="phone-login-btn" bindtap="goToPhoneLogin">
+      <button class="phone-login-btn" hover-class="phone-login-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="goToPhoneLogin">
         手机号登录
       </button>
     </view>

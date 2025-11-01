@@ -81,7 +81,7 @@
         
         <!-- 快捷选项 -->
         <view class="quick-options">
-          <view class="quick-option-item" wx:for="{{quickOptions}}" wx:key="index" bindtap="addQuickOption" data-text="{{item}}">
+          <view class="quick-option-item" hover-class="quick-option-item-hover" hover-start-time="0" hover-stay-time="70" wx:for="{{quickOptions}}" wx:key="index" bindtap="addQuickOption" data-text="{{item}}">
             <text>{{item}}</text>
           </view>
         </view>

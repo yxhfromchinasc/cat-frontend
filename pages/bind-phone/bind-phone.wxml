@@ -41,7 +41,7 @@
       </view>
     </view>
 
-    <button class="bind-btn" bindtap="bindPhone">
+    <button class="bind-btn" hover-class="bind-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="bindPhone">
       确认绑定
     </button>
 

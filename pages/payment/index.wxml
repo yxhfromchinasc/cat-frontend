@@ -73,6 +73,9 @@
     <view class="coupon-list" wx:if="{{showCouponPicker}}">
       <view 
         class="coupon-item" 
+        hover-class="coupon-card-hover"
+        hover-start-time="0"
+        hover-stay-time="70"
         wx:for="{{availableCoupons}}" 
         wx:key="id"
         bindtap="selectCoupon"

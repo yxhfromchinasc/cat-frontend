@@ -167,7 +167,7 @@ page {
   border-radius: 12rpx;
 }
 
-.feature-item:active {
+.feature-item-hover {
   background: #f8f9fa;
 }
 
@@ -203,7 +203,7 @@ page {
   border-bottom: none;
 }
 
-.function-item:active {
+.function-item-hover {
   background-color: #f8f9fa;
 }
 
@@ -297,10 +297,10 @@ page {
   color: #333333;
 }
 
-.wechat-login-btn:active {
+.wechat-login-btn-hover {
   background: #05a050;
 }
 
-.phone-login-btn:active {
+.phone-login-btn-hover {
   background: #e0e0e0;
 }

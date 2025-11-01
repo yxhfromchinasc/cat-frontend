@@ -246,7 +246,7 @@
   min-height: 140rpx;
 }
 
-.coupon-card:active {
+.coupon-card-hover {
   opacity: 0.8;
   transform: scale(0.98);
 }

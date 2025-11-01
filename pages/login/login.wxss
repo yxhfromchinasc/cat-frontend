@@ -97,7 +97,7 @@
   justify-content: center;
 }
 
-.wechat-btn:active {
+.wechat-btn-hover {
   background: #05a050;
 }
 
@@ -172,7 +172,7 @@
   color: #999999;
 }
 
-.login-btn:active {
+.login-btn-hover {
   background: #0056b3;
 }
 
@@ -194,7 +194,7 @@
   z-index: 100;
 }
 
-.back-btn:active {
+.back-btn-hover {
   background: rgba(0, 0, 0, 0.5);
 }
 
@@ -251,7 +251,7 @@
   transition: all 0.3s ease;
 }
 
-.phone-auth-btn:active {
+.phone-auth-btn-hover {
   transform: scale(0.98);
   opacity: 0.9;
 }
@@ -267,7 +267,7 @@
   transition: all 0.3s ease;
 }
 
-.phone-auth-cancel:active {
+.phone-auth-cancel-hover {
   background: #f5f5f5;
   transform: scale(0.98);
 }

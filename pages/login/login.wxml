@@ -33,7 +33,7 @@
         <view class="wechat-icon">💬</view>
         <view class="wechat-text">使用微信账号快速登录</view>
       </view>
-      <button class="wechat-btn" bindtap="wechatLogin">
+      <button class="wechat-btn" hover-class="wechat-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="wechatLogin">
         微信授权登录
       </button>
     </view>
@@ -75,6 +75,9 @@
       
       <button 
         class="login-btn {{!phone || !code ? 'disabled' : ''}}"
+        hover-class="login-btn-hover"
+        hover-start-time="0"
+        hover-stay-time="70"
         disabled="{{!phone || !code}}"
         bindtap="phoneLogin"
       >
@@ -84,7 +87,7 @@
   </view>
 
   <!-- 返回按钮 -->
-  <view class="back-btn" bindtap="goHome">
+  <view class="back-btn" hover-class="back-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="goHome">
     ←
   </view>
 
@@ -95,12 +98,15 @@
       <view class="phone-auth-desc">为了完成登录，需要获取您的手机号</view>
       <button 
         class="phone-auth-btn" 
+        hover-class="phone-auth-btn-hover"
+        hover-start-time="0"
+        hover-stay-time="70"
         open-type="getPhoneNumber" 
         bindgetphonenumber="onPhoneNumberGet"
       >
         授权手机号
       </button>
-      <button class="phone-auth-cancel" bindtap="cancelPhoneAuth">取消</button>
+      <button class="phone-auth-cancel" hover-class="phone-auth-cancel-hover" hover-start-time="0" hover-stay-time="70" bindtap="cancelPhoneAuth">取消</button>
     </view>
   </view>
 </view>

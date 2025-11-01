@@ -193,7 +193,7 @@
   transition: all 0.3s;
 }
 
-.quick-option-item:active {
+.quick-option-item-hover {
   background: #667eea;
   color: #fff;
 }
