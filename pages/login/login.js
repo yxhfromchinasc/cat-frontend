@@ -283,10 +283,20 @@ Page({
         }
       } else {
         console.error('获取手机号失败:', e.detail)
-        wx.showToast({
-          title: '获取手机号失败',
-          icon: 'none'
-        })
+        // 检查是否是权限问题
+        if (e.detail.errMsg && e.detail.errMsg.includes('no permission')) {
+          wx.showModal({
+            title: '权限未开通',
+            content: '需要在微信公众平台后台开通"获取手机号"权限。\n\n路径：开发 -> 接口设置 -> 获取手机号',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        } else {
+          wx.showToast({
+            title: '获取手机号失败',
+            icon: 'none'
+          })
+        }
       }
     } catch (error) {
       console.error('手机号授权处理失败:', error)

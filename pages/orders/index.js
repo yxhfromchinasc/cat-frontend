@@ -7,7 +7,8 @@ Page({
     orderList: [],
     
     // 当前选中的状态筛选：null-全部，1-进行中，2-已完成
-    currentStatus: null,
+    // 默认展示进行中的订单
+    currentStatus: 1,
     
     // 分页相关
     pageNum: 1,
@@ -15,11 +16,11 @@ Page({
     hasMore: true,
     loading: false,
     
-    // 状态筛选选项
+    // 状态筛选选项（进行中放最前面，全部订单放最后面）
     statusOptions: [
-      { label: '全部订单', value: null },
       { label: '进行中', value: 1 },
-      { label: '已完成', value: 2 }
+      { label: '已完成', value: 2 },
+      { label: '全部订单', value: null }
     ]
   },
 
