@@ -3,7 +3,7 @@
   <!-- 头部Logo -->
   <view class="header">
     <view class="logo">🐱</view>
-    <view class="title">猫社区</view>
+    <view class="title">喵呜管家</view>
     <view class="subtitle">欢迎回来</view>
   </view>
 
