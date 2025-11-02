@@ -524,6 +524,15 @@ function cancelRecharge(orderNo) {
 }
 
 /**
+ * 取消第三方支付订单
+ * 当用户从支付页面退出时调用，用于取消第三方支付订单并更新本地订单状态
+ * @param {string} orderNo 订单号
+ */
+function cancelThirdPartyPayment(orderNo) {
+  return post(`/pay/cancel`, {}, { url: `/pay/cancel?orderNo=${orderNo}`, showSuccess: false })
+}
+
+/**
  * 创建提现订单（仅创建本地订单，不扣除余额）
  */
 function createWithdraw(amount, withdrawMethod) {
@@ -879,6 +888,7 @@ module.exports = {
   getRechargeStatus,
   cancelRecharge,
   createPayment,
+  cancelThirdPartyPayment,
   
   // 钱包相关
   getWalletBalance,

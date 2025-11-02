@@ -139,8 +139,77 @@ async function pay(amount) {
     } catch (err) {
       // 用户取消或拉起失败
       if (err && err.errMsg && err.errMsg.includes('cancel')) {
-        wx.showToast({ title: '支付已取消', icon: 'none', duration: 2000 })
-        return { success: false, cancelled: true, orderNo: order.orderNo }
+        // 用户主动取消支付，但需要先确认订单状态
+        // 因为支付成功后关闭组件也可能触发 cancel 回调
+        try {
+          wx.showLoading({ title: '确认支付结果...', mask: true })
+          
+          // 延迟 2 秒，等待微信回调处理完成
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          
+          // 查询订单状态，确认是否已经支付成功
+          const statusRes = await api.getRechargeStatus(order.orderNo)
+          wx.hideLoading()
+          
+          if (statusRes && statusRes.success && statusRes.data) {
+            const status = statusRes.data.status
+            
+            if (status === 2) {
+              // 订单已支付成功，不调用取消接口，直接返回成功
+              wx.showToast({ title: '支付成功', icon: 'success', duration: 2000 })
+              return { success: true, orderNo: order.orderNo }
+            } else if (status === 3 || status === 4) {
+              // 订单已失败或已取消，不需要再调用取消接口
+              if (status === 3) {
+                wx.showToast({ title: '支付失败', icon: 'none', duration: 2000 })
+              } else {
+                wx.showToast({ title: '订单已取消', icon: 'none', duration: 2000 })
+              }
+              return { success: false, cancelled: status === 4, orderNo: order.orderNo }
+            } else {
+              // 订单还在待支付状态（status === 1），调用取消接口
+              try {
+                wx.showLoading({ title: '取消支付中...', mask: true })
+                const cancelRes = await api.cancelThirdPartyPayment(order.orderNo)
+                wx.hideLoading()
+                
+                if (cancelRes && cancelRes.success) {
+                  wx.showToast({ title: '已取消支付', icon: 'success', duration: 2000 })
+                } else {
+                  wx.showToast({ title: cancelRes?.message || '取消支付失败', icon: 'none', duration: 2000 })
+                }
+              } catch (cancelErr) {
+                wx.hideLoading()
+                console.error('取消支付接口调用失败:', cancelErr)
+                wx.showToast({ title: '取消支付失败，请稍后查看', icon: 'none', duration: 2000 })
+              }
+              
+              return { success: false, cancelled: true, orderNo: order.orderNo }
+            }
+          } else {
+            // 查询订单状态失败，保守处理：不调用取消接口，继续轮询确认
+            wx.showToast({ title: '支付结果确认中...', icon: 'none', duration: 2000 })
+            // 继续轮询确认订单状态
+            const result = await pollStatus(order.orderNo, order.expireTime)
+            if (result.status === 2) {
+              api.showSuccess('充值成功')
+              return { success: true, orderNo: order.orderNo }
+            }
+            return { success: false, cancelled: true, orderNo: order.orderNo }
+          }
+        } catch (checkErr) {
+          wx.hideLoading()
+          console.error('查询订单状态失败:', checkErr)
+          // 查询失败，保守处理：不调用取消接口，继续轮询确认
+          wx.showToast({ title: '支付结果确认中...', icon: 'none', duration: 2000 })
+          // 继续轮询确认订单状态
+          const result = await pollStatus(order.orderNo, order.expireTime)
+          if (result.status === 2) {
+            api.showSuccess('充值成功')
+            return { success: true, orderNo: order.orderNo }
+          }
+          return { success: false, cancelled: true, orderNo: order.orderNo }
+        }
       } else {
         wx.showToast({ title: '支付未完成，请重试', icon: 'none', duration: 2000 })
         return { success: false, cancelled: false, orderNo: order.orderNo, error: err }
