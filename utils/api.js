@@ -509,6 +509,14 @@ function getPaymentProgress(orderNo) {
 }
 
 /**
+ * 主动刷新三方支付状态（后端将直查三方并回补本地状态）
+ * 若后端暂未实现，该请求可能返回404/400，前端需容错忽略
+ */
+function refreshPaymentStatus(orderNo) {
+  return get(`/pay/progress/refresh`, { orderNo }, { showSuccess: false })
+}
+
+/**
  * 创建第三方支付订单，获取小程序支付参数
  * @param {string} orderNo 订单号
  * @param {number} paymentMethod 支付方式（2=微信小程序支付, 4=钱包支付）

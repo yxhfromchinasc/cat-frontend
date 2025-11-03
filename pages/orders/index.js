@@ -1,5 +1,6 @@
 // pages/orders/index.js
 const { api } = require('../../utils/util.js')
+const amount = require('../../utils/amount.js')
 
 Page({
   data: {
@@ -66,6 +67,13 @@ Page({
           }
           if (order.recyclingStartTime && order.recyclingEndTime) {
             order.recyclingTimeStr = this.formatTimeRange(order.recyclingStartTime, order.recyclingEndTime)
+          }
+          // 金额：统一格式化展示（若存在）
+          if (order && (order.actualAmount != null || order.totalAmount != null)) {
+            const val = order.actualAmount != null ? order.actualAmount : order.totalAmount
+            const num = amount.parseBigDecimalLike(val, 0)
+            order.amount = num
+            order.amountStr = `¥${amount.formatAmount(num)}`
           }
           // 格式化创建时间
           order.createdAtStr = this.formatTime(order.createdAt)

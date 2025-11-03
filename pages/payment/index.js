@@ -1,5 +1,7 @@
 // pages/payment/index.js
 const { api } = require('../../utils/util.js')
+const payUtils = require('../../utils/pay.js')
+const amount = require('../../utils/amount.js')
 
 Page({
   data: {
@@ -30,7 +32,10 @@ Page({
     userBalance: 0, // 用户余额（数字类型，用于计算）
     userBalanceStr: '0.00', // 用户余额（字符串类型，用于显示）
     
-    loading: true
+    loading: true,
+    // 自定义倒计时加载UI
+    showPaymentLoading: false,
+    paymentLoadingCountdown: 0
   },
 
   onLoad(options) {
@@ -62,9 +67,12 @@ Page({
       
       if (res.success && res.data) {
         const detail = res.data
-        // 确保金额字段正确解析（处理 null、undefined 和字符串数字）
-        const originalAmount = detail.totalAmount != null && detail.totalAmount !== undefined ? Number(detail.totalAmount) : 0
-        const actualAmount = detail.actualAmount != null && detail.actualAmount !== undefined ? Number(detail.actualAmount) : (detail.totalAmount != null && detail.totalAmount !== undefined ? Number(detail.totalAmount) : 0)
+        // 统一金额解析
+        const originalAmount = amount.parseBigDecimalLike(detail.totalAmount, 0)
+        const actualAmount = amount.parseBigDecimalLike(
+          detail.actualAmount != null ? detail.actualAmount : detail.totalAmount,
+          0
+        )
         
         console.log('支付详情数据:', detail)
         console.log('订单金额 (totalAmount):', detail.totalAmount, '类型:', typeof detail.totalAmount)
@@ -72,11 +80,11 @@ Page({
         console.log('实际金额 (actualAmount):', detail.actualAmount, '类型:', typeof detail.actualAmount)
         console.log('解析后的实际金额:', actualAmount, '类型:', typeof actualAmount)
         
-        // 格式化金额为字符串（用于显示）
-        const originalAmountStr = originalAmount.toFixed(2)
-        const finalAmountStr = actualAmount.toFixed(2)
+        // 统一金额格式化
+        const originalAmountStr = amount.formatAmount(originalAmount)
+        const finalAmountStr = amount.formatAmount(actualAmount)
         const hasDiscount = originalAmount > actualAmount
-        const discountAmountStr = hasDiscount ? (originalAmount - actualAmount).toFixed(2) : '0.00'
+        const discountAmountStr = hasDiscount ? amount.formatAmount(originalAmount - actualAmount) : '0.00'
         
         // 构建支付方式列表（根据后端返回的 supportedPaymentMethods）
         // PaymentMethod: 1=WECHAT_NATIVE, 2=WECHAT_MINIPROGRAM, 3=ALIPAY, 4=WALLET
@@ -158,19 +166,11 @@ Page({
     try {
       const res = await api.getWalletBalance()
       if (res && res.success && res.data != null) {
-        // 后端返回的是 BigDecimal，可能是数字、字符串或对象
-        let balance = 0
-        if (typeof res.data === 'number') {
-          balance = res.data
-        } else if (typeof res.data === 'string') {
-          balance = parseFloat(res.data)
-        } else if (res.data.value != null) {
-          balance = parseFloat(res.data.value || res.data)
-        }
+        const balance = amount.parseBigDecimalLike(res.data, 0)
         
         this.setData({
           userBalance: balance,
-          userBalanceStr: balance.toFixed(2)
+          userBalanceStr: amount.formatAmount(balance)
         })
       } else {
         // 如果没有余额信息，设置为0
@@ -229,28 +229,9 @@ Page({
   decorateCoupon(item) {
     // 后端返回的 UserCouponResp 字段：type, discountValue, minAmount, couponTemplateId, name, expiredAt
     const type = item.type || item.couponType || 1
-    // 处理 BigDecimal 序列化后的值（可能是对象、字符串或数字）
-    let discountValue = 0
-    if (item.discountValue != null) {
-      if (typeof item.discountValue === 'number') {
-        discountValue = item.discountValue
-      } else if (typeof item.discountValue === 'string') {
-        discountValue = parseFloat(item.discountValue)
-      } else if (item.discountValue.value != null) {
-        discountValue = parseFloat(item.discountValue.value || item.discountValue)
-      }
-    }
-    
-    let minAmount = 0
-    if (item.minAmount != null) {
-      if (typeof item.minAmount === 'number') {
-        minAmount = item.minAmount
-      } else if (typeof item.minAmount === 'string') {
-        minAmount = parseFloat(item.minAmount)
-      } else if (item.minAmount.value != null) {
-        minAmount = parseFloat(item.minAmount.value || item.minAmount)
-      }
-    }
+    // 统一 BigDecimal 解析
+    const discountValue = amount.parseBigDecimalLike(item.discountValue, 0)
+    const minAmount = amount.parseBigDecimalLike(item.minAmount, 0)
     
     const typeMap = { 
       1: { name: '立减', icon: '💰', color: '#FF6B6B' }, 
@@ -266,19 +247,19 @@ Page({
     
     if (type === 1) {
       // 立减类型：显示减免金额
-      mainValue = `¥${discountValue.toFixed(0)}`
+      mainValue = `¥${Math.round(discountValue).toString()}`
       subtitle = '立减优惠'
-      conditionText = minAmount > 0 ? `满¥${minAmount.toFixed(2)}可用` : '无门槛使用'
+      conditionText = minAmount > 0 ? `满¥${amount.formatAmount(minAmount)}可用` : '无门槛使用'
     } else if (type === 2) {
       // 折扣类型：显示折扣百分比
       mainValue = `${discountValue}%`
       subtitle = '折扣优惠'
-      conditionText = minAmount > 0 ? `满¥${minAmount.toFixed(2)}可用` : '无门槛使用'
+      conditionText = minAmount > 0 ? `满¥${amount.formatAmount(minAmount)}可用` : '无门槛使用'
     } else if (type === 3) {
       // 满减类型：显示减免金额和满额要求
-      mainValue = `¥${discountValue.toFixed(0)}`
+      mainValue = `¥${Math.round(discountValue).toString()}`
       subtitle = '满减优惠'
-      conditionText = `满¥${minAmount.toFixed(2)}减¥${discountValue.toFixed(0)}`
+      conditionText = `满¥${amount.formatAmount(minAmount)}减¥${Math.round(discountValue).toString()}`
     }
     
     // 格式化过期时间
@@ -313,7 +294,7 @@ Page({
       expiredAtText: expiredAtText,
       // 保留旧字段用于兼容
       valuePrefix: type === 2 ? '' : '¥',
-      valueDisplay: type === 2 ? `${discountValue}%` : discountValue.toFixed(0),
+      valueDisplay: type === 2 ? `${discountValue}%` : Math.round(discountValue).toString(),
       discount: discountValue
     }
   },
@@ -349,24 +330,15 @@ Page({
       wx.hideLoading()
       
       if (res && res.success && res.data != null) {
-        // 后端返回的是优惠金额（BigDecimal），可能是数字、字符串或对象
-        let discountValue = 0
-        if (typeof res.data === 'number') {
-          discountValue = res.data
-        } else if (typeof res.data === 'string') {
-          discountValue = parseFloat(res.data)
-        } else if (res.data.value != null) {
-          discountValue = parseFloat(res.data.value || res.data)
-        }
-        
-        const discount = Math.max(0, discountValue)
-        const finalAmount = Math.max(0, this.data.originalAmount - discount)
+        const discountValue = amount.parseBigDecimalLike(res.data, 0)
+        const discount = amount.nonNegative(discountValue)
+        const finalAmount = amount.nonNegative(this.data.originalAmount - discount)
         
         this.setData({
           selectedCoupon: coupon,
           couponDiscount: discount,
           finalAmount: finalAmount,
-          finalAmountStr: finalAmount.toFixed(2),
+          finalAmountStr: amount.formatAmount(finalAmount),
           showCouponPicker: false
         })
       } else {
@@ -385,7 +357,7 @@ Page({
       selectedCoupon: null,
       couponDiscount: 0,
       finalAmount: this.data.originalAmount,
-      finalAmountStr: this.data.originalAmount.toFixed(2)
+      finalAmountStr: amount.formatAmount(this.data.originalAmount)
     })
   },
 
@@ -420,6 +392,14 @@ Page({
     }
     
     try {
+      // 若处于继续支付模式，先主动刷新一次三方状态，促使后端直查并回补
+      try {
+        if (this.data.paymentDetail && this.data.paymentDetail.continueMode) {
+          await api.refreshPaymentStatus(orderNo)
+        }
+      } catch (_) {
+        // 忽略刷新失败，不影响后续流程
+      }
       wx.showLoading({ title: '支付中...', mask: true })
       
       // 先查询订单的支付进度，判断是创建支付还是继续支付
@@ -475,23 +455,34 @@ Page({
             // })
           }, 1500)
         } else {
-          // 微信小程序支付，需要调起微信支付
+          // 微信小程序支付：调起并进入5秒短轮询（自定义倒计时加载，不使用系统Loading）
           const paymentParams = res.data.paymentParams
           if (!paymentParams) {
             wx.showToast({ title: '支付参数错误', icon: 'none' })
             return
           }
           
-          // 调起微信支付（前端不处理回调后逻辑）
-          wx.requestPayment({
-            timeStamp: String(paymentParams.timeStamp),
-            nonceStr: paymentParams.nonceStr,
-            package: paymentParams.package,
-            signType: paymentParams.signType,
-            paySign: paymentParams.paySign,
-            success: () => {},
-            fail: () => {}
-          })
+          try {
+            // 封装的 Promise 版支付请求
+            await payUtils.requestPayment(paymentParams)
+          } catch (_) {
+            // 即使失败（包含用户取消），也进入短轮询确认真实结果
+          }
+
+          // 进入5秒短轮询确认（展示自定义倒计时 UI）
+          try {
+            const result = await payUtils.pollPaymentProgress(orderNo, 5, this)
+            if (result.paymentStatus === 'success') {
+              wx.showToast({ title: '支付成功', icon: 'success' })
+              setTimeout(() => wx.navigateBack(), 1200)
+            } else if (result.paymentStatus === 'failed') {
+              wx.showToast({ title: '支付失败', icon: 'none' })
+            } else {
+              wx.showToast({ title: '支付处理中，请稍后在订单查看', icon: 'none' })
+            }
+          } catch (e) {
+            wx.showToast({ title: '确认支付结果失败', icon: 'none' })
+          }
         }
       } else {
         wx.showToast({ 

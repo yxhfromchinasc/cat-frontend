@@ -17,7 +17,7 @@
     <view class="section-title">金额明细</view>
     <view class="amount-item">
       <text class="label">充值金额：</text>
-      <text class="value">¥{{(detail.actualAmount || detail.totalAmount)}}</text>
+      <text class="value">¥{{amountStr}}</text>
     </view>
   </view>
 

@@ -461,3 +461,19 @@
   color: #999;
 }
 
+/* 自定义倒计时覆盖层动画 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 备选类（若后续改为使用类名而非内联样式） */
+.spinner {
+  width: 72rpx;
+  height: 72rpx;
+  border: 6rpx solid #eaeaea;
+  border-top-color: #07c160;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+

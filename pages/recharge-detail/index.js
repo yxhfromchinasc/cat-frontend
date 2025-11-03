@@ -1,11 +1,13 @@
 const { api } = require('../../utils/util.js')
+const amount = require('../../utils/amount.js')
 
 Page({
   data: {
     orderNo: '',
     detail: {},
     paymentStatus: 'pending',
-    paymentStatusDesc: ''
+    paymentStatusDesc: '',
+    amountStr: '0.00'
   },
 
   onLoad(options) {
@@ -29,7 +31,10 @@ Page({
     try {
       const res = await api.getPaymentDetail(orderNo)
       if (res && res.success) {
-        this.setData({ detail: res.data || {} })
+        const detail = res.data || {}
+        const val = detail.actualAmount != null ? detail.actualAmount : detail.totalAmount
+        const num = amount.parseBigDecimalLike(val, 0)
+        this.setData({ detail, amountStr: amount.formatAmount(num) })
       }
     } catch (e) {
       console.error('获取充值订单详情失败', e)

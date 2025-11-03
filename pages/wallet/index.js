@@ -1,9 +1,11 @@
 // pages/wallet/index.js
 const { api } = require('../../utils/util.js')
+const amount = require('../../utils/amount.js')
 
 Page({
   data:{
     balance: 0,
+    balanceStr: '0.00',
     transactions: [], // 交易记录列表
     loading: false,
     pageNum: 1, // 当前页码（从1开始）
@@ -19,22 +21,14 @@ Page({
       // 调用后端钱包余额接口
       const res = await api.getWalletBalance()
       if (res && res.success && res.data != null) {
-        // 后端返回的是 BigDecimal，可能是数字、字符串或对象
-        let balance = 0
-        if (typeof res.data === 'number') {
-          balance = res.data
-        } else if (typeof res.data === 'string') {
-          balance = parseFloat(res.data)
-        } else if (res.data.value != null) {
-          balance = parseFloat(res.data.value || res.data)
-        }
-        this.setData({ balance })
+        const bal = amount.parseBigDecimalLike(res.data, 0)
+        this.setData({ balance: bal, balanceStr: amount.formatAmount(bal) })
       } else {
-        this.setData({ balance: 0 })
+        this.setData({ balance: 0, balanceStr: '0.00' })
       }
     }catch(e){
       console.error('加载余额失败:', e)
-      this.setData({ balance: 0 })
+      this.setData({ balance: 0, balanceStr: '0.00' })
     }
   },
   goRecharge(){
@@ -124,18 +118,11 @@ Page({
     const typeInfo = typeMap[tx.transactionType] || { name: '未知', icon: '❓', color: '#757575' }
     
     // 处理交易金额
-    let amount = 0
-    if (typeof tx.amount === 'number') {
-      amount = tx.amount
-    } else if (typeof tx.amount === 'string') {
-      amount = parseFloat(tx.amount)
-    } else if (tx.amount && tx.amount.value != null) {
-      amount = parseFloat(tx.amount.value || tx.amount)
-    }
+    const amt = amount.parseBigDecimalLike(tx.amount, 0)
     
     // 判断是收入还是支出（金额为正数是收入，负数是支出）
-    const isIncome = amount > 0
-    const amountStr = isIncome ? `+¥${Math.abs(amount).toFixed(2)}` : `-¥${Math.abs(amount).toFixed(2)}`
+    const isIncome = amt > 0
+    const amountStr = isIncome ? `+¥${amount.formatAmount(Math.abs(amt))}` : `-¥${amount.formatAmount(Math.abs(amt))}`
     
     // 格式化时间
     let timeStr = ''
@@ -157,7 +144,7 @@ Page({
       typeName: typeInfo.name,
       typeIcon: typeInfo.icon,
       typeColor: typeInfo.color,
-      amount: amount,
+      amount: amt,
       amountStr: amountStr,
       isIncome: isIncome,
       timeStr: timeStr

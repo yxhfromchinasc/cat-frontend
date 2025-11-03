@@ -1,12 +1,14 @@
 // pages/express-detail/index.js
 const { api } = require('../../utils/util.js')
+const amount = require('../../utils/amount.js')
 
 Page({
   data: {
     orderNo: '',
     orderDetail: null,
     loading: true,
-    isFirstLoad: true // 标记是否是首次加载
+    isFirstLoad: true, // 标记是否是首次加载
+    amountStr: '0.00'
   },
 
   onLoad(options) {
@@ -70,6 +72,12 @@ Page({
         detail.courierRating = 5
         detail.courierRatingArray = [1, 2, 3, 4, 5]
 
+        // 统一金额：实际金额优先，其次总金额
+        const amountVal = detail.actualAmount != null ? detail.actualAmount : detail.expressPrice != null ? detail.expressPrice : detail.totalAmount
+        const amountNum = amount.parseBigDecimalLike(amountVal, 0)
+        detail.amount = amountNum
+        const amountStr = amount.formatAmount(amountNum)
+
         // 预处理时间字段，格式化后直接存储在对象中
         detail.createdAtFormatted = this.formatTime(detail.createdAt)
         detail.bandingTimeFormatted = this.formatTime(detail.bandingTime)
@@ -94,6 +102,7 @@ Page({
 
         this.setData({
           orderDetail: detail,
+          amountStr: amountStr,
           loading: false
         })
       } else {
