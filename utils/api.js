@@ -919,6 +919,7 @@ module.exports = {
   createRecharge,
   getRechargeStatus,
   getPaymentProgress,
+  refreshPaymentStatus,
   cancelRecharge,
   createPayment,
   cancelThirdPartyPayment,

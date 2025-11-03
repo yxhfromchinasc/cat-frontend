@@ -110,6 +110,7 @@ function pollPaymentProgress(orderNo, durationSeconds = 5, pageInstance = null) 
     // 执行查询的函数
     const executeQuery = async () => {
       try {
+        // 已在进入倒计时前做过一次 refresh，这里仅查询本地进度即可
         const res = await api.getPaymentProgress(orderNo)
         const { success, data } = res || {}
         if (success && data) {
@@ -358,27 +359,36 @@ async function pay(amount) {
       }
     }
     
-    // 如果是支付成功或其他错误，进入5秒缓冲轮询
+    // 如果是支付成功或其他错误，先进行一次快速确认（refresh + progress），再决定是否进入5秒缓冲轮询
     if (paymentResult === 'success' || paymentResult === 'error') {
+      try { await api.refreshPaymentStatus(order.orderNo) } catch (_) {}
+      try {
+        const quick = await api.getPaymentProgress(order.orderNo)
+        if (quick && quick.success && quick.data) {
+          const st = quick.data.paymentStatus
+          if (st === 'success') {
+            api.showSuccess('充值成功')
+            return { success: true, orderNo: order.orderNo }
+          } else if (st === 'failed') {
+            wx.showToast({ title: '支付失败', icon: 'none' })
+            return { success: false, orderNo: order.orderNo }
+          }
+        }
+      } catch (_) { /* 忽略，进入缓冲轮询 */ }
+
       // 获取当前页面实例（如果有）
       const pages = getCurrentPages()
       const currentPage = pages[pages.length - 1]
-      
-      // 进入5秒缓冲轮询流程
-      // pollPaymentProgress 内部会显示带倒计时的 loading
+
+      // 进入5秒缓冲轮询流程（倒计时覆盖层）
       const result = await pollPaymentProgress(order.orderNo, 5, currentPage)
-      
       if (result.paymentStatus === 'success') {
-        // 本次支付成功
         api.showSuccess('充值成功')
         return { success: true, orderNo: order.orderNo }
       } else if (result.paymentStatus === 'failed') {
-        // 本次支付失败
         wx.showToast({ title: '支付失败', icon: 'none' })
         return { success: false, orderNo: order.orderNo }
       } else {
-        // 5秒内都是 "支付中"，不做处理，让后端继续处理
-        // 用户可以稍后在订单详情页查看最新状态
         wx.showToast({ title: '支付处理中，请稍后查看', icon: 'none', duration: 2000 })
         return { success: false, orderNo: order.orderNo }
       }

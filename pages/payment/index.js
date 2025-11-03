@@ -376,6 +376,10 @@ Page({
   async onPay() {
     const { orderNo, selectedPaymentMethod, selectedCoupon, finalAmount } = this.data
     
+    // 每次点击前先确保清理自定义倒计时与系统Loading
+    try { wx.hideLoading() } catch (_) {}
+    this.setData({ showPaymentLoading: false, paymentLoadingCountdown: 0 })
+
     // 验证支付金额
     if (finalAmount <= 0) {
       wx.showToast({ title: '支付金额必须大于0', icon: 'none' })
@@ -392,13 +396,16 @@ Page({
     }
     
     try {
-      // 若处于继续支付模式，先主动刷新一次三方状态，促使后端直查并回补
-      try {
-        if (this.data.paymentDetail && this.data.paymentDetail.continueMode) {
+      // 若处于继续支付模式，先主动刷新一次三方状态；失败则阻断后续流程
+      if (this.data.paymentDetail && this.data.paymentDetail.continueMode) {
+        try {
           await api.refreshPaymentStatus(orderNo)
+        } catch (e) {
+          // 确保不进入倒计时覆盖层
+          this.setData({ showPaymentLoading: false, paymentLoadingCountdown: 0 })
+          wx.showToast({ title: '无法确认支付状态，请稍后重试', icon: 'none' })
+          return
         }
-      } catch (_) {
-        // 忽略刷新失败，不影响后续流程
       }
       wx.showLoading({ title: '支付中...', mask: true })
       
@@ -466,8 +473,25 @@ Page({
             // 封装的 Promise 版支付请求
             await payUtils.requestPayment(paymentParams)
           } catch (_) {
-            // 即使失败（包含用户取消），也进入短轮询确认真实结果
+            // 无论成功或失败（含用户取消），都进行一次快速确认
           }
+
+          // 快速确认：先触发一次直查回补，再查进度；若已得出结论则不进入倒计时
+          try {
+            try { await api.refreshPaymentStatus(orderNo) } catch (_) {}
+            const quick = await api.getPaymentProgress(orderNo)
+            if (quick && quick.success && quick.data) {
+              const st = quick.data.paymentStatus
+              if (st === 'success') {
+                wx.showToast({ title: '支付成功', icon: 'success' })
+                setTimeout(() => wx.navigateBack(), 1200)
+                return
+              } else if (st === 'failed') {
+                wx.showToast({ title: '支付失败', icon: 'none' })
+                return
+              }
+            }
+          } catch (_) { /* 忽略，进入倒计时兜底 */ }
 
           // 进入5秒短轮询确认（展示自定义倒计时 UI）
           try {
