@@ -222,11 +222,11 @@
     <button 
       wx:for="{{orderDetail.allowedActions}}" 
       wx:key="*this"
-      class="action-btn {{item === 'PAY' ? 'pay-btn' : 'cancel-btn'}}"
+      class="action-btn {{item === 'PAY' || item === 'CONTINUE_PAY' ? 'pay-btn' : item === 'CANCEL_PAYMENT' ? 'cancel-payment-btn' : 'cancel-btn'}}"
       bindtap="handleAction"
       data-action="{{item}}"
     >
-      {{item === 'PAY' ? '立即支付' : item === 'CANCEL' ? '取消订单' : item}}
+      {{item === 'PAY' ? '立即支付' : item === 'CONTINUE_PAY' ? '继续支付' : item === 'CANCEL_PAYMENT' ? '取消支付' : item === 'CANCEL' ? '取消订单' : item}}
     </button>
   </view>
 </view>

@@ -172,7 +172,12 @@ Page({
     const serviceType = e.currentTarget.dataset.servicetype
     
     // 根据订单类型跳转到不同的详情页
-    if (serviceType === 2) {
+    if (serviceType === 1) {
+      // 充值订单跳转到充值订单详情页
+      wx.navigateTo({
+        url: `/pages/recharge-detail/index?orderNo=${orderNo}`
+      })
+    } else if (serviceType === 2) {
       // 快递代取订单跳转到快递订单详情页
       wx.navigateTo({
         url: `/pages/express-detail/index?orderNo=${orderNo}`

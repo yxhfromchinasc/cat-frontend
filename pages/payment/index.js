@@ -391,11 +391,37 @@ Page({
     try {
       wx.showLoading({ title: '支付中...', mask: true })
       
-      // 获取选中的优惠券ID（如果有）
-      const couponId = selectedCoupon ? selectedCoupon.id : null
+      // 先查询订单的支付进度，判断是创建支付还是继续支付
+      const progressRes = await api.getPaymentProgress(orderNo)
+      let res = null
       
-      // 调用后端创建支付订单接口（传递优惠券ID）
-      const res = await api.createPayment(orderNo, selectedPaymentMethod, couponId)
+      if (progressRes && progressRes.success && progressRes.data) {
+        const paymentStatus = progressRes.data.paymentStatus
+        
+        if (paymentStatus === 'paying') {
+          // 订单处于支付中状态，调用继续支付接口
+          res = await api.continuePayment(orderNo)
+        } else if (paymentStatus === 'pending') {
+          // 订单处于待支付状态，调用创建支付订单接口
+          const couponId = selectedCoupon ? selectedCoupon.id : null
+          res = await api.createPayment(orderNo, selectedPaymentMethod, couponId)
+        } else {
+          // 订单已支付成功或失败，不允许再次支付
+          wx.hideLoading()
+          wx.showToast({ 
+            title: paymentStatus === 'success' ? '订单已支付成功' : '订单已支付失败', 
+            icon: 'none' 
+          })
+          setTimeout(() => {
+            wx.navigateBack()
+          }, 1500)
+          return
+        }
+      } else {
+        // 查询支付进度失败，默认调用创建支付订单接口
+        const couponId = selectedCoupon ? selectedCoupon.id : null
+        res = await api.createPayment(orderNo, selectedPaymentMethod, couponId)
+      }
       
       wx.hideLoading()
       
@@ -426,7 +452,6 @@ Page({
           }
           
           // 调起微信支付
-          // 注意：不依赖支付组件的回调结果，统一使用5秒缓冲轮询来查询支付进度
           wx.requestPayment({
             timeStamp: String(paymentParams.timeStamp),
             nonceStr: paymentParams.nonceStr,
@@ -438,11 +463,97 @@ Page({
               // 无论回调是成功还是失败，都统一进入轮询流程
               this.pollPaymentResult(orderNo, 5)
             },
-            fail: (err) => {
+            fail: async (err) => {
               console.log('微信支付组件回调:', err)
-              // 不管支付组件回调是什么，都统一进入5秒缓冲轮询流程
-              // 由后端负责处理支付状态，前端只负责查询和展示
-              this.pollPaymentResult(orderNo, 5)
+              
+              // 检查是否是用户取消
+              const isUserCancel = err && err.errMsg && err.errMsg.includes('cancel')
+              
+              if (isUserCancel) {
+                // 用户主动取消，立即查询一次支付状态（不延迟）
+                // 因为支付成功后关闭也可能触发 cancel，需要确认
+                try {
+                  const progressRes = await api.getPaymentProgress(orderNo)
+                  
+                  if (progressRes && progressRes.success && progressRes.data) {
+                    const paymentStatus = progressRes.data.paymentStatus
+                    
+                    if (paymentStatus === 'success') {
+                      // 支付成功（支付成功后关闭也可能触发 cancel）
+                      wx.showToast({
+                        title: '支付成功',
+                        icon: 'success',
+                        duration: 2000
+                      })
+                      setTimeout(() => {
+                        wx.navigateBack()
+                      }, 1500)
+                      return
+                    } else if (paymentStatus === 'failed') {
+                      // 支付失败
+                      wx.showToast({
+                        title: '支付失败',
+                        icon: 'none',
+                        duration: 2000
+                      })
+                      setTimeout(() => {
+                        wx.navigateBack()
+                      }, 2000)
+                      return
+                    } else {
+                      // paymentStatus === 'pending' 或 'paying'
+                      // 等待2秒后再查询一次（确认是否支付成功）
+                      await new Promise(resolve => setTimeout(resolve, 2000))
+                      
+                      const secondProgressRes = await api.getPaymentProgress(orderNo)
+                      if (secondProgressRes && secondProgressRes.success && secondProgressRes.data) {
+                        const secondPaymentStatus = secondProgressRes.data.paymentStatus
+                        
+                        if (secondPaymentStatus === 'success') {
+                          // 支付成功
+                          wx.showToast({
+                            title: '支付成功',
+                            icon: 'success',
+                            duration: 2000
+                          })
+                          setTimeout(() => {
+                            wx.navigateBack()
+                          }, 1500)
+                          return
+                        } else if (secondPaymentStatus === 'failed') {
+                          // 支付失败
+                          wx.showToast({
+                            title: '支付失败',
+                            icon: 'none',
+                            duration: 2000
+                          })
+                          setTimeout(() => {
+                            wx.navigateBack()
+                          }, 2000)
+                          return
+                        }
+                      }
+                      
+                      // 两次查询都是 pending 或 paying，说明用户确实取消了
+                      // 不等待5秒缓冲轮询，直接返回
+                      // 后端定时任务会处理订单状态
+                      wx.showToast({
+                        title: '已取消支付',
+                        icon: 'none',
+                        duration: 2000
+                      })
+                      return
+                    }
+                  }
+                } catch (e) {
+                  // 查询失败，进入5秒缓冲轮询（兜底）
+                  console.error('查询支付状态失败:', e)
+                  this.pollPaymentResult(orderNo, 5)
+                }
+              } else {
+                // 其他错误（非用户取消），进入5秒缓冲轮询
+                this.pollPaymentResult(orderNo, 5)
+              }
             }
           })
         }

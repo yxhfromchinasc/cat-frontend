@@ -543,6 +543,16 @@ function cancelThirdPartyPayment(orderNo) {
 }
 
 /**
+ * 继续支付
+ * 从订单详情页继续支付，如果订单处于支付中状态且有保存的支付参数且未过期，直接返回支付参数
+ * 如果已过期或没有支付参数，重新创建支付订单
+ * @param {string} orderNo 订单号
+ */
+function continuePayment(orderNo) {
+  return post(`/pay/continue`, {}, { url: `/pay/continue?orderNo=${orderNo}`, showSuccess: false })
+}
+
+/**
  * 创建提现订单（仅创建本地订单，不扣除余额）
  */
 function createWithdraw(amount, withdrawMethod) {
@@ -900,6 +910,7 @@ module.exports = {
   cancelRecharge,
   createPayment,
   cancelThirdPartyPayment,
+  continuePayment,
   
   // 钱包相关
   getWalletBalance,
