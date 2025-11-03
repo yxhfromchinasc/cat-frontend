@@ -126,7 +126,7 @@
 
   <!-- 支付按钮 -->
   <view class="payment-bar">
-  <view class="payment-summary">
+    <view class="payment-summary">
     <view class="summary-main">
       <text class="summary-label">合计：</text>
       <text class="summary-amount">¥{{finalAmountStr || '0.00'}}</text>

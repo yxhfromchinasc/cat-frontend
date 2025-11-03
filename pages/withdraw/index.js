@@ -46,48 +46,35 @@ Page({
     this.setData({ amount: value, canSubmit: true })
   },
 
-  // 调起确认收款页面
+  // 调起确认收款页面（商家转账升级版）
   async requestUserConfirmReceipt(packageInfoStr) {
     return new Promise((resolve, reject) => {
       try {
-        // packageInfoStr 是 JSON 字符串，需要解析
-        let packageInfo
-        try {
-          packageInfo = typeof packageInfoStr === 'string' ? JSON.parse(packageInfoStr) : packageInfoStr
-        } catch (e) {
-          console.error('解析packageInfo失败:', e)
-          reject(new Error('确认收款参数格式错误'))
+        // packageInfoStr 是后端返回的 base64 编码字符串，直接使用，无需解析
+        if (!packageInfoStr || typeof packageInfoStr !== 'string') {
+          reject(new Error('确认收款参数无效'))
           return
         }
 
-        // 根据微信文档，使用wx.requestMerchantTransfer调起确认收款页面
-        // 注意：需要小程序基础库版本支持
-        if (typeof wx.requestMerchantTransfer === 'function') {
-          wx.requestMerchantTransfer({
-            package: packageInfo.package || packageInfo, // package_info中的package字段
-            success: (res) => {
-              console.log('调起确认收款成功:', res)
-              resolve(res)
-            },
-            fail: (err) => {
-              console.error('调起确认收款失败:', err)
-              // 用户取消
-              if (err && err.errMsg && err.errMsg.includes('cancel')) {
-                reject({ cancelled: true, errMsg: err.errMsg })
-              } else {
-                reject(new Error(err.errMsg || '调起确认收款失败'))
-              }
+        // 根据微信文档，使用 wx.openBusinessView 调起确认收款页面
+        // businessType: 'transferConfirm' 表示转账确认
+        wx.openBusinessView({
+          businessType: 'transferConfirm',
+          queryString: 'package=' + encodeURIComponent(packageInfoStr),
+          success: (res) => {
+            console.log('调起确认收款成功:', res)
+            resolve(res)
+          },
+          fail: (err) => {
+            console.error('调起确认收款失败:', err)
+            // 用户取消
+            if (err && err.errMsg && (err.errMsg.includes('cancel') || err.errMsg.includes('取消'))) {
+              reject({ cancelled: true, errMsg: err.errMsg })
+            } else {
+              reject(new Error(err.errMsg || '调起确认收款失败'))
             }
-          })
-        } else {
-          // 如果不支持，提示用户升级微信版本
-          wx.showModal({
-            title: '提示',
-            content: '您的微信版本过低，请升级微信后重试',
-            showCancel: false
-          })
-          reject(new Error('微信版本不支持'))
-        }
+          }
+        })
       } catch (e) {
         console.error('调起确认收款异常:', e)
         reject(e)

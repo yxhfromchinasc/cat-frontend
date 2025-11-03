@@ -379,7 +379,7 @@ async function pay(amount) {
       // 获取当前页面实例（如果有）
       const pages = getCurrentPages()
       const currentPage = pages[pages.length - 1]
-
+      
       // 进入5秒缓冲轮询流程（倒计时覆盖层）
       const result = await pollPaymentProgress(order.orderNo, 5, currentPage)
       if (result.paymentStatus === 'success') {
