@@ -32,9 +32,18 @@ Page({
       const res = await api.getPaymentDetail(orderNo)
       if (res && res.success) {
         const detail = res.data || {}
-        const val = detail.actualAmount != null ? detail.actualAmount : detail.totalAmount
-        const num = amount.parseBigDecimalLike(val, 0)
-        this.setData({ detail, amountStr: amount.formatAmount(num) })
+        const orig = amount.parseBigDecimalLike(detail.totalAmount, 0)
+        const act = amount.parseBigDecimalLike(detail.actualAmount != null ? detail.actualAmount : detail.totalAmount, 0)
+        const hasDiscount = orig > act
+        const discount = Math.max(0, orig - act)
+        this.setData({
+          detail,
+          amountStr: amount.formatAmount(act),
+          originalAmountStr: amount.formatAmount(orig),
+          finalAmountStr: amount.formatAmount(act),
+          discountAmountStr: amount.formatAmount(discount),
+          hasDiscount: hasDiscount
+        })
       }
     } catch (e) {
       console.error('获取充值订单详情失败', e)

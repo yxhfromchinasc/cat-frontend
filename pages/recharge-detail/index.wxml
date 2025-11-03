@@ -16,8 +16,16 @@
   <view class="section amount-info">
     <view class="section-title">金额明细</view>
     <view class="amount-item">
-      <text class="label">充值金额：</text>
-      <text class="value">¥{{amountStr}}</text>
+      <text class="label">订单金额：</text>
+      <text class="value">¥{{originalAmountStr || amountStr || '0.00'}}</text>
+    </view>
+    <view class="amount-item" wx:if="{{hasDiscount}}">
+      <text class="label">优惠金额：</text>
+      <text class="value discount">-¥{{discountAmountStr || '0.00'}}</text>
+    </view>
+    <view class="amount-item final">
+      <text class="label">实付金额：</text>
+      <text class="value final-amount">¥{{finalAmountStr || amountStr || '0.00'}}</text>
     </view>
   </view>
 

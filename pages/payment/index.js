@@ -35,7 +35,10 @@ Page({
     loading: true,
     // 自定义倒计时加载UI
     showPaymentLoading: false,
-    paymentLoadingCountdown: 0
+    paymentLoadingCountdown: 0,
+    // 继续支付倒计时展示
+    payRemainSeconds: 0,
+    payRemainStr: ''
   },
 
   onLoad(options) {
@@ -103,6 +106,8 @@ Page({
           const fixed = paymentMethodsMap[detail.currentPaymentMethod] || null
           paymentMethods = fixed ? [fixed] : paymentMethods
           readOnlyPayment = true
+          // 启动本次支付剩余时间倒计时
+          this.startPayRemainCountdown(detail.paymentExpireTime)
         }
         
         this.setData({
@@ -158,6 +163,43 @@ Page({
       }, 1500)
     } finally {
       wx.hideLoading()
+    }
+  },
+
+  // 启动支付剩余时间倒计时
+  startPayRemainCountdown(expireTime) {
+    try {
+      if (!expireTime) return
+      if (this._remainTimer) clearInterval(this._remainTimer)
+      const parseTs = (t) => {
+        // 兼容字符串格式：优先 new Date(t)
+        const d = new Date(t)
+        if (!isNaN(d.getTime())) return d.getTime()
+        return Date.parse(t)
+      }
+      const expireTs = typeof expireTime === 'number' ? expireTime : parseTs(expireTime)
+      const tick = () => {
+        const now = Date.now()
+        let remain = Math.floor((expireTs - now) / 1000)
+        if (remain < 0) remain = 0
+        const mm = Math.floor(remain / 60)
+        const ss = remain % 60
+        const str = `${mm.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`
+        this.setData({ payRemainSeconds: remain, payRemainStr: str })
+        if (remain === 0) {
+          clearInterval(this._remainTimer)
+          this._remainTimer = null
+        }
+      }
+      tick()
+      this._remainTimer = setInterval(tick, 1000)
+    } catch (_) {}
+  },
+
+  onUnload() {
+    if (this._remainTimer) {
+      clearInterval(this._remainTimer)
+      this._remainTimer = null
     }
   },
 
@@ -334,13 +376,20 @@ Page({
         const discount = amount.nonNegative(discountValue)
         const finalAmount = amount.nonNegative(this.data.originalAmount - discount)
         
-        this.setData({
+        const updates = {
           selectedCoupon: coupon,
           couponDiscount: discount,
           finalAmount: finalAmount,
           finalAmountStr: amount.formatAmount(finalAmount),
           showCouponPicker: false
-        })
+        }
+        // 若为0元，限定仅钱包支付
+        if (finalAmount === 0) {
+          const walletOnly = [{ code: 4, name: '钱包余额', icon: '💰' }]
+          updates.paymentMethods = walletOnly
+          updates.selectedPaymentMethod = 4
+        }
+        this.setData(updates)
       } else {
         wx.showToast({ title: res?.message || '计算失败', icon: 'none' })
       }
@@ -353,12 +402,22 @@ Page({
 
   // 不使用优惠券
   removeCoupon() {
-    this.setData({
+    const fa = this.data.originalAmount
+    const updates = {
       selectedCoupon: null,
       couponDiscount: 0,
-      finalAmount: this.data.originalAmount,
-      finalAmountStr: amount.formatAmount(this.data.originalAmount)
-    })
+      finalAmount: fa,
+      finalAmountStr: amount.formatAmount(fa)
+    }
+    // 恢复默认支付方式（微信+钱包），当金额>0时
+    if (fa > 0) {
+      updates.paymentMethods = [
+        { code: 2, name: '微信支付', icon: '💳' },
+        { code: 4, name: '钱包余额', icon: '💰' }
+      ]
+      updates.selectedPaymentMethod = 2
+    }
+    this.setData(updates)
   },
 
   // 选择支付方式
@@ -380,9 +439,25 @@ Page({
     try { wx.hideLoading() } catch (_) {}
     this.setData({ showPaymentLoading: false, paymentLoadingCountdown: 0 })
 
-    // 验证支付金额
-    if (finalAmount <= 0) {
-      wx.showToast({ title: '支付金额必须大于0', icon: 'none' })
+    // 金额校验与0元分支
+    if (finalAmount < 0) {
+      wx.showToast({ title: '金额异常', icon: 'none' })
+      return
+    }
+    if (finalAmount === 0) {
+      // 仅走钱包支付，同步成功，不拉起三方
+      try {
+        const couponId = selectedCoupon ? selectedCoupon.id : null
+        const res = await api.createPayment(orderNo, 4, couponId)
+        if (res && res.success) {
+          wx.showToast({ title: '支付成功', icon: 'success' })
+          setTimeout(() => wx.navigateBack(), 1200)
+        } else {
+          wx.showToast({ title: res?.message || '支付失败，请重试', icon: 'none' })
+        }
+      } catch (e) {
+        wx.showToast({ title: e?.message || '支付失败，请重试', icon: 'none' })
+      }
       return
     }
     

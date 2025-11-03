@@ -417,7 +417,8 @@
 
 .payment-summary {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   flex: 1;
 }
 
@@ -433,10 +434,36 @@
   color: #ff4757;
 }
 
+.summary-main {
+  display: flex;
+  align-items: baseline;
+}
+
+.summary-remain {
+  margin-top: 6rpx;
+  display: flex;
+  align-items: center;
+}
+
+.summary-remain-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.summary-remain-time {
+  font-size: 24rpx;
+  color: #ff4757;
+  margin-left: 6rpx;
+}
+
 .pay-btn {
   flex: 1;
   height: 88rpx;
-  line-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: normal;
   text-align: center;
   font-size: 32rpx;
   font-weight: 500;
@@ -449,6 +476,11 @@
 .pay-btn:disabled {
   background: #ccc;
   color: #999;
+}
+
+/* 移除小程序 button 默认边框效果，确保视觉对齐 */
+.pay-btn::after {
+  border: none;
 }
 
 /* 加载中 */

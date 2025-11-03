@@ -208,9 +208,21 @@
           <text class="timeline-time" wx:if="{{orderDetail.paidAtFormatted}}">{{orderDetail.paidAtFormatted}}</text>
         </view>
         <view class="timeline-info">
-          <view class="info-item" wx:if="{{orderDetail.totalAmount}}">
-            <text class="info-label">支付金额：</text>
-            <text class="info-value price">￥{{orderDetail.totalAmount}}</text>
+          <view class="info-item">
+            <text class="info-label">订单金额：</text>
+            <text class="info-value">¥{{originalAmountStr || amountStr || '0.00'}}</text>
+          </view>
+          <view class="info-item" wx:if="{{hasDiscount}}">
+            <text class="info-label">优惠金额：</text>
+            <text class="info-value discount">-¥{{discountAmountStr || '0.00'}}</text>
+          </view>
+          <view class="info-item" wx:if="{{couponName}}">
+            <text class="info-label">使用优惠券：</text>
+            <text class="info-value">{{couponName}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">实付金额：</text>
+            <text class="info-value price">¥{{finalAmountStr || originalAmountStr || amountStr || '0.00'}}</text>
           </view>
         </view>
       </view>

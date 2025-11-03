@@ -8,14 +8,19 @@ Page({
     orderDetail: null,
     loading: true,
     isFirstLoad: true, // 标记是否是首次加载
-    amountStr: '0.00'
+    amountStr: '0.00',
+    // 金额明细展示用
+    originalAmountStr: '0.00',
+    finalAmountStr: '0.00',
+    discountAmountStr: '0.00',
+    hasDiscount: false,
+    couponName: ''
   },
 
   onLoad(options) {
     if (options.orderNo) {
       this.setData({ 
-        orderNo: options.orderNo,
-        isFirstLoad: false // 设置标志，表示已经完成首次加载
+        orderNo: options.orderNo
       })
       this.loadOrderDetail()
     } else {
@@ -100,10 +105,24 @@ Page({
           detail.allowedActions = detail.allowedActions.filter(a => a !== 'CANCEL_PAYMENT')
         }
 
+        // 基于订单详情接口直接渲染金额与优惠信息（后端已返回 actualAmount/couponId/couponName/discountAmount）
+        const origSrc = detail.totalAmount != null ? detail.totalAmount : (detail.expressPrice != null ? detail.expressPrice : 0)
+        const actSrc = detail.actualAmount != null ? detail.actualAmount : origSrc
+        const discSrc = detail.discountAmount != null ? detail.discountAmount : (amount.parseBigDecimalLike(origSrc, 0) - amount.parseBigDecimalLike(actSrc, 0))
+        const orig = amount.parseBigDecimalLike(origSrc, 0)
+        const act = amount.parseBigDecimalLike(actSrc, 0)
+        const disc = Math.max(0, amount.parseBigDecimalLike(discSrc, 0))
+
         this.setData({
           orderDetail: detail,
           amountStr: amountStr,
-          loading: false
+          originalAmountStr: amount.formatAmount(orig),
+          finalAmountStr: amount.formatAmount(act),
+          discountAmountStr: amount.formatAmount(disc),
+          hasDiscount: orig > act,
+          couponName: detail.couponName || '',
+          loading: false,
+          isFirstLoad: false
         })
       } else {
         wx.showToast({ title: res.message || '加载失败', icon: 'none' })
