@@ -35,7 +35,154 @@ async function createOrder(amount) {
 }
 
 /**
- * 轮询查询订单状态（直到非待支付或超时）
+ * 5秒缓冲轮询查询订单支付进度
+ * 后端返回支付参数后，无论支付组件回调是什么，都使用此方法进行5秒缓冲轮询
+ * 每秒查询一次后端的支付进度，如果查询到 success 或 failed 则返回
+ * 如果5秒内都是 paying，则不做处理，让后端继续处理
+ * 
+ * @param {string} orderNo 订单号
+ * @param {number} durationSeconds 轮询持续时间（秒），默认5秒
+ */
+function pollPaymentProgress(orderNo, durationSeconds = 5, pageInstance = null) {
+  return new Promise((resolve) => {
+    let pollCount = 0
+    const maxPolls = durationSeconds // 每秒查询一次
+    const pollInterval = 1000 // 1秒
+    let pollTimer = null
+    let countdownTimer = null
+    let isResolved = false // 标记是否已解决（成功或失败）
+
+    // 更新倒计时显示（如果有页面实例，使用 setData；否则使用 wx.showLoading）
+    const updateCountdown = (remainingSeconds) => {
+      if (isResolved) return // 如果已经解决，不再更新
+      
+      if (pageInstance && typeof pageInstance.setData === 'function') {
+        // 使用页面 setData 更新倒计时
+        pageInstance.setData({
+          showPaymentLoading: true,
+          paymentLoadingCountdown: remainingSeconds
+        })
+      } else {
+        // 回退到 wx.showLoading（不支持动态更新）
+        wx.showLoading({ 
+          title: `确认支付结果...`, 
+          mask: true 
+        })
+      }
+    }
+
+    // 隐藏倒计时显示
+    const hideCountdown = () => {
+      if (pageInstance && typeof pageInstance.setData === 'function') {
+        pageInstance.setData({
+          showPaymentLoading: false,
+          paymentLoadingCountdown: 0
+        })
+      } else {
+        wx.hideLoading()
+      }
+    }
+
+    // 独立的倒计时定时器（每秒更新一次显示）
+    let countdown = maxPolls
+    const startCountdown = () => {
+      // 立即显示第一次
+      updateCountdown(countdown)
+      
+      countdownTimer = setInterval(() => {
+        if (isResolved) {
+          clearInterval(countdownTimer)
+          return
+        }
+        countdown--
+        if (countdown > 0) {
+          updateCountdown(countdown)
+        } else {
+          clearInterval(countdownTimer)
+          hideCountdown()
+        }
+      }, 1000) // 每秒更新一次倒计时
+    }
+
+    // 立即显示第一次加载提示（显示剩余秒数）
+    startCountdown()
+
+    // 执行查询的函数
+    const executeQuery = async () => {
+      try {
+        const res = await api.getPaymentProgress(orderNo)
+        const { success, data } = res || {}
+        if (success && data) {
+          const paymentStatus = data.paymentStatus
+          
+          if (paymentStatus === 'success') {
+            // 本次支付成功 - 立即停止轮询并返回
+            isResolved = true
+            if (pollTimer) clearInterval(pollTimer)
+            if (countdownTimer) clearInterval(countdownTimer)
+            hideCountdown()
+            resolve({ finished: true, paymentStatus: 'success', data })
+            return
+          } else if (paymentStatus === 'failed') {
+            // 本次支付失败 - 立即停止轮询并返回
+            isResolved = true
+            if (pollTimer) clearInterval(pollTimer)
+            if (countdownTimer) clearInterval(countdownTimer)
+            hideCountdown()
+            resolve({ finished: true, paymentStatus: 'failed', data })
+            return
+          }
+          // paymentStatus === 'pending' 或 paymentStatus === 'paying'，继续轮询
+        }
+
+        // 增加查询次数
+        pollCount++
+        
+        // 如果达到最大轮询次数（5秒），停止轮询
+        if (pollCount >= maxPolls) {
+          isResolved = true
+          if (pollTimer) clearInterval(pollTimer)
+          if (countdownTimer) clearInterval(countdownTimer)
+          hideCountdown()
+          // 5秒内查询的全是 "支付中"，不做任何处理
+          // 订单状态应该是 "支付中"，等待后端通过定时任务和回调更新状态
+          resolve({ finished: true, paymentStatus: 'paying', data: null })
+          return
+        }
+      } catch (error) {
+        // 查询失败，记录日志但继续轮询
+        console.error(`第${pollCount + 1}次查询支付状态失败:`, error)
+        
+        // 增加查询次数
+        pollCount++
+        
+        // 如果达到最大轮询次数，停止轮询
+        if (pollCount >= maxPolls) {
+          isResolved = true
+          if (pollTimer) clearInterval(pollTimer)
+          if (countdownTimer) clearInterval(countdownTimer)
+          hideCountdown()
+          // 查询失败也不做处理，让后端通过定时任务处理
+          resolve({ finished: true, paymentStatus: 'unknown', data: null })
+          return
+        }
+      }
+    }
+
+    // 立即执行第一次查询
+    executeQuery()
+
+    // 然后每秒执行一次
+    pollTimer = setInterval(executeQuery, pollInterval)
+  })
+}
+
+/**
+ * 轮询查询订单支付进度（长轮询，直到最终状态或超时）
+ * 最终状态：success（支付成功）, failed（支付失败）
+ * 中间状态（继续轮询）：pending（待支付）, paying（支付中）
+ * 
+ * @deprecated 建议使用 pollPaymentProgress 进行5秒缓冲轮询
  */
 function pollStatus(orderNo, expireTimeIso) {
   const deadline = new Date(expireTimeIso || Date.now() + 15*60*1000).getTime()
@@ -45,15 +192,21 @@ function pollStatus(orderNo, expireTimeIso) {
       
       if (now > deadline) {
         clearInterval(timer)
-        resolve({ finished: true, status: 'EXPIRED' })
+        resolve({ finished: true, paymentStatus: 'EXPIRED' })
         return
       }
       try {
-        const res = await api.getRechargeStatus(orderNo)
+        const res = await api.getPaymentProgress(orderNo)
         const { success, data } = res || {}
-        if (success && data && data.status !== 1) { // 1=PENDING
-          clearInterval(timer)
-          resolve({ finished: true, status: data.status, data })
+        if (success && data) {
+          const paymentStatus = data.paymentStatus
+          // 最终状态：success（支付成功）, failed（支付失败）
+          // 中间状态（继续轮询）：pending（待支付）, paying（支付中）
+          if (paymentStatus === 'success' || paymentStatus === 'failed') {
+            clearInterval(timer)
+            resolve({ finished: true, paymentStatus: paymentStatus, data })
+          }
+          // 状态为 pending 或 paying 时继续轮询
         }
       } catch (error) {
         // 忽略瞬时错误，继续轮询
@@ -134,102 +287,42 @@ async function pay(amount) {
       throw new Error('获取支付参数失败')
     }
 
+    // 隐藏之前的 loading，准备进入轮询流程（轮询会显示带倒计时的 loading）
+    api.hideLoadingToast()
+
+    // 调起微信支付
+    // 注意：不依赖支付组件的回调结果，统一使用5秒缓冲轮询来查询支付进度
     try {
       await requestPayment(payResp.data.paymentParams)
     } catch (err) {
-      // 用户取消或拉起失败
-      if (err && err.errMsg && err.errMsg.includes('cancel')) {
-        // 用户主动取消支付，但需要先确认订单状态
-        // 因为支付成功后关闭组件也可能触发 cancel 回调
-        try {
-          wx.showLoading({ title: '确认支付结果...', mask: true })
-          
-          // 延迟 2 秒，等待微信回调处理完成
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          
-          // 查询订单状态，确认是否已经支付成功
-          const statusRes = await api.getRechargeStatus(order.orderNo)
-          wx.hideLoading()
-          
-          if (statusRes && statusRes.success && statusRes.data) {
-            const status = statusRes.data.status
-            
-            if (status === 2) {
-              // 订单已支付成功，不调用取消接口，直接返回成功
-              wx.showToast({ title: '支付成功', icon: 'success', duration: 2000 })
-              return { success: true, orderNo: order.orderNo }
-            } else if (status === 3 || status === 4) {
-              // 订单已失败或已取消，不需要再调用取消接口
-              if (status === 3) {
-                wx.showToast({ title: '支付失败', icon: 'none', duration: 2000 })
-              } else {
-                wx.showToast({ title: '订单已取消', icon: 'none', duration: 2000 })
-              }
-              return { success: false, cancelled: status === 4, orderNo: order.orderNo }
-            } else {
-              // 订单还在待支付状态（status === 1），调用取消接口
-              try {
-                wx.showLoading({ title: '取消支付中...', mask: true })
-                const cancelRes = await api.cancelThirdPartyPayment(order.orderNo)
-                wx.hideLoading()
-                
-                if (cancelRes && cancelRes.success) {
-                  wx.showToast({ title: '已取消支付', icon: 'success', duration: 2000 })
-                } else {
-                  wx.showToast({ title: cancelRes?.message || '取消支付失败', icon: 'none', duration: 2000 })
-                }
-              } catch (cancelErr) {
-                wx.hideLoading()
-                console.error('取消支付接口调用失败:', cancelErr)
-                wx.showToast({ title: '取消支付失败，请稍后查看', icon: 'none', duration: 2000 })
-              }
-              
-              return { success: false, cancelled: true, orderNo: order.orderNo }
-            }
-          } else {
-            // 查询订单状态失败，保守处理：不调用取消接口，继续轮询确认
-            wx.showToast({ title: '支付结果确认中...', icon: 'none', duration: 2000 })
-            // 继续轮询确认订单状态
-            const result = await pollStatus(order.orderNo, order.expireTime)
-            if (result.status === 2) {
-              api.showSuccess('充值成功')
-              return { success: true, orderNo: order.orderNo }
-            }
-            return { success: false, cancelled: true, orderNo: order.orderNo }
-          }
-        } catch (checkErr) {
-          wx.hideLoading()
-          console.error('查询订单状态失败:', checkErr)
-          // 查询失败，保守处理：不调用取消接口，继续轮询确认
-          wx.showToast({ title: '支付结果确认中...', icon: 'none', duration: 2000 })
-          // 继续轮询确认订单状态
-          const result = await pollStatus(order.orderNo, order.expireTime)
-          if (result.status === 2) {
-            api.showSuccess('充值成功')
-            return { success: true, orderNo: order.orderNo }
-          }
-          return { success: false, cancelled: true, orderNo: order.orderNo }
-        }
-      } else {
-        wx.showToast({ title: '支付未完成，请重试', icon: 'none', duration: 2000 })
-        return { success: false, cancelled: false, orderNo: order.orderNo, error: err }
-      }
+      // 无论支付组件回调是什么，都进入轮询流程
+      // 由后端负责处理支付状态，前端只负责查询和展示
+      console.log('微信支付组件回调:', err)
     }
-
-    const result = await pollStatus(order.orderNo, order.expireTime)
     
-    if (result.status === 2) { // 2=PAID
+    // 获取当前页面实例（如果有）
+    const pages = getCurrentPages()
+    const currentPage = pages[pages.length - 1]
+    
+    // 无论支付组件回调是什么，都统一进入5秒缓冲轮询流程
+    // 前端只查询支付进度，不介入业务逻辑
+    // pollPaymentProgress 内部会显示带倒计时的 loading
+    const result = await pollPaymentProgress(order.orderNo, 5, currentPage)
+    
+    if (result.paymentStatus === 'success') {
+      // 本次支付成功
       api.showSuccess('充值成功')
       return { success: true, orderNo: order.orderNo }
-    } else if (result.status === 3) { // 3=FAILED
+    } else if (result.paymentStatus === 'failed') {
+      // 本次支付失败
       wx.showToast({ title: '支付失败', icon: 'none' })
       return { success: false, orderNo: order.orderNo }
-    } else if (result.status === 4) { // 4=CANCELLED
-      wx.showToast({ title: '订单已取消', icon: 'none' })
+    } else {
+      // 5秒内都是 "支付中"，不做处理，让后端继续处理
+      // 用户可以稍后在订单详情页查看最新状态
+      wx.showToast({ title: '支付处理中，请稍后查看', icon: 'none', duration: 2000 })
       return { success: false, orderNo: order.orderNo }
     }
-    wx.showToast({ title: '支付结果未确认，请稍后查看', icon: 'none' })
-    return { success: false, orderNo: order.orderNo }
   } catch (e) {
     console.error('支付流程异常:', e)
     wx.showToast({ title: e?.message || '支付发起失败', icon: 'none' })
@@ -244,6 +337,7 @@ module.exports = {
   pay,
   createOrder,
   pollStatus,
+  pollPaymentProgress,
   requestPayment,
   isPaying,
   setPaying,

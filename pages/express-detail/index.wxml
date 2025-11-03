@@ -178,8 +178,27 @@
       </view>
     </view>
 
+    <!-- 支付中 -->
+    <view class="timeline-item" wx:if="{{orderDetail.expressStatus === 7}}">
+      <view class="timeline-node">
+        <view class="timeline-dot waiting"></view>
+      </view>
+      <view class="timeline-content">
+        <view class="timeline-header">
+          <text class="timeline-title">支付中</text>
+          <text class="timeline-time"></text>
+        </view>
+        <view class="timeline-info">
+          <view class="info-item" wx:if="{{orderDetail.totalAmount}}">
+            <text class="info-label">支付金额：</text>
+            <text class="info-value price">￥{{orderDetail.totalAmount}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
     <!-- 已支付 -->
-    <view class="timeline-item" wx:if="{{orderDetail.expressStatus >= 5}}">
+    <view class="timeline-item" wx:if="{{orderDetail.expressStatus === 5}}">
       <view class="timeline-node">
         <view class="timeline-dot completed"></view>
       </view>

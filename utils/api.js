@@ -492,10 +492,20 @@ function createRecharge(amount) {
 }
 
 /**
- * 查询充值状态
+ * 查询充值状态（已废弃，请使用 getPaymentProgress）
+ * @deprecated 请使用 getPaymentProgress 替代
  */
 function getRechargeStatus(orderNo) {
   return get(`/recharge/status`, { orderNo }, { showSuccess: false })
+}
+
+/**
+ * 查询订单支付进度
+ * @param {string} orderNo 订单号
+ * @returns {Promise} 返回支付进度信息，包含 paymentStatus: success/failed/paying/pending
+ */
+function getPaymentProgress(orderNo) {
+  return get(`/pay/progress`, { orderNo }, { showSuccess: false })
 }
 
 /**
@@ -886,6 +896,7 @@ module.exports = {
   // 支付相关（充值）
   createRecharge,
   getRechargeStatus,
+  getPaymentProgress,
   cancelRecharge,
   createPayment,
   cancelThirdPartyPayment,

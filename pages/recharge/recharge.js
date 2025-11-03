@@ -4,7 +4,9 @@ Page({
   data: {
     amount: '',
     canSubmit: false,
-    submitting: false
+    submitting: false,
+    showPaymentLoading: false, // 是否显示支付加载倒计时
+    paymentLoadingCountdown: 0 // 倒计时秒数
   },
 
   onShow() {},

@@ -24,4 +24,12 @@
   </view>
 </view>
 
+<!-- 支付加载倒计时遮罩 -->
+<view class="payment-loading-mask" wx:if="{{showPaymentLoading}}">
+  <view class="payment-loading-content">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">确认支付结果... {{paymentLoadingCountdown}}秒</text>
+  </view>
+</view>
+
 

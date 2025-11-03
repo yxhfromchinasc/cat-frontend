@@ -141,19 +141,35 @@ Page({
     })
     
     // 4. 待支付（送达）
+    // 状态判断：status === 4 (待支付) → waiting, status === 7 (支付中) 或 status === 5 (已支付) → completed
+    let waitPayStatus = 'disabled'
+    if (status === 4) {
+      waitPayStatus = 'waiting'  // 待支付状态，显示为等待中
+    } else if (status === 7 || status === 5) {
+      waitPayStatus = 'completed'  // 支付中或已支付，待支付步骤已完成
+    } else if (status === 3) {
+      waitPayStatus = 'waiting'  // 运输中，下一步是待支付
+    }
     steps.push({
       key: 'wait_pay',
       title: '待支付',
-      status: status >= 4 ? 'completed' : status === 3 ? 'waiting' : 'disabled',
+      status: waitPayStatus,
       time: detail.sendSucTime,
       show: true
     })
     
     // 5. 已支付
+    // 状态判断：status === 4 (待支付) → waiting, status === 7 (支付中) → waiting, status === 5 (已支付) → completed
+    let paidStatus = 'disabled'
+    if (status === 4 || status === 7) {
+      paidStatus = 'waiting'  // 待支付或支付中状态，显示为等待中
+    } else if (status === 5) {
+      paidStatus = 'completed'  // 已支付状态，显示为已完成
+    }
     steps.push({
       key: 'paid',
       title: '已支付',
-      status: status >= 5 ? 'completed' : status === 4 ? 'waiting' : 'disabled',
+      status: paidStatus,
       time: detail.paidAt,
       show: true
     })
