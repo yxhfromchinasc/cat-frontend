@@ -87,6 +87,11 @@ Page({
         // 计算进度节点
         detail.progressSteps = this.calculateProgressSteps(detail)
         
+        // 过滤掉取消支付操作按钮，统一在支付页处理
+        if (detail.allowedActions && Array.isArray(detail.allowedActions)) {
+          detail.allowedActions = detail.allowedActions.filter(a => a !== 'CANCEL_PAYMENT')
+        }
+
         this.setData({
           orderDetail: detail,
           loading: false
@@ -258,131 +263,9 @@ Page({
 
   // 处理继续支付
   async handleContinuePay() {
-    try {
-      wx.showLoading({ title: '获取支付参数...' })
-      
-      const { api } = require('../../utils/util.js')
-      const { pollPaymentProgress } = require('../../utils/pay.js')
-      
-      // 调用继续支付接口
-      const res = await api.continuePayment(this.data.orderNo)
-      
-      wx.hideLoading()
-      
-      if (res.success && res.data && res.data.paymentParams) {
-        // 获取支付参数成功，调起微信支付
-        const paymentParams = res.data.paymentParams
-        
-        // 隐藏 loading，准备进入轮询流程
-        try {
-          // 调起微信支付
-          const { requestPayment } = require('../../utils/pay.js')
-          await requestPayment(paymentParams)
-          
-          // 支付调起成功，进入5秒缓冲轮询（使用订单详情页实例）
-          const result = await pollPaymentProgress(this.data.orderNo, 5, this)
-          
-          // 根据轮询结果刷新订单详情
-          if (result.finished) {
-            if (result.paymentStatus === 'success') {
-              wx.showToast({ title: '支付成功', icon: 'success', duration: 2000 })
-              setTimeout(() => {
-                this.loadOrderDetail()
-              }, 1500)
-            } else if (result.paymentStatus === 'failed') {
-              wx.showToast({ title: '支付失败', icon: 'none', duration: 2000 })
-              setTimeout(() => {
-                this.loadOrderDetail()
-              }, 2000)
-            } else {
-              // 5秒内都是 paying，刷新订单详情查看最新状态
-              this.loadOrderDetail()
-            }
-          }
-          
-        } catch (err) {
-          console.error('调起支付失败:', err)
-          // 检查是否是用户取消
-          const isUserCancel = err && err.errMsg && err.errMsg.includes('cancel')
-          
-          if (isUserCancel) {
-            // 用户取消支付，进入快速查询流程（与支付页面逻辑一致）
-            await this.handleUserCancelPayment()
-          } else {
-            wx.showToast({ title: '调起支付失败，请重试', icon: 'none' })
-          }
-        }
-      } else {
-        wx.showToast({ title: res.message || '获取支付参数失败', icon: 'none' })
-      }
-    } catch (e) {
-      wx.hideLoading()
-      console.error('继续支付异常:', e)
-      wx.showToast({ title: '继续支付失败，请重试', icon: 'none' })
-    }
+    wx.navigateTo({ url: `/pages/payment/index?orderNo=${this.data.orderNo}` })
   },
 
-  // 处理用户取消支付（继续支付流程中的取消）
-  async handleUserCancelPayment() {
-    try {
-      // 立即查询一次支付状态
-      const { api } = require('../../utils/util.js')
-      const progressRes = await api.getPaymentProgress(this.data.orderNo)
-      
-      if (progressRes && progressRes.success && progressRes.data) {
-        const paymentStatus = progressRes.data.paymentStatus
-        
-        if (paymentStatus === 'success') {
-          // 支付成功
-          wx.showToast({ title: '支付成功', icon: 'success', duration: 2000 })
-          setTimeout(() => {
-            this.loadOrderDetail()
-          }, 1500)
-          return
-        } else if (paymentStatus === 'failed') {
-          // 支付失败
-          wx.showToast({ title: '支付失败', icon: 'none', duration: 2000 })
-          setTimeout(() => {
-            this.loadOrderDetail()
-          }, 2000)
-          return
-        }
-      }
-      
-      // 等待2秒后再查询一次
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      const secondProgressRes = await api.getPaymentProgress(this.data.orderNo)
-      if (secondProgressRes && secondProgressRes.success && secondProgressRes.data) {
-        const secondPaymentStatus = secondProgressRes.data.paymentStatus
-        
-        if (secondPaymentStatus === 'success') {
-          // 支付成功
-          wx.showToast({ title: '支付成功', icon: 'success', duration: 2000 })
-          setTimeout(() => {
-            this.loadOrderDetail()
-          }, 1500)
-          return
-        } else if (secondPaymentStatus === 'failed') {
-          // 支付失败
-          wx.showToast({ title: '支付失败', icon: 'none', duration: 2000 })
-          setTimeout(() => {
-            this.loadOrderDetail()
-          }, 2000)
-          return
-        }
-      }
-      
-      // 两次查询都是 pending 或 paying，说明用户确实取消了
-      // 刷新订单详情，让用户看到最新状态
-      this.loadOrderDetail()
-      
-    } catch (e) {
-      console.error('查询支付状态失败:', e)
-      // 查询失败，刷新订单详情
-      this.loadOrderDetail()
-    }
-  },
 
   // 处理取消支付（支付中状态下的取消）
   async handleCancelPayment() {

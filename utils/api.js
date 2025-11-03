@@ -848,6 +848,10 @@ function checkLogin() {
   return !!token
 }
 
+function getCouponDetail(id) {
+  return get('/coupon/detail', { id }, { showSuccess: false })
+}
+
 module.exports = {
   // 基础请求方法
   request,
@@ -928,6 +932,7 @@ module.exports = {
   calculateCouponDiscount,
   calculateCouponDiscountByOrder,
   getUserCouponReceiveCount,
+  getCouponDetail,
   
   // 订单相关
   getOrderList,

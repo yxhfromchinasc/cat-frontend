@@ -13,6 +13,8 @@ Page({
     couponDiscount: 0, // 优惠金额
     finalAmount: 0, // 最终支付金额（数字类型，用于计算）
     finalAmountStr: '0.00', // 最终支付金额（字符串类型，用于显示）
+    hasDiscount: false, // 是否存在优惠（用于展示只读优惠信息）
+    discountAmountStr: '0.00', // 优惠金额字符串
     
     // 优惠券
     availableCoupons: [], // 可用优惠券列表
@@ -28,9 +30,7 @@ Page({
     userBalance: 0, // 用户余额（数字类型，用于计算）
     userBalanceStr: '0.00', // 用户余额（字符串类型，用于显示）
     
-    loading: true,
-    showPaymentLoading: false, // 是否显示支付加载倒计时
-    paymentLoadingCountdown: 0 // 倒计时秒数
+    loading: true
   },
 
   onLoad(options) {
@@ -75,6 +75,8 @@ Page({
         // 格式化金额为字符串（用于显示）
         const originalAmountStr = originalAmount.toFixed(2)
         const finalAmountStr = actualAmount.toFixed(2)
+        const hasDiscount = originalAmount > actualAmount
+        const discountAmountStr = hasDiscount ? (originalAmount - actualAmount).toFixed(2) : '0.00'
         
         // 构建支付方式列表（根据后端返回的 supportedPaymentMethods）
         // PaymentMethod: 1=WECHAT_NATIVE, 2=WECHAT_MINIPROGRAM, 3=ALIPAY, 4=WALLET
@@ -82,7 +84,18 @@ Page({
           2: { code: 2, name: '微信支付', icon: '💳' },
           4: { code: 4, name: '钱包余额', icon: '💰' } // PaymentMethod.WALLET = 4
         }
-        const paymentMethods = (detail.supportedPaymentMethods || []).map(code => paymentMethodsMap[code] || { code, name: '未知', icon: '💳' })
+        let paymentMethods = (detail.supportedPaymentMethods || []).map(code => paymentMethodsMap[code] || { code, name: '未知', icon: '💳' })
+
+        // 如果是继续支付模式：隐藏优惠券、固定支付方式
+        let readOnlyPayment = false
+        if (detail.continueMode) {
+          // 隐藏优惠券
+          detail.couponAllowed = false
+          // 固定支付方式为 currentPaymentMethod
+          const fixed = paymentMethodsMap[detail.currentPaymentMethod] || null
+          paymentMethods = fixed ? [fixed] : paymentMethods
+          readOnlyPayment = true
+        }
         
         this.setData({
           paymentDetail: detail,
@@ -90,19 +103,36 @@ Page({
           originalAmountStr: originalAmountStr, // 格式化字符串用于显示
           finalAmount: actualAmount || originalAmount || 0, // 保留数字类型用于计算
           finalAmountStr: finalAmountStr, // 格式化字符串用于显示
+          hasDiscount,
+          discountAmountStr,
           couponAllowed: detail.couponAllowed !== false,
           paymentMethods: paymentMethods.length > 0 ? paymentMethods : [{ code: 2, name: '微信支付', icon: '💳' }],
-          // 默认选择最后一个支付方式（通常钱包支付排在最后）
-          selectedPaymentMethod: paymentMethods.length > 0 ? paymentMethods[paymentMethods.length - 1].code : 2,
+          // 默认选择第一个（继续支付模式下即为固定方式）
+          selectedPaymentMethod: paymentMethods.length > 0 ? paymentMethods[0].code : 2,
+          readOnlyPayment,
           loading: false
         }, () => {
           console.log('setData 后的数据:', this.data.originalAmount, this.data.finalAmount)
           console.log('格式化后的字符串:', this.data.originalAmountStr, this.data.finalAmountStr)
         })
         
-        // 如果允许使用优惠券，加载可用优惠券
+        // 加载优惠券：
+        // 1) 正常场景：允许使用优惠券 -> 加载可用优惠券供用户选择
+        // 2) 继续支付：不允许选择，但需要根据 currentCouponId 展示只读优惠券信息
         if (detail.couponAllowed) {
           this.loadAvailableCoupons(originalAmount)
+        } else if (detail.continueMode && detail.currentCouponId) {
+          try {
+            const resDetail = await api.getCouponDetail(detail.currentCouponId)
+            if (resDetail && resDetail.success && resDetail.data) {
+              const decorated = this.decorateCoupon(resDetail.data)
+              this.setData({
+                selectedCoupon: decorated
+              })
+            }
+          } catch (e) {
+            console.warn('加载只读优惠券失败（继续支付展示用）:', e)
+          }
         }
       } else {
         wx.hideLoading()
@@ -361,6 +391,7 @@ Page({
 
   // 选择支付方式
   selectPaymentMethod(e) {
+    if (this.data.readOnlyPayment) return
     const method = e.currentTarget.dataset.method
     if (!method) return
     
@@ -451,110 +482,15 @@ Page({
             return
           }
           
-          // 调起微信支付
+          // 调起微信支付（前端不处理回调后逻辑）
           wx.requestPayment({
             timeStamp: String(paymentParams.timeStamp),
             nonceStr: paymentParams.nonceStr,
             package: paymentParams.package,
             signType: paymentParams.signType,
             paySign: paymentParams.paySign,
-            success: () => {
-              // 支付调起成功，启动5秒缓冲轮询查询支付结果
-              // 无论回调是成功还是失败，都统一进入轮询流程
-              this.pollPaymentResult(orderNo, 5)
-            },
-            fail: async (err) => {
-              console.log('微信支付组件回调:', err)
-              
-              // 检查是否是用户取消
-              const isUserCancel = err && err.errMsg && err.errMsg.includes('cancel')
-              
-              if (isUserCancel) {
-                // 用户主动取消，立即查询一次支付状态（不延迟）
-                // 因为支付成功后关闭也可能触发 cancel，需要确认
-                try {
-                  const progressRes = await api.getPaymentProgress(orderNo)
-                  
-                  if (progressRes && progressRes.success && progressRes.data) {
-                    const paymentStatus = progressRes.data.paymentStatus
-                    
-                    if (paymentStatus === 'success') {
-                      // 支付成功（支付成功后关闭也可能触发 cancel）
-                      wx.showToast({
-                        title: '支付成功',
-                        icon: 'success',
-                        duration: 2000
-                      })
-                      setTimeout(() => {
-                        wx.navigateBack()
-                      }, 1500)
-                      return
-                    } else if (paymentStatus === 'failed') {
-                      // 支付失败
-                      wx.showToast({
-                        title: '支付失败',
-                        icon: 'none',
-                        duration: 2000
-                      })
-                      setTimeout(() => {
-                        wx.navigateBack()
-                      }, 2000)
-                      return
-                    } else {
-                      // paymentStatus === 'pending' 或 'paying'
-                      // 等待2秒后再查询一次（确认是否支付成功）
-                      await new Promise(resolve => setTimeout(resolve, 2000))
-                      
-                      const secondProgressRes = await api.getPaymentProgress(orderNo)
-                      if (secondProgressRes && secondProgressRes.success && secondProgressRes.data) {
-                        const secondPaymentStatus = secondProgressRes.data.paymentStatus
-                        
-                        if (secondPaymentStatus === 'success') {
-                          // 支付成功
-                          wx.showToast({
-                            title: '支付成功',
-                            icon: 'success',
-                            duration: 2000
-                          })
-                          setTimeout(() => {
-                            wx.navigateBack()
-                          }, 1500)
-                          return
-                        } else if (secondPaymentStatus === 'failed') {
-                          // 支付失败
-                          wx.showToast({
-                            title: '支付失败',
-                            icon: 'none',
-                            duration: 2000
-                          })
-                          setTimeout(() => {
-                            wx.navigateBack()
-                          }, 2000)
-                          return
-                        }
-                      }
-                      
-                      // 两次查询都是 pending 或 paying，说明用户确实取消了
-                      // 不等待5秒缓冲轮询，直接返回
-                      // 后端定时任务会处理订单状态
-                      wx.showToast({
-                        title: '已取消支付',
-                        icon: 'none',
-                        duration: 2000
-                      })
-                      return
-                    }
-                  }
-                } catch (e) {
-                  // 查询失败，进入5秒缓冲轮询（兜底）
-                  console.error('查询支付状态失败:', e)
-                  this.pollPaymentResult(orderNo, 5)
-                }
-              } else {
-                // 其他错误（非用户取消），进入5秒缓冲轮询
-                this.pollPaymentResult(orderNo, 5)
-              }
-            }
+            success: () => {},
+            fail: () => {}
           })
         }
       } else {
@@ -573,156 +509,36 @@ Page({
     }
   },
 
-  /**
-   * 轮询查询支付结果（5秒缓冲轮询）
-   * 后端返回支付参数后，无论支付组件回调是什么，都进入此流程
-   * 每秒查询一次后端的支付进度，如果查询到 success 或 failed 则显示提示
-   * 如果5秒内都是 paying，则不做任何处理，让后端继续处理（通过定时任务和回调）
-   * 
-   * @param {string} orderNo 订单号
-   * @param {number} durationSeconds 轮询持续时间（秒），默认5秒
-   */
-  pollPaymentResult(orderNo, durationSeconds = 5) {
-    if (!orderNo) {
-      console.error('订单号不能为空')
-      return
-    }
-
-    let pollCount = 0
-    const maxPolls = durationSeconds // 每秒查询一次，共查询指定次数
-    const pollInterval = 1000 // 1秒
-    let pollTimer = null
-    let countdownTimer = null
-    let isResolved = false // 标记是否已解决（成功或失败）
-    const pageInstance = this // 获取页面实例
-
-    // 更新倒计时显示（使用页面 setData）
-    const updateCountdown = (remainingSeconds) => {
-      if (isResolved) return // 如果已经解决，不再更新
-      pageInstance.setData({
-        showPaymentLoading: true,
-        paymentLoadingCountdown: remainingSeconds
-      })
-    }
-
-    // 隐藏倒计时显示
-    const hideCountdown = () => {
-      pageInstance.setData({
-        showPaymentLoading: false,
-        paymentLoadingCountdown: 0
-      })
-    }
-
-    // 独立的倒计时定时器（每秒更新一次显示）
-    let countdown = maxPolls
-    const startCountdown = () => {
-      // 立即显示第一次
-      updateCountdown(countdown)
-      
-      countdownTimer = setInterval(() => {
-        if (isResolved) {
-          clearInterval(countdownTimer)
-          return
-        }
-        countdown--
-        if (countdown > 0) {
-          updateCountdown(countdown)
-        } else {
-          clearInterval(countdownTimer)
-          hideCountdown()
-        }
-      }, 1000) // 每秒更新一次倒计时
-    }
-
-    // 立即显示第一次加载提示（显示剩余秒数）
-    startCountdown()
-
-    // 执行查询的函数
-    const executeQuery = async () => {
-      try {
-        // 查询支付进度（由后端统一管理）
-        const progressRes = await api.getPaymentProgress(orderNo)
-
-        if (progressRes && progressRes.success && progressRes.data) {
-          const paymentStatus = progressRes.data.paymentStatus
-
-          if (paymentStatus === 'success') {
-            // 本次支付成功 - 立即处理并停止轮询
-            isResolved = true
-            if (pollTimer) clearInterval(pollTimer)
-            if (countdownTimer) clearInterval(countdownTimer)
-            hideCountdown()
-            wx.showToast({
-              title: '支付成功',
-              icon: 'success',
-              duration: 2000
-            })
-
-            // 延迟跳转
+  async onCancelPayment() {
+    const { orderNo } = this.data
+    wx.showModal({
+      title: '确认取消支付',
+      content: '确定要取消本次支付吗？取消后可稍后重新支付。',
+      success: async (res) => {
+        if (!res.confirm) return
+        try {
+          wx.showLoading({ title: '取消中...' })
+          const { api } = require('../../utils/util.js')
+          const result = await api.cancelThirdPartyPayment(orderNo)
+          wx.hideLoading()
+          if (result && result.success) {
+            wx.showToast({ title: '已取消本次支付', icon: 'success' })
+            // 返回上一页
             setTimeout(() => {
               wx.navigateBack()
-            }, 1500)
-            return
-          } else if (paymentStatus === 'failed') {
-            // 本次支付失败 - 停止轮询
-            isResolved = true
-            if (pollTimer) clearInterval(pollTimer)
-            if (countdownTimer) clearInterval(countdownTimer)
-            hideCountdown()
-            wx.showToast({
-              title: '支付失败',
-              icon: 'none',
-              duration: 2000
-            })
-            
-            // 延迟返回，让用户看到提示
-            setTimeout(() => {
-              wx.navigateBack()
-            }, 2000)
-            return
+            }, 800)
+          } else {
+            wx.showToast({ title: result?.message || '取消失败', icon: 'none' })
           }
-          // paymentStatus === 'pending' (待支付) 或 paymentStatus === 'paying' (支付中)，继续轮询
-        }
-
-        // 增加查询次数
-        pollCount++
-        
-        // 如果达到最大轮询次数（5秒），停止轮询
-        if (pollCount >= maxPolls) {
-          isResolved = true
-          if (pollTimer) clearInterval(pollTimer)
-          if (countdownTimer) clearInterval(countdownTimer)
-          hideCountdown()
-          // 5秒内查询的全是 "支付中"，不做任何处理
-          // 订单状态应该是 "支付中"，等待后端通过定时任务和回调更新状态
-          // 用户可以从订单详情页查看最新状态
-          return
-        }
-      } catch (e) {
-        // 查询失败，记录日志但继续轮询
-        console.error(`第${pollCount + 1}次查询支付状态失败:`, e)
-
-        // 增加查询次数
-        pollCount++
-        
-        // 如果达到最大轮询次数，停止轮询
-        if (pollCount >= maxPolls) {
-          isResolved = true
-          if (pollTimer) clearInterval(pollTimer)
-          if (countdownTimer) clearInterval(countdownTimer)
-          hideCountdown()
-          // 查询失败也不做处理，让后端通过定时任务处理
-          return
+        } catch (e) {
+          wx.hideLoading()
+          wx.showToast({ title: '取消失败', icon: 'none' })
         }
       }
-    }
-
-    // 立即执行第一次查询
-    executeQuery()
-
-    // 然后每秒执行一次
-    pollTimer = setInterval(executeQuery, pollInterval)
+    })
   },
+
+  // 已移除倒计时与轮询逻辑，支付结果完全交由后端更新
 
 
 })

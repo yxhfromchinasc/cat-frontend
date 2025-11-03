@@ -1,12 +1,10 @@
-const pay = require('../../utils/pay.js')
+const { api } = require('../../utils/util.js')
 
 Page({
   data: {
     amount: '',
     canSubmit: false,
-    submitting: false,
-    showPaymentLoading: false, // 是否显示支付加载倒计时
-    paymentLoadingCountdown: 0 // 倒计时秒数
+    submitting: false
   },
 
   onShow() {},
@@ -27,25 +25,20 @@ Page({
 
   async onPay() {
     if (!this.data.canSubmit) return
-    if (this.data.submitting || pay.isPaying()) return
+    if (this.data.submitting) return
     const amountNum = Number(this.data.amount)
     this.setData({ submitting: true })
     
     try {
-      const result = await pay.pay(amountNum)
-      console.log('充值结果:', result)
-      
-      if (result.success) {
-        // 支付成功，可以刷新余额或返回
-        console.log('充值成功，订单号:', result.orderNo)
-        // TODO: 刷新余额或返回首页
-      } else if (result.cancelled) {
-        // 用户取消支付，不需要特殊处理
-        console.log('用户取消支付')
-      } else {
-        // 支付失败，显示错误信息
-        console.log('支付失败:', result.message)
+      // 1) 创建充值订单
+      const res = await api.createRecharge(amountNum)
+      if (!res || !res.success || !res.data || !res.data.orderNo) {
+        wx.showToast({ title: res?.message || '创建订单失败', icon: 'none' })
+        return
       }
+      const orderNo = res.data.orderNo
+      // 2) 跳转统一支付页
+      wx.navigateTo({ url: `/pages/payment/index?orderNo=${orderNo}` })
     } catch (error) {
       console.error('充值异常:', error)
     } finally {
@@ -57,7 +50,9 @@ Page({
   onQuickPick(e) {
     const val = Number(e.currentTarget.dataset.val)
     const value = val.toFixed(2)
-    this.setData({ amount: value, canSubmit: pay.isValidAmount(val) })
+    // 基础校验：>0 且两位小数
+    const valid = val > 0 && Math.round(val * 100) === val * 100
+    this.setData({ amount: value, canSubmit: valid })
   }
 })
 

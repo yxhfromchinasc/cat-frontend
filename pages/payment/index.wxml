@@ -32,9 +32,9 @@
       <text class="label">订单金额：</text>
       <text class="value">¥{{originalAmountStr || '0.00'}}</text>
     </view>
-    <view class="amount-item" wx:if="{{selectedCoupon && couponDiscount > 0}}">
+    <view class="amount-item" wx:if="{{hasDiscount}}">
       <text class="label">优惠金额：</text>
-      <text class="value discount">-¥{{couponDiscount.toFixed ? couponDiscount.toFixed(2) : couponDiscount}}</text>
+      <text class="value discount">-¥{{discountAmountStr || '0.00'}}</text>
     </view>
     <view class="amount-item final">
       <text class="label">实付金额：</text>
@@ -42,8 +42,8 @@
     </view>
   </view>
 
-  <!-- 优惠券选择 -->
-  <view class="section coupon-section" wx:if="{{couponAllowed}}">
+  <!-- 优惠券：继续支付也展示只读已选券 -->
+  <view class="section coupon-section" wx:if="{{couponAllowed || (paymentDetail && paymentDetail.continueMode && selectedCoupon)}}">
     <view class="section-title">优惠券</view>
     <view class="coupon-selector" bindtap="toggleCouponPicker">
       <view class="coupon-info" wx:if="{{selectedCoupon}}">
@@ -58,7 +58,7 @@
           <text class="coupon-name-small">{{selectedCoupon.name || '优惠券'}}</text>
           <text class="coupon-condition-small">{{selectedCoupon.conditionText}}</text>
         </view>
-        <text class="remove-coupon" catchtap="removeCoupon" stop-propagation>不使用</text>
+        <text class="remove-coupon" wx:if="{{!paymentDetail || !paymentDetail.continueMode}}" catchtap="removeCoupon" stop-propagation>不使用</text>
       </view>
       <view class="coupon-placeholder" wx:else>
         <view class="coupon-placeholder-left">
@@ -66,11 +66,11 @@
           <text class="coupon-count" wx:if="{{availableCoupons.length > 0}}">{{availableCoupons.length}}张可用</text>
         </view>
       </view>
-      <text class="arrow">›</text>
+      <text class="arrow" wx:if="{{couponAllowed}}">›</text>
     </view>
     
     <!-- 优惠券列表（下拉选择） -->
-    <view class="coupon-list" wx:if="{{showCouponPicker}}">
+    <view class="coupon-list" wx:if="{{showCouponPicker && couponAllowed}}">
       <view 
         class="coupon-item" 
         hover-class="coupon-card-hover"
@@ -133,6 +133,9 @@
     <button class="pay-btn" bindtap="onPay" disabled="{{finalAmount <= 0}}">
       确认支付
     </button>
+    <button class="pay-btn" wx:if="{{paymentDetail && paymentDetail.continueMode}}" bindtap="onCancelPayment" style="background:#f5f5f5;color:#333;">
+      取消本次支付
+    </button>
   </view>
 </view>
 
@@ -140,11 +143,4 @@
   <text>加载中...</text>
 </view>
 
-<!-- 支付加载倒计时遮罩 -->
-<view class="payment-loading-mask" wx:if="{{showPaymentLoading}}">
-  <view class="payment-loading-content">
-    <view class="loading-spinner"></view>
-    <text class="loading-text">确认支付结果... {{paymentLoadingCountdown}}秒</text>
-  </view>
-</view>
 
