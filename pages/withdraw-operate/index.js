@@ -70,6 +70,14 @@ Page({
         const continueMode = detail.continueMode === true
         const transferExpireTime = detail.transferExpireTime || null
         
+        // 操作页只显示操作相关的按钮，过滤掉取消订单相关的按钮
+        const allActions = detail.allowedActions || []
+        const operateActions = allActions.filter(action => 
+          action === 'WITHDRAW' || 
+          action === 'CONTINUE_WITHDRAW' || 
+          action === 'CANCEL_TRANSFER'
+        )
+        
         this.setData({
           withdrawDetail: detail,
           continueMode,
@@ -79,7 +87,7 @@ Page({
           actualAmount: actAmt,
           actualAmountStr: amount.formatAmount(actAmt),
           feeStr: amount.formatAmount(fee),
-          allowedActions: detail.allowedActions || [], // 从后端获取允许的操作列表
+          allowedActions: operateActions, // 操作页只显示操作相关的按钮
           loading: false
         })
         
@@ -171,16 +179,6 @@ Page({
     })
   },
 
-  // 发起提现：调起确认收款页面
-  async onWithdraw() {
-    if (this.data.continueMode) {
-      // 继续提现模式：调起确认收款页面
-      await this.handleContinueWithdraw()
-    } else {
-      // 发起提现模式：发起转账申请
-      await this.handleInitiateWithdraw()
-    }
-  },
 
   // 发起提现：发起转账申请
   async handleInitiateWithdraw() {
@@ -325,7 +323,14 @@ Page({
   // 处理操作按钮点击
   async handleAction(e) {
     const action = e.currentTarget.dataset.action
-    if (action === 'CANCEL_TRANSFER') {
+    if (action === 'WITHDRAW') {
+      // 发起提现
+      await this.handleInitiateWithdraw()
+    } else if (action === 'CONTINUE_WITHDRAW') {
+      // 继续提现
+      await this.handleContinueWithdraw()
+    } else if (action === 'CANCEL_TRANSFER') {
+      // 取消本次提现
       await this.onCancel()
     }
   },

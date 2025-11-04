@@ -136,18 +136,16 @@
       <text class="summary-remain-time">{{payRemainStr}}</text>
     </view>
   </view>
-    <button class="pay-btn" bindtap="onPay" disabled="{{finalAmount < 0}}">
-      确认支付
-    </button>
     <button 
       wx:for="{{allowedActions}}" 
       wx:key="*this"
-      class="pay-btn cancel-payment-btn" 
+      class="pay-btn {{item === 'PAY' || item === 'CONTINUE_PAY' ? 'pay-btn' : 'cancel-payment-btn'}}" 
       bindtap="handleAction"
       data-action="{{item}}"
-      style="background:#f5f5f5;color:#333;"
+      disabled="{{(item === 'PAY' || item === 'CONTINUE_PAY') && finalAmount < 0}}"
+      style="{{item === 'PAY' || item === 'CONTINUE_PAY' ? '' : 'background:#f5f5f5;color:#333;'}}"
     >
-      {{item === 'CANCEL_PAYMENT' ? '取消本次支付' : item}}
+      {{item === 'PAY' ? '确认支付' : item === 'CONTINUE_PAY' ? '继续支付' : item === 'CANCEL_PAYMENT' ? '取消本次支付' : item}}
     </button>
   </view>
 </view>

@@ -75,6 +75,9 @@ Page({
     } else if (action === 'CONTINUE_WITHDRAW') {
       // 继续提现（跳转到提现操作页）
       wx.navigateTo({ url: `/pages/withdraw-operate/index?orderNo=${orderNo}` })
+    } else if (action === 'CANCEL_TRANSFER') {
+      // 取消本次提现（跳转到提现操作页）
+      wx.navigateTo({ url: `/pages/withdraw-operate/index?orderNo=${orderNo}` })
     } else if (action === 'CANCEL') {
       // 取消订单（发起提现模式，直接取消）
       wx.showModal({

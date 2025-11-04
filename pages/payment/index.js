@@ -112,6 +112,14 @@ Page({
           this.startPayRemainCountdown(detail.paymentExpireTime)
         }
         
+        // 支付页面只显示操作相关的按钮，过滤掉取消订单相关的按钮
+        const allActions = detail.allowedActions || []
+        const operateActions = allActions.filter(action => 
+          action === 'PAY' || 
+          action === 'CONTINUE_PAY' || 
+          action === 'CANCEL_PAYMENT'
+        )
+        
         this.setData({
           paymentDetail: detail,
           originalAmount: originalAmount || 0, // 保留数字类型用于计算
@@ -125,7 +133,7 @@ Page({
           // 默认选择第一个（继续支付模式下即为固定方式）
           selectedPaymentMethod: paymentMethods.length > 0 ? paymentMethods[0].code : 2,
           readOnlyPayment,
-          allowedActions: detail.allowedActions || [], // 从后端获取允许的操作列表
+          allowedActions: operateActions, // 支付页面只显示操作相关的按钮
           loading: false
         }, () => {
           console.log('setData 后的数据:', this.data.originalAmount, this.data.finalAmount)
@@ -605,7 +613,11 @@ Page({
   // 处理操作按钮点击
   async handleAction(e) {
     const action = e.currentTarget.dataset.action
-    if (action === 'CANCEL_PAYMENT') {
+    if (action === 'PAY' || action === 'CONTINUE_PAY') {
+      // 发起支付或继续支付
+      await this.onPay()
+    } else if (action === 'CANCEL_PAYMENT') {
+      // 取消本次支付
       await this.onCancelPayment()
     }
   },
