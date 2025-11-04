@@ -7,14 +7,18 @@
 .status { font-size: 14px; }
 .status.success { color: #16a34a; }
 .status.failed { color: #ef4444; }
-.status.paying { color: #f59e0b; }
+.status.withdrawing { color: #f59e0b; }
 .status.pending { color: #64748b; }
+.status.withedrawed { color: #16a34a; }
+.status.cancel { color: #ef4444; }
 .amount-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; font-size: 14px; }
 .amount-item .label { color: #666; }
 .amount-item .value { color: #333; font-weight: 600; }
+.amount-item .value.fee { color: #666; font-weight: normal; }
+.amount-item .value.error { color: #ef4444; font-weight: normal; }
 .actions-bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; padding: 12px 16px; box-shadow: 0 -4px 24px rgba(0,0,0,0.06); display: flex; gap: 12px; }
 .action-btn { flex: 1; padding: 12px 0; border-radius: 8px; text-align: center; font-size: 15px; }
-.pay-btn { background: #07c160; color: #fff; }
+.withdraw-btn { background: #667eea; color: #fff; }
 .cancel-btn { background: #f5f5f5; color: #333; border: 1px solid #e5e6eb; }
-.cancel-payment-btn { background: #f5f5f5; color: #333; border: 1px solid #e5e6eb; }
-
+.cancel-order-btn { background: #f5f5f5; color: #333; border: 1px solid #e5e6eb; }
+.loading { display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 14px; color: #999; }

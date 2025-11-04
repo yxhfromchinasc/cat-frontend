@@ -1,7 +1,5 @@
 .withdraw-page {
   padding: 40rpx;
-  min-height: 100vh;
-  background: #f7f8fa;
 }
 
 .header {
@@ -21,13 +19,6 @@
   color: #888;
 }
 
-.form {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 32rpx;
-  margin-bottom: 24rpx;
-}
-
 .form-item {
   margin-bottom: 24rpx;
 }
@@ -36,7 +27,13 @@
   display: block;
   margin-bottom: 12rpx;
   color: #555;
-  font-size: 28rpx;
+}
+
+.balance-value {
+  display: block;
+  font-size: 32rpx;
+  color: #667eea;
+  font-weight: 500;
 }
 
 .input {
@@ -46,30 +43,17 @@
   font-size: 32rpx;
 }
 
-.withdraw-btn {
-  margin-top: 24rpx;
+.pay-btn {
+  margin-top: 12rpx;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
   border: none;
-  border-radius: 12rpx;
-  height: 88rpx;
-  line-height: 88rpx;
-  font-size: 32rpx;
 }
 
 .quick-amounts {
   display: flex;
   gap: 16rpx;
   margin: 12rpx 0 8rpx;
-}
-
-.balance-info {
-  margin-top: 20rpx;
-  padding: 16rpx;
-  background: #f5f5f5;
-  border-radius: 8rpx;
-  font-size: 26rpx;
-  color: #666;
 }
 
 .tips {
@@ -79,3 +63,12 @@
   line-height: 1.8;
 }
 
+/* 加载中 */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 28rpx;
+  color: #999;
+}

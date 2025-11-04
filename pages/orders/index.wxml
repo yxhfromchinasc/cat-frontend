@@ -36,8 +36,14 @@
         <view wx:if="{{item.serviceType === 1}}" class="order-type-recharge">
           <view class="order-type-title">用户充值</view>
           <view class="order-info">
-            <text class="order-amount">￥{{item.totalAmount}}</text>
-            <text class="order-status-text" wx:if="{{item.rechargeOrderStatusDesc}}">{{item.rechargeOrderStatusDesc}}</text>
+            <view class="order-info-item" wx:if="{{item.totalAmount}}">
+              <text class="label">充值金额：</text>
+              <text class="value price">￥{{item.totalAmount}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.rechargeOrderStatusDesc}}">
+              <text class="label">订单状态：</text>
+              <text class="value">{{item.rechargeOrderStatusDesc}}</text>
+            </view>
           </view>
         </view>
 
@@ -112,6 +118,21 @@
             <view class="order-info-item" wx:if="{{item.recyclingStatusDesc}}">
               <text class="label">回收状态：</text>
               <text class="value">{{item.recyclingStatusDesc}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 提现订单 -->
+        <view wx:if="{{item.serviceType === 4}}" class="order-type-withdraw">
+          <view class="order-type-title">余额提现</view>
+          <view class="order-info">
+            <view class="order-info-item" wx:if="{{item.amountStr}}">
+              <text class="label">提现金额：</text>
+              <text class="value price">{{item.amountStr}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.description}}">
+              <text class="label">提现方式：</text>
+              <text class="value">{{item.description}}</text>
             </view>
           </view>
         </view>

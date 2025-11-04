@@ -195,9 +195,15 @@ Page({
       wx.navigateTo({
         url: `/pages/recycling-detail/index?orderNo=${orderNo}`
       })
+    } else if (serviceType === 4) {
+      // 提现订单跳转到提现订单详情页
+      wx.navigateTo({
+        url: `/pages/withdraw-detail/index?orderNo=${orderNo}`
+      })
     } else {
       // 其他订单类型暂时不处理
       console.log('订单类型:', serviceType, '订单号:', orderNo)
+      wx.showToast({ title: '暂不支持该订单类型', icon: 'none' })
     }
   }
 })

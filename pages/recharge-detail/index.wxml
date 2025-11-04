@@ -8,7 +8,7 @@
     </view>
     <view class="order-item">
       <text class="label">订单状态：</text>
-      <text class="status {{paymentStatus}}">{{paymentStatusDesc}}</text>
+      <text class="status {{rechargeStatus}}">{{rechargeStatusDesc}}</text>
     </view>
   </view>
 
@@ -30,9 +30,16 @@
   </view>
 
   <!-- 操作栏 -->
-  <view class="actions-bar" wx:if="{{paymentStatus === 'pending' || paymentStatus === 'paying'}}">
-    <button class="action-btn pay-btn" wx:if="{{paymentStatus === 'pending'}}" bindtap="handlePay">立即支付</button>
-    <button class="action-btn pay-btn" wx:if="{{paymentStatus === 'paying'}}" bindtap="handleContinuePay">继续支付</button>
+  <view class="actions-bar" wx:if="{{allowedActions && allowedActions.length > 0}}">
+    <button 
+      wx:for="{{allowedActions}}" 
+      wx:key="*this"
+      class="action-btn {{item === 'PAY' || item === 'CONTINUE_PAY' ? 'pay-btn' : 'cancel-btn'}}"
+      bindtap="handleAction"
+      data-action="{{item}}"
+    >
+      {{item === 'PAY' ? '立即支付' : item === 'CONTINUE_PAY' ? '继续支付' : item === 'CANCEL' || item === 'CANCEL_WITH_REDIRECT' ? '取消订单' : item}}
+    </button>
   </view>
 </view>
 

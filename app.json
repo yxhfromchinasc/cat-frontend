@@ -18,6 +18,8 @@
     "pages/bind-phone/bind-phone",
     "pages/recharge/recharge",
     "pages/withdraw/index",
+    "pages/withdraw-detail/index",
+    "pages/withdraw-operate/index",
     "pages/payment/index",
     "pages/recharge-detail/index"
   ],

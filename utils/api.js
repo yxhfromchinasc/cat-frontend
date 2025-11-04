@@ -588,6 +588,40 @@ function initiateWithdraw(orderNo) {
 }
 
 /**
+ * 获取提现订单详情
+ */
+function getWithdrawDetail(orderNo) {
+  return get('/withdraw/detail', { orderNo }, { showSuccess: false })
+}
+
+/**
+ * 取消当次提现
+ * 清除保存的转账参数，允许用户重新发起提现
+ * @param {string} orderNo 订单号
+ */
+function cancelTransfer(orderNo) {
+  return post(`/withdraw/cancel-transfer`, {}, { url: `/withdraw/cancel-transfer?orderNo=${orderNo}`, showSuccess: false })
+}
+
+/**
+ * 取消提现订单
+ * 取消整个提现订单（仅限待提现状态）
+ * @param {string} orderNo 订单号
+ */
+function cancelWithdrawOrder(orderNo) {
+  return post(`/withdraw/cancel`, {}, { url: `/withdraw/cancel?orderNo=${orderNo}`, showSuccess: false })
+}
+
+/**
+ * 取消充值订单
+ * 取消整个充值订单（仅限待支付状态）
+ * @param {string} orderNo 订单号
+ */
+function cancelRechargeOrder(orderNo) {
+  return post(`/recharge/cancel`, {}, { url: `/recharge/cancel?orderNo=${orderNo}`, showSuccess: false })
+}
+
+/**
  * 获取代金券模板列表
  */
 function getCouponTemplates(page = 1, pageSize = 10) {
@@ -778,11 +812,19 @@ function getRecyclingOrderDetail(orderNo) {
 }
 
 /**
- * 获取订单支付详情
+ * 获取订单支付详情（用于支付页面）
  * @param {string} orderNo 订单号
  */
 function getPaymentDetail(orderNo) {
   return get('/pay/detail', { orderNo }, { showSuccess: false })
+}
+
+/**
+ * 获取充值订单详情
+ * @param {string} orderNo 订单号
+ */
+function getRechargeOrderDetail(orderNo) {
+  return get('/recharge/detail', { orderNo }, { showSuccess: false })
 }
 
 /**
@@ -918,9 +960,11 @@ module.exports = {
   // 支付相关（充值）
   createRecharge,
   getRechargeStatus,
+  getRechargeOrderDetail,
   getPaymentProgress,
   refreshPaymentStatus,
   cancelRecharge,
+  cancelRechargeOrder,
   createPayment,
   cancelThirdPartyPayment,
   continuePayment,
@@ -932,6 +976,9 @@ module.exports = {
   // 提现相关
   createWithdraw,
   initiateWithdraw,
+  getWithdrawDetail,
+  cancelTransfer,
+  cancelWithdrawOrder,
   
   // 代金券相关
   getCouponTemplates,
