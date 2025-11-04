@@ -79,12 +79,6 @@ Page({
           0
         )
         
-        console.log('支付详情数据:', detail)
-        console.log('订单金额 (totalAmount):', detail.totalAmount, '类型:', typeof detail.totalAmount)
-        console.log('解析后的订单金额:', originalAmount, '类型:', typeof originalAmount)
-        console.log('实际金额 (actualAmount):', detail.actualAmount, '类型:', typeof detail.actualAmount)
-        console.log('解析后的实际金额:', actualAmount, '类型:', typeof actualAmount)
-        
         // 统一金额格式化
         const originalAmountStr = amount.formatAmount(originalAmount)
         const finalAmountStr = amount.formatAmount(actualAmount)
@@ -135,9 +129,6 @@ Page({
           readOnlyPayment,
           allowedActions: operateActions, // 支付页面只显示操作相关的按钮
           loading: false
-        }, () => {
-          console.log('setData 后的数据:', this.data.originalAmount, this.data.finalAmount)
-          console.log('格式化后的字符串:', this.data.originalAmountStr, this.data.finalAmountStr)
         })
         
         // 加载优惠券：
@@ -245,9 +236,7 @@ Page({
   // 加载可用优惠券
   async loadAvailableCoupons(orderAmount) {
     try {
-      console.log('加载可用优惠券，订单金额:', orderAmount)
       const res = await api.getAvailableCoupons(orderAmount)
-      console.log('优惠券API返回:', res)
       if (res && res.success && res.data) {
         // 处理不同的数据格式：可能是数组，也可能是包含 list 的对象
         let couponsList = []
@@ -260,12 +249,10 @@ Page({
         }
         
         const coupons = couponsList.map(item => this.decorateCoupon(item))
-        console.log('处理后的优惠券列表:', coupons)
         this.setData({
           availableCoupons: coupons
         })
       } else {
-        console.log('优惠券API返回数据格式异常:', res)
         this.setData({
           availableCoupons: []
         })
@@ -355,7 +342,6 @@ Page({
   // 显示/隐藏优惠券选择器
   toggleCouponPicker() {
     const newState = !this.data.showCouponPicker
-    console.log('切换优惠券选择器状态:', newState, '当前优惠券数量:', this.data.availableCoupons.length)
     this.setData({
       showCouponPicker: newState
     })
@@ -649,10 +635,6 @@ Page({
         }
       }
     })
-  },
-
-  // 已移除倒计时与轮询逻辑，支付结果完全交由后端更新
-
-
+  }
 })
 
