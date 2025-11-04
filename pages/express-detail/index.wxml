@@ -238,7 +238,7 @@
       bindtap="handleAction"
       data-action="{{item}}"
     >
-      {{item === 'PAY' ? '立即支付' : item === 'CONTINUE_PAY' ? '继续支付' : item === 'CANCEL_PAYMENT' ? '取消支付' : item === 'CANCEL' ? '取消订单' : item}}
+      {{item === 'PAY' ? '立即支付' : item === 'CONTINUE_PAY' ? '继续支付' : item === 'CANCEL_PAYMENT' ? '取消支付' : item === 'CANCEL' || item === 'CANCEL_WITH_REDIRECT' ? '取消订单' : item}}
     </button>
   </view>
 </view>

@@ -20,6 +20,9 @@ Page({
     transferRemainSeconds: 0,
     transferRemainStr: '',
     
+    // 允许的操作按钮列表
+    allowedActions: [],
+    
     submitting: false,
     loading: true
   },
@@ -76,6 +79,7 @@ Page({
           actualAmount: actAmt,
           actualAmountStr: amount.formatAmount(actAmt),
           feeStr: amount.formatAmount(fee),
+          allowedActions: detail.allowedActions || [], // 从后端获取允许的操作列表
           loading: false
         })
         
@@ -315,6 +319,14 @@ Page({
       this.setData({ submitting: false })
     } finally {
       this.setData({ submitting: false })
+    }
+  },
+
+  // 处理操作按钮点击
+  async handleAction(e) {
+    const action = e.currentTarget.dataset.action
+    if (action === 'CANCEL_TRANSFER') {
+      await this.onCancel()
     }
   },
 

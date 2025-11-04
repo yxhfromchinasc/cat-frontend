@@ -38,7 +38,9 @@ Page({
     paymentLoadingCountdown: 0,
     // 继续支付倒计时展示
     payRemainSeconds: 0,
-    payRemainStr: ''
+    payRemainStr: '',
+    // 允许的操作按钮列表
+    allowedActions: []
   },
 
   onLoad(options) {
@@ -123,6 +125,7 @@ Page({
           // 默认选择第一个（继续支付模式下即为固定方式）
           selectedPaymentMethod: paymentMethods.length > 0 ? paymentMethods[0].code : 2,
           readOnlyPayment,
+          allowedActions: detail.allowedActions || [], // 从后端获取允许的操作列表
           loading: false
         }, () => {
           console.log('setData 后的数据:', this.data.originalAmount, this.data.finalAmount)
@@ -596,6 +599,14 @@ Page({
         title: e?.message || '支付失败，请重试', 
         icon: 'none' 
       })
+    }
+  },
+
+  // 处理操作按钮点击
+  async handleAction(e) {
+    const action = e.currentTarget.dataset.action
+    if (action === 'CANCEL_PAYMENT') {
+      await this.onCancelPayment()
     }
   },
 

@@ -58,8 +58,15 @@
     <button class="pay-btn" bindtap="onWithdraw" disabled="{{submitting}}" loading="{{submitting}}">
       {{continueMode ? '继续提现' : '发起提现'}}
     </button>
-    <button class="pay-btn cancel-btn" wx:if="{{continueMode}}" bindtap="onCancel" style="background:#f5f5f5;color:#333;">
-      取消本次提现
+    <button 
+      wx:for="{{allowedActions}}" 
+      wx:key="*this"
+      class="pay-btn cancel-btn" 
+      bindtap="handleAction"
+      data-action="{{item}}"
+      style="background:#f5f5f5;color:#333;"
+    >
+      {{item === 'CANCEL_TRANSFER' ? '取消本次提现' : item}}
     </button>
   </view>
 </view>

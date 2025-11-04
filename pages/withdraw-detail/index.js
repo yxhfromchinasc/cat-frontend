@@ -75,37 +75,8 @@ Page({
     } else if (action === 'CONTINUE_WITHDRAW') {
       // 继续提现（跳转到提现操作页）
       wx.navigateTo({ url: `/pages/withdraw-operate/index?orderNo=${orderNo}` })
-    } else if (action === 'CANCEL_TRANSFER') {
-      // 取消本次提现
-      wx.showModal({
-        title: '确认取消',
-        content: '取消后可以重新发起提现，是否确认取消？',
-        success: async (res) => {
-          if (res.confirm) {
-            try {
-              wx.showLoading({ title: '取消中...' })
-              const cancelRes = await api.cancelTransfer(orderNo)
-              if (cancelRes && cancelRes.success) {
-                wx.hideLoading()
-                wx.showToast({ title: '已取消', icon: 'success' })
-                // 刷新订单详情
-                setTimeout(() => {
-                  this.loadDetail()
-                }, 1000)
-              } else {
-                wx.hideLoading()
-                wx.showToast({ title: cancelRes?.message || '取消失败', icon: 'none' })
-              }
-            } catch (e) {
-              wx.hideLoading()
-              console.error('取消当次提现失败', e)
-              wx.showToast({ title: '取消失败', icon: 'none' })
-            }
-          }
-        }
-      })
     } else if (action === 'CANCEL') {
-      // 取消订单
+      // 取消订单（发起提现模式，直接取消）
       wx.showModal({
         title: '确认取消',
         content: '确定要取消该提现订单吗？取消后金额将退回账户余额',
@@ -130,6 +101,18 @@ Page({
               console.error('取消提现订单失败', e)
               wx.showToast({ title: '取消失败', icon: 'none' })
             }
+          }
+        }
+      })
+    } else if (action === 'CANCEL_WITH_REDIRECT') {
+      // 取消订单（继续提现模式，提示跳转到提现操作页）
+      wx.showModal({
+        title: '提示',
+        content: '当前有提现中订单，请前往提现操作页操作',
+        confirmText: '前往提现',
+        success: (res) => {
+          if (res.confirm) {
+            wx.navigateTo({ url: `/pages/withdraw-operate/index?orderNo=${orderNo}` })
           }
         }
       })

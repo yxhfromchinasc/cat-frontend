@@ -46,7 +46,7 @@
       bindtap="handleAction"
       data-action="{{item}}"
     >
-      {{item === 'WITHDRAW' ? '去提现' : item === 'CONTINUE_WITHDRAW' ? '继续提现' : item === 'CANCEL_TRANSFER' ? '取消本次提现' : item === 'CANCEL' ? '取消订单' : item}}
+      {{item === 'WITHDRAW' ? '去提现' : item === 'CONTINUE_WITHDRAW' ? '继续提现' : item === 'CANCEL' || item === 'CANCEL_WITH_REDIRECT' ? '取消订单' : item}}
     </button>
   </view>
 </view>

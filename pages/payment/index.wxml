@@ -139,8 +139,15 @@
     <button class="pay-btn" bindtap="onPay" disabled="{{finalAmount < 0}}">
       确认支付
     </button>
-    <button class="pay-btn" wx:if="{{paymentDetail && paymentDetail.continueMode}}" bindtap="onCancelPayment" style="background:#f5f5f5;color:#333;">
-      取消本次支付
+    <button 
+      wx:for="{{allowedActions}}" 
+      wx:key="*this"
+      class="pay-btn cancel-payment-btn" 
+      bindtap="handleAction"
+      data-action="{{item}}"
+      style="background:#f5f5f5;color:#333;"
+    >
+      {{item === 'CANCEL_PAYMENT' ? '取消本次支付' : item}}
     </button>
   </view>
 </view>

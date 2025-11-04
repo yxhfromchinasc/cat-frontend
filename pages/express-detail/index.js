@@ -99,11 +99,6 @@ Page({
 
         // 计算进度节点
         detail.progressSteps = this.calculateProgressSteps(detail)
-        
-        // 过滤掉取消支付操作按钮，统一在支付页处理
-        if (detail.allowedActions && Array.isArray(detail.allowedActions)) {
-          detail.allowedActions = detail.allowedActions.filter(a => a !== 'CANCEL_PAYMENT')
-        }
 
         // 基于订单详情接口直接渲染金额与优惠信息（后端已返回 actualAmount/couponId/couponName/discountAmount）
         const origSrc = detail.totalAmount != null ? detail.totalAmount : (detail.expressPrice != null ? detail.expressPrice : 0)
@@ -278,6 +273,18 @@ Page({
       await this.handleCancelPayment()
     } else if (action === 'CANCEL') {
       await this.handleCancel()
+    } else if (action === 'CANCEL_WITH_REDIRECT') {
+      // 取消订单（继续支付模式，提示跳转到支付详情页）
+      wx.showModal({
+        title: '提示',
+        content: '当前有支付中订单，请前往支付详情页操作',
+        confirmText: '前往支付',
+        success: (res) => {
+          if (res.confirm) {
+            wx.navigateTo({ url: `/pages/payment/index?orderNo=${this.data.orderNo}` })
+          }
+        }
+      })
     }
   },
 
