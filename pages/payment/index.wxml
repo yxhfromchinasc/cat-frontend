@@ -42,8 +42,8 @@
     </view>
   </view>
 
-  <!-- 优惠券：继续支付也展示只读已选券 -->
-  <view class="section coupon-section" wx:if="{{couponAllowed || (paymentDetail && paymentDetail.continueMode && selectedCoupon)}}">
+  <!-- 优惠券：支付中状态也展示只读已选券 -->
+  <view class="section coupon-section" wx:if="{{couponAllowed || (paymentDetail && paymentDetail.paymentExpireTime && selectedCoupon)}}">
     <view class="section-title">优惠券</view>
     <view class="coupon-selector" bindtap="toggleCouponPicker">
       <view class="coupon-info" wx:if="{{selectedCoupon}}">
@@ -58,7 +58,7 @@
           <text class="coupon-name-small">{{selectedCoupon.name || '优惠券'}}</text>
           <text class="coupon-condition-small">{{selectedCoupon.conditionText}}</text>
         </view>
-        <text class="remove-coupon" wx:if="{{!paymentDetail || !paymentDetail.continueMode}}" catchtap="removeCoupon" stop-propagation>不使用</text>
+        <text class="remove-coupon" wx:if="{{!paymentDetail || !paymentDetail.paymentExpireTime}}" catchtap="removeCoupon" stop-propagation>不使用</text>
       </view>
       <view class="coupon-placeholder" wx:else>
         <view class="coupon-placeholder-left">
@@ -131,7 +131,7 @@
       <text class="summary-label">合计：</text>
       <text class="summary-amount">¥{{finalAmountStr || '0.00'}}</text>
     </view>
-    <view class="summary-remain" wx:if="{{paymentDetail && paymentDetail.continueMode && payRemainStr}}">
+    <view class="summary-remain" wx:if="{{paymentDetail && paymentDetail.paymentExpireTime && payRemainStr}}">
       <text class="summary-remain-label">剩余：</text>
       <text class="summary-remain-time">{{payRemainStr}}</text>
     </view>

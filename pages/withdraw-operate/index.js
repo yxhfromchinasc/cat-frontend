@@ -6,7 +6,6 @@ Page({
   data: {
     orderNo: '',
     withdrawDetail: null, // 提现详情（从后端获取）
-    continueMode: false, // 是否继续提现模式
     
     // 金额信息
     amount: 0,
@@ -58,7 +57,7 @@ Page({
     const { orderNo } = this.data
     try {
       wx.showLoading({ title: '加载中...' })
-      const res = await api.getWithdrawDetail(orderNo)
+      const res = await api.getWithdrawOperateDetail(orderNo)
       
       if (res && res.success && res.data) {
         const detail = res.data
@@ -66,9 +65,11 @@ Page({
         const actAmt = amount.parseBigDecimalLike(detail.actualAmount != null ? detail.actualAmount : detail.amount, 0)
         const fee = amount.parseBigDecimalLike(detail.fee, 0)
         
-        // 从后端获取 continueMode 和 transferExpireTime
-        const continueMode = detail.continueMode === true
+        // 从后端获取 transferExpireTime
         const transferExpireTime = detail.transferExpireTime || null
+        
+        // 判断是否为提现中状态（withdrawStatus === 2 表示提现中）
+        const isWithdrawing = detail.withdrawStatus === 2
         
         // 操作页只显示操作相关的按钮，过滤掉取消订单相关的按钮
         const allActions = detail.allowedActions || []
@@ -80,7 +81,6 @@ Page({
         
         this.setData({
           withdrawDetail: detail,
-          continueMode,
           transferExpireTime,
           amount: amt,
           amountStr: amount.formatAmount(amt),
@@ -91,8 +91,8 @@ Page({
           loading: false
         })
         
-        // 如果是继续提现模式，启动倒计时
-        if (continueMode && transferExpireTime) {
+        // 如果是提现中状态且有转账过期时间，启动倒计时
+        if (isWithdrawing && transferExpireTime) {
           this.startTransferRemainCountdown(transferExpireTime)
         }
       } else {
@@ -197,7 +197,9 @@ Page({
       api.showLoadingToast('发起转账...')
       
       // 发起转账申请（调用第三方API获取packageInfo）
-      const initiateRes = await api.initiateWithdraw(orderNo)
+      // 从订单详情中获取提现方式，默认为微信零钱（1）
+      const withdrawMethod = (this.data.withdrawDetail && this.data.withdrawDetail.withdrawMethod) || 1
+      const initiateRes = await api.initiateWithdraw(orderNo, withdrawMethod)
       
       if (!initiateRes.success || !initiateRes.data) {
         throw new Error(initiateRes.message || initiateRes.error || '发起转账申请失败')
@@ -264,16 +266,16 @@ Page({
     this.setData({ submitting: true })
     
     try {
-      api.showLoadingToast('发起转账...')
+      api.showLoadingToast('继续提现...')
       
-      // 发起转账申请（如果有保存的参数且未过期，会直接返回；否则重新创建）
-      const initiateRes = await api.initiateWithdraw(orderNo)
+      // 继续提现（如果有保存的参数且未过期，会直接返回；否则重新创建）
+      const continueRes = await api.continueWithdraw(orderNo)
       
-      if (!initiateRes.success || !initiateRes.data) {
-        throw new Error(initiateRes.message || initiateRes.error || '发起转账申请失败')
+      if (!continueRes.success || !continueRes.data) {
+        throw new Error(continueRes.message || continueRes.error || '继续提现失败')
       }
       
-      const { packageInfo } = initiateRes.data
+      const { packageInfo } = continueRes.data
       
       if (!packageInfo) {
         throw new Error('未获取到确认收款参数')

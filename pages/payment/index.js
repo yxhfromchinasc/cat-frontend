@@ -93,9 +93,12 @@ Page({
         }
         let paymentMethods = (detail.supportedPaymentMethods || []).map(code => paymentMethodsMap[code] || { code, name: '未知', icon: '💳' })
 
-        // 如果是继续支付模式：隐藏优惠券、固定支付方式
+        // 判断是否为支付中状态（用于隐藏优惠券、固定支付方式）
+        // 通过检查是否有 paymentExpireTime 或者服务类型的状态来判断
+        // 这里我们通过检查是否有 paymentExpireTime 来判断是否为支付中状态
         let readOnlyPayment = false
-        if (detail.continueMode) {
+        const isPaying = detail.paymentExpireTime != null && detail.paymentExpireTime.trim() !== ''
+        if (isPaying) {
           // 隐藏优惠券
           detail.couponAllowed = false
           // 固定支付方式为 currentPaymentMethod
@@ -133,10 +136,10 @@ Page({
         
         // 加载优惠券：
         // 1) 正常场景：允许使用优惠券 -> 加载可用优惠券供用户选择
-        // 2) 继续支付：不允许选择，但需要根据 currentCouponId 展示只读优惠券信息
+        // 2) 支付中状态：不允许选择，但需要根据 currentCouponId 展示只读优惠券信息
         if (detail.couponAllowed) {
           this.loadAvailableCoupons(originalAmount)
-        } else if (detail.continueMode && detail.currentCouponId) {
+        } else if (isPaying && detail.currentCouponId) {
           try {
             const resDetail = await api.getCouponDetail(detail.currentCouponId)
             if (resDetail && resDetail.success && resDetail.data) {
@@ -146,7 +149,7 @@ Page({
               })
             }
           } catch (e) {
-            console.warn('加载只读优惠券失败（继续支付展示用）:', e)
+            console.warn('加载只读优惠券失败（支付中展示用）:', e)
           }
         }
       } else {
@@ -468,8 +471,10 @@ Page({
     }
     
     try {
-      // 若处于继续支付模式，先主动刷新一次三方状态；失败则阻断后续流程
-      if (this.data.paymentDetail && this.data.paymentDetail.continueMode) {
+      // 若处于支付中状态（有 paymentExpireTime），先主动刷新一次三方状态；失败则阻断后续流程
+      const isPaying = this.data.paymentDetail && this.data.paymentDetail.paymentExpireTime != null 
+        && this.data.paymentDetail.paymentExpireTime.trim() !== ''
+      if (isPaying) {
         try {
           await api.refreshPaymentStatus(orderNo)
         } catch (e) {

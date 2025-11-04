@@ -8,7 +8,8 @@ Page({
     rechargeStatus: null,
     rechargeStatusDesc: '',
     amountStr: '0.00',
-    allowedActions: [] // 允许的操作按钮列表
+    allowedActions: [], // 允许的操作按钮列表
+    isFirstLoad: true // 是否首次加载
   },
 
   onLoad(options) {
@@ -18,7 +19,8 @@ Page({
   },
 
   onShow() {
-    if (this.data.orderNo) {
+    // 如果不是首次加载（说明是从其他页面返回的），则刷新订单详情
+    if (this.data.orderNo && !this.data.isFirstLoad) {
       this.loadDetail()
     }
   },
@@ -48,11 +50,13 @@ Page({
           hasDiscount: hasDiscount,
           rechargeStatus: statusClass,
           rechargeStatusDesc: detail.rechargeStatusDesc || '',
-          allowedActions: detail.allowedActions || [] // 从后端获取允许的操作列表
+          allowedActions: detail.allowedActions || [], // 从后端获取允许的操作列表
+          isFirstLoad: false // 标记已加载过
         })
       }
     } catch (e) {
       console.error('获取充值订单详情失败', e)
+      this.setData({ isFirstLoad: false }) // 即使失败也标记为已加载
     }
   },
 

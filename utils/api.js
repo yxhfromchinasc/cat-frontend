@@ -576,11 +576,12 @@ function createWithdraw(amount, withdrawMethod) {
 
 /**
  * 发起提现转账（扣除余额、调用第三方API）
+ * 仅限待提现状态
  */
-function initiateWithdraw(orderNo) {
-  console.log('发起提现转账，订单号:', orderNo)
+function initiateWithdraw(orderNo, withdrawMethod) {
   return post('/withdraw/initiate', {
-    orderNo: orderNo
+    orderNo: orderNo,
+    withdrawMethod: withdrawMethod || 1  // 默认微信零钱
   }, {
     showSuccess: false,
     showError: false  // 不在通用请求中显示错误，让页面自己处理错误信息
@@ -588,10 +589,24 @@ function initiateWithdraw(orderNo) {
 }
 
 /**
+ * 继续提现
+ * 从订单详情页继续提现，如果订单处于提现中状态且有保存的转账参数且未过期，直接返回转账参数
+ * 如果已过期或没有转账参数，重新创建转账订单
+ * @param {string} orderNo 订单号
+ */
+function continueWithdraw(orderNo) {
+  return post(`/withdraw/continue`, {}, { url: `/withdraw/continue?orderNo=${orderNo}`, showSuccess: false })
+}
+
+/**
  * 获取提现订单详情
  */
 function getWithdrawDetail(orderNo) {
   return get('/withdraw/detail', { orderNo }, { showSuccess: false })
+}
+
+function getWithdrawOperateDetail(orderNo) {
+  return get('/withdraw/operate-detail', { orderNo }, { showSuccess: false })
 }
 
 /**
@@ -976,7 +991,9 @@ module.exports = {
   // 提现相关
   createWithdraw,
   initiateWithdraw,
+  continueWithdraw,
   getWithdrawDetail,
+  getWithdrawOperateDetail,
   cancelTransfer,
   cancelWithdrawOrder,
   

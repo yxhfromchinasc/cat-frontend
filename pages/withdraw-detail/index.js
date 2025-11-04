@@ -11,7 +11,8 @@ Page({
     actualAmountStr: '0.00',
     feeStr: '0.00',
     loading: false,
-    allowedActions: [] // 允许的操作按钮列表
+    allowedActions: [], // 允许的操作按钮列表
+    isFirstLoad: true // 是否首次加载
   },
 
   onLoad(options) {
@@ -28,7 +29,8 @@ Page({
   },
 
   onShow() {
-    if (this.data.orderNo) {
+    // 如果不是首次加载（说明是从其他页面返回的），则刷新订单详情
+    if (this.data.orderNo && !this.data.isFirstLoad) {
       this.loadDetail()
     }
   },
@@ -56,11 +58,13 @@ Page({
           feeStr: amount.formatAmount(fee),
           withdrawStatus: statusClass,
           withdrawStatusDesc: detail.withdrawStatusDesc || '',
-          allowedActions: detail.allowedActions || [] // 从后端获取允许的操作列表
+          allowedActions: detail.allowedActions || [], // 从后端获取允许的操作列表
+          isFirstLoad: false // 标记已加载过
         })
       }
     } catch (e) {
       console.error('获取提现订单详情失败', e)
+      this.setData({ isFirstLoad: false }) // 即使失败也标记为已加载
     }
   },
 
@@ -76,8 +80,34 @@ Page({
       // 继续提现（跳转到提现操作页）
       wx.navigateTo({ url: `/pages/withdraw-operate/index?orderNo=${orderNo}` })
     } else if (action === 'CANCEL_TRANSFER') {
-      // 取消本次提现（跳转到提现操作页）
-      wx.navigateTo({ url: `/pages/withdraw-operate/index?orderNo=${orderNo}` })
+      // 取消本次提现（直接调用后端接口）
+      wx.showModal({
+        title: '确认取消',
+        content: '确定要取消本次提现吗？取消后可稍后重新提现。',
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              wx.showLoading({ title: '取消中...' })
+              const cancelRes = await api.cancelTransfer(orderNo)
+              if (cancelRes && cancelRes.success) {
+                wx.hideLoading()
+                wx.showToast({ title: '已取消本次提现', icon: 'success' })
+                // 刷新订单详情
+                setTimeout(() => {
+                  this.loadDetail()
+                }, 1000)
+              } else {
+                wx.hideLoading()
+                wx.showToast({ title: cancelRes?.message || '取消失败', icon: 'none' })
+              }
+            } catch (e) {
+              wx.hideLoading()
+              console.error('取消本次提现失败', e)
+              wx.showToast({ title: '取消失败', icon: 'none' })
+            }
+          }
+        }
+      })
     } else if (action === 'CANCEL') {
       // 取消订单（发起提现模式，直接取消）
       wx.showModal({

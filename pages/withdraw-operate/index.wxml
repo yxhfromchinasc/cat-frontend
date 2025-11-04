@@ -50,7 +50,7 @@
         <text class="summary-label">合计：</text>
         <text class="summary-amount">¥{{actualAmountStr || '0.00'}}</text>
       </view>
-      <view class="summary-remain" wx:if="{{continueMode && transferRemainStr}}">
+      <view class="summary-remain" wx:if="{{withdrawDetail && withdrawDetail.withdrawStatus === 2 && transferRemainStr}}">
         <text class="summary-remain-label">剩余：</text>
         <text class="summary-remain-time">{{transferRemainStr}}</text>
       </view>
