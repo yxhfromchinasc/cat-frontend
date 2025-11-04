@@ -610,6 +610,24 @@ function getWithdrawOperateDetail(orderNo) {
 }
 
 /**
+ * 主动刷新订单转账状态
+ * 直查第三方转账订单状态并按回调成功逻辑回补本地状态
+ * @param {string} orderNo 订单号
+ */
+function refreshTransferStatus(orderNo) {
+  return get('/withdraw/progress/refresh', { orderNo }, { showSuccess: false })
+}
+
+/**
+ * 查询订单提现进度
+ * 查询订单的提现进度，返回提现状态（成功/失败/提现中/待提现）
+ * @param {string} orderNo 订单号
+ */
+function getWithdrawProgress(orderNo) {
+  return get('/withdraw/progress', { orderNo }, { showSuccess: false })
+}
+
+/**
  * 取消当次提现
  * 清除保存的转账参数，允许用户重新发起提现
  * @param {string} orderNo 订单号

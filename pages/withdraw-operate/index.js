@@ -1,6 +1,7 @@
 // pages/withdraw-operate/index.js - 提现操作页（类似支付页，支持发起提现和继续提现）
 const { api } = require('../../utils/util.js')
 const amount = require('../../utils/amount.js')
+const withdrawUtils = require('../../utils/withdraw.js')
 
 Page({
   data: {
@@ -23,7 +24,10 @@ Page({
     allowedActions: [],
     
     submitting: false,
-    loading: true
+    loading: true,
+    // 自定义倒计时加载UI
+    showWithdrawLoading: false,
+    withdrawLoadingCountdown: 0
   },
 
   onLoad(options) {
@@ -217,13 +221,38 @@ Page({
       try {
         await this.requestUserConfirmReceipt(packageInfo)
         
-        // 确认收款成功，显示成功提示
-        wx.showToast({ title: '提现申请已提交', icon: 'success' })
-        
-        // 延迟返回详情页
-        setTimeout(() => {
-          wx.navigateBack()
-        }, 1500)
+        // 确认收款调起成功，进入5秒短轮询（自定义倒计时加载，不使用系统Loading）
+        // 快速确认：先触发一次直查回补，再查进度；若已得出结论则不进入倒计时
+        try {
+          try { await api.refreshTransferStatus(orderNo) } catch (_) {}
+          const quick = await api.getWithdrawProgress(orderNo)
+          if (quick && quick.success && quick.data) {
+            const st = quick.data.withdrawStatus
+            if (st === 'success') {
+              wx.showToast({ title: '提现成功', icon: 'success' })
+              setTimeout(() => wx.navigateBack(), 1200)
+              return
+            } else if (st === 'failed') {
+              wx.showToast({ title: '提现失败', icon: 'none' })
+              return
+            }
+          }
+        } catch (_) { /* 忽略，进入倒计时兜底 */ }
+
+        // 进入5秒短轮询确认（展示自定义倒计时 UI）
+        try {
+          const result = await withdrawUtils.pollWithdrawProgress(orderNo, 5, this)
+          if (result.withdrawStatus === 'success') {
+            wx.showToast({ title: '提现成功', icon: 'success' })
+            setTimeout(() => wx.navigateBack(), 1200)
+          } else if (result.withdrawStatus === 'failed') {
+            wx.showToast({ title: '提现失败', icon: 'none' })
+          } else {
+            wx.showToast({ title: '提现处理中，请稍后在订单查看', icon: 'none' })
+          }
+        } catch (e) {
+          wx.showToast({ title: '确认提现结果失败', icon: 'none' })
+        }
         
       } catch (receiptError) {
         // 用户取消确认收款
@@ -287,13 +316,38 @@ Page({
       try {
         await this.requestUserConfirmReceipt(packageInfo)
         
-        // 确认收款成功，显示成功提示
-        wx.showToast({ title: '提现申请已提交', icon: 'success' })
-        
-        // 延迟返回详情页
-        setTimeout(() => {
-          wx.navigateBack()
-        }, 1500)
+        // 确认收款调起成功，进入5秒短轮询（自定义倒计时加载，不使用系统Loading）
+        // 快速确认：先触发一次直查回补，再查进度；若已得出结论则不进入倒计时
+        try {
+          try { await api.refreshTransferStatus(orderNo) } catch (_) {}
+          const quick = await api.getWithdrawProgress(orderNo)
+          if (quick && quick.success && quick.data) {
+            const st = quick.data.withdrawStatus
+            if (st === 'success') {
+              wx.showToast({ title: '提现成功', icon: 'success' })
+              setTimeout(() => wx.navigateBack(), 1200)
+              return
+            } else if (st === 'failed') {
+              wx.showToast({ title: '提现失败', icon: 'none' })
+              return
+            }
+          }
+        } catch (_) { /* 忽略，进入倒计时兜底 */ }
+
+        // 进入5秒短轮询确认（展示自定义倒计时 UI）
+        try {
+          const result = await withdrawUtils.pollWithdrawProgress(orderNo, 5, this)
+          if (result.withdrawStatus === 'success') {
+            wx.showToast({ title: '提现成功', icon: 'success' })
+            setTimeout(() => wx.navigateBack(), 1200)
+          } else if (result.withdrawStatus === 'failed') {
+            wx.showToast({ title: '提现失败', icon: 'none' })
+          } else {
+            wx.showToast({ title: '提现处理中，请稍后在订单查看', icon: 'none' })
+          }
+        } catch (e) {
+          wx.showToast({ title: '确认提现结果失败', icon: 'none' })
+        }
         
       } catch (receiptError) {
         // 用户取消确认收款
