@@ -152,28 +152,107 @@ Page({
   },
 
   // 调起确认收款页面（商家转账升级版）
+  // 参考文档: https://developers.weixin.qq.com/miniprogram/dev/platform-capabilities/miniapp/api/miniapp/openBusinessView.html
   async requestUserConfirmReceipt(packageInfoStr) {
     return new Promise((resolve, reject) => {
       try {
         if (!packageInfoStr || typeof packageInfoStr !== 'string') {
+          console.error('packageInfo 参数无效:', packageInfoStr)
           reject(new Error('确认收款参数无效'))
           return
         }
 
-        wx.openBusinessView({
-          businessType: 'transferConfirm',
-          queryString: 'package=' + encodeURIComponent(packageInfoStr),
+        // 检查 packageInfo 是否为空或格式不正确
+        if (packageInfoStr.trim().length === 0) {
+          console.error('packageInfo 为空字符串')
+          reject(new Error('确认收款参数为空'))
+          return
+        }
+
+        // 记录 packageInfo 长度（不打印完整内容，避免敏感信息）
+        console.log('调起确认收款，packageInfo 长度:', packageInfoStr.length)
+        console.log('packageInfo 前50个字符:', packageInfoStr.substring(0, 50))
+
+        // 检查 packageInfo 是否包含特殊字符（base64 编码应该只包含 A-Z, a-z, 0-9, +, /, =）
+        const base64Pattern = /^[A-Za-z0-9+/=]+$/
+        if (!base64Pattern.test(packageInfoStr)) {
+          console.error('packageInfo 格式不正确，不是有效的 base64 编码')
+          reject(new Error('确认收款参数格式错误'))
+          return
+        }
+
+        // 根据官方文档：https://pay.weixin.qq.com/doc/v3/merchant/4012716430
+        // 使用 wx.requestMerchantTransfer 调起用户确认收款
+        // 参数说明：
+        // - mchId: 商户号，和发起转账传入的mchid必须是同一个
+        // - appId: 商户绑定的AppID，和发起转账传入的appid必须是同一个
+        // - package: package_info，从发起转账接口返回
+        
+        // 获取商户号和AppID（从配置中获取，或从后端返回）
+        const mchId = '1731392706' // 商户号
+        // 获取小程序 AppID（推荐使用动态获取）
+        let appId = 'wxd4ebe905e33c7b07' // 默认AppID
+        try {
+          const accountInfo = wx.getAccountInfoSync()
+          if (accountInfo && accountInfo.miniProgram && accountInfo.miniProgram.appId) {
+            appId = accountInfo.miniProgram.appId
+          }
+        } catch (e) {
+          console.warn('获取小程序AppID失败，使用默认值:', e)
+        }
+        
+        console.log('准备调用 wx.requestMerchantTransfer')
+        console.log('参数 - mchId:', mchId)
+        console.log('参数 - appId:', appId)
+        console.log('参数 - package 长度:', packageInfoStr.length)
+        
+        // 检查 API 是否支持
+        if (!wx.canIUse('requestMerchantTransfer')) {
+          console.error('wx.requestMerchantTransfer API 不可用，请检查微信版本')
+          wx.showModal({
+            title: '提示',
+            content: '你的微信版本过低，请更新至最新版本。',
+            showCancel: false,
+            success: () => {
+              reject(new Error('微信版本不支持此功能'))
+            }
+          })
+          return
+        }
+        
+        // 调用 wx.requestMerchantTransfer
+        wx.requestMerchantTransfer({
+          mchId: mchId,
+          appId: appId,
+          package: packageInfoStr, // package_info 已经是 base64 编码的字符串
           success: (res) => {
             console.log('调起确认收款成功:', res)
+            // res.err_msg 将在页面展示成功后返回应用时返回 ok，并不代表付款成功
             resolve(res)
           },
           fail: (err) => {
             console.error('调起确认收款失败:', err)
-            if (err && err.errMsg && (err.errMsg.includes('cancel') || err.errMsg.includes('取消'))) {
-              reject({ cancelled: true, errMsg: err.errMsg })
-            } else {
-              reject(new Error(err.errMsg || '调起确认收款失败'))
+            console.error('失败详情 - errMsg:', err?.errMsg)
+            console.error('失败详情 - 完整错误对象:', JSON.stringify(err))
+            
+            // 根据错误类型提供更友好的提示
+            let errorMsg = '调起确认收款失败'
+            if (err?.errMsg) {
+              errorMsg = err.errMsg
+              
+              // 针对常见错误提供更友好的提示
+              if (err.errMsg.includes('cancel') || err.errMsg.includes('取消')) {
+                // 用户取消操作
+                reject({ cancelled: true, errMsg: err.errMsg })
+                return
+              } else if (err.errMsg.includes('fail') || err.errMsg.includes('internal')) {
+                errorMsg = '调起确认收款失败，可能是配置问题，请联系客服'
+              }
+            } else if (err?.message) {
+              errorMsg = err.message
             }
+            
+            reject(new Error(errorMsg))
           }
         })
       } catch (e) {
@@ -212,8 +291,17 @@ Page({
       const { packageInfo } = initiateRes.data
       
       if (!packageInfo) {
+        console.error('后端返回的 packageInfo 为空:', initiateRes.data)
         throw new Error('未获取到确认收款参数')
       }
+      
+      // 检查 packageInfo 格式
+      if (typeof packageInfo !== 'string') {
+        console.error('packageInfo 类型错误，应为字符串，实际为:', typeof packageInfo, packageInfo)
+        throw new Error('确认收款参数格式错误')
+      }
+      
+      console.log('获取到 packageInfo，长度:', packageInfo.length)
       
       api.hideLoadingToast()
       
@@ -307,8 +395,17 @@ Page({
       const { packageInfo } = continueRes.data
       
       if (!packageInfo) {
+        console.error('后端返回的 packageInfo 为空:', continueRes.data)
         throw new Error('未获取到确认收款参数')
       }
+      
+      // 检查 packageInfo 格式
+      if (typeof packageInfo !== 'string') {
+        console.error('packageInfo 类型错误，应为字符串，实际为:', typeof packageInfo, packageInfo)
+        throw new Error('确认收款参数格式错误')
+      }
+      
+      console.log('获取到 packageInfo，长度:', packageInfo.length)
       
       api.hideLoadingToast()
       

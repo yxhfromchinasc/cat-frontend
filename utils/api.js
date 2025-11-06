@@ -5,7 +5,7 @@
 
 // 基础配置
 const API_CONFIG = {
-  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
+  baseURL: 'http://172.20.10.9:8080/api/user', // 后端对外统一前缀
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
 }
@@ -1012,6 +1012,8 @@ module.exports = {
   continueWithdraw,
   getWithdrawDetail,
   getWithdrawOperateDetail,
+  refreshTransferStatus,
+  getWithdrawProgress,
   cancelTransfer,
   cancelWithdrawOrder,
   
