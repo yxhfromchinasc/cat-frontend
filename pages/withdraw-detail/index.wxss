@@ -18,7 +18,7 @@
 .amount-item .value.error { color: #ef4444; font-weight: normal; }
 .actions-bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; padding: 12px 16px; box-shadow: 0 -4px 24px rgba(0,0,0,0.06); display: flex; gap: 12px; }
 .action-btn { flex: 1; padding: 12px 0; border-radius: 8px; text-align: center; font-size: 15px; }
-.withdraw-btn { background: #667eea; color: #fff; }
+.withdraw-btn { background: #07c160; color: #fff; }
 .cancel-btn { background: #f5f5f5; color: #333; border: 1px solid #e5e6eb; }
 .cancel-order-btn { background: #f5f5f5; color: #333; border: 1px solid #e5e6eb; }
 .loading { display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 14px; color: #999; }

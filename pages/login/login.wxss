@@ -1,14 +1,18 @@
 /* pages/login/login.wxss */
+page {
+  background: #f7f8fa;
+}
+
 .login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 0 40rpx;
+  background: #f7f8fa;
+  padding: 24rpx;
 }
 
 /* 头部 */
 .header {
   text-align: center;
-  padding: 120rpx 0 80rpx;
+  padding: 80rpx 0 60rpx;
 }
 
 .logo {
@@ -17,32 +21,40 @@
 }
 
 .title {
-  font-size: 48rpx;
-  font-weight: bold;
-  color: #ffffff;
-  margin-bottom: 16rpx;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 12rpx;
 }
 
 .subtitle {
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 26rpx;
+  color: #8a8a8e;
 }
 
 /* 登录卡片 */
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 16rpx;
+}
+
+.shadow {
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
 .login-card {
-  background: #ffffff;
-  border-radius: 20rpx;
-  padding: 40rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  margin-bottom: 0;
 }
 
 /* 登录方式切换 */
 .tabs {
   display: flex;
-  background: #f5f5f5;
+  background: #f2f3f5;
   border-radius: 12rpx;
   padding: 6rpx;
-  margin-bottom: 40rpx;
+  margin-bottom: 32rpx;
 }
 
 .tab {
@@ -51,15 +63,15 @@
   padding: 20rpx 0;
   border-radius: 8rpx;
   font-size: 28rpx;
-  color: #666666;
+  color: #666;
   transition: all 0.3s ease;
 }
 
 .tab.active {
   background: #ffffff;
-  color: #333333;
-  font-weight: 500;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  color: #07c160;
+  font-weight: 600;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 /* 内容区域 */
@@ -70,7 +82,7 @@
 /* 微信登录 */
 .wechat-info {
   text-align: center;
-  margin-bottom: 40rpx;
+  margin-bottom: 32rpx;
 }
 
 .wechat-icon {
@@ -80,36 +92,37 @@
 
 .wechat-text {
   font-size: 28rpx;
-  color: #666666;
+  color: #666;
 }
 
 .wechat-btn {
   width: 100%;
   height: 88rpx;
-  background: #07c160;
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
   color: #ffffff;
   border: none;
   border-radius: 12rpx;
   font-size: 32rpx;
-  font-weight: 500;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .wechat-btn-hover {
-  background: #05a050;
+  opacity: 0.9;
+  transform: scale(0.98);
 }
 
 /* 表单 */
 .form-group {
-  margin-bottom: 32rpx;
+  margin-bottom: 24rpx;
 }
 
 .label {
   font-size: 28rpx;
-  color: #333333;
-  margin-bottom: 16rpx;
+  color: #111;
+  margin-bottom: 12rpx;
   font-weight: 500;
 }
 
@@ -117,16 +130,16 @@
   width: 100%;
   height: 88rpx;
   padding: 0 24rpx;
-  border: 2rpx solid #e0e0e0;
+  border: 1rpx solid #e5e5e5;
   border-radius: 12rpx;
   font-size: 28rpx;
-  color: #333333;
+  color: #111;
   background: #ffffff;
   box-sizing: border-box;
 }
 
 .input:focus {
-  border-color: #007aff;
+  border-color: #07c160;
 }
 
 .code-row {
@@ -142,12 +155,19 @@
 .send-btn {
   height: 88rpx;
   padding: 0 24rpx;
-  background: #007aff;
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
   color: #ffffff;
   border: none;
   border-radius: 12rpx;
-  font-size: 24rpx;
+  font-size: 32rpx;
   white-space: nowrap;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  min-width: 160rpx;
+  box-sizing: border-box;
 }
 
 .send-btn.disabled {
@@ -158,12 +178,12 @@
 .login-btn {
   width: 100%;
   height: 88rpx;
-  background: #007aff;
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
   color: #ffffff;
   border: none;
   border-radius: 12rpx;
   font-size: 32rpx;
-  font-weight: 500;
+  font-weight: 600;
   margin-top: 20rpx;
 }
 
@@ -173,29 +193,32 @@
 }
 
 .login-btn-hover {
-  background: #0056b3;
+  opacity: 0.9;
+  transform: scale(0.98);
 }
 
 /* 返回按钮 */
 .back-btn {
   position: fixed;
   top: 60rpx;
-  left: 40rpx;
-  width: 80rpx;
-  height: 80rpx;
-  background: rgba(0, 0, 0, 0.3);
+  left: 24rpx;
+  width: 64rpx;
+  height: 64rpx;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: #111;
   font-size: 32rpx;
   font-weight: bold;
   z-index: 100;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .back-btn-hover {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 1);
+  transform: scale(0.95);
 }
 
 /* 手机号授权弹窗 */
@@ -214,7 +237,7 @@
 }
 
 .phone-auth-content {
-  background: white;
+  background: #fff;
   border-radius: 20rpx;
   padding: 60rpx 40rpx;
   margin: 0 40rpx;
@@ -227,7 +250,7 @@
 .phone-auth-title {
   font-size: 36rpx;
   font-weight: 600;
-  color: #333;
+  color: #111;
   margin-bottom: 20rpx;
 }
 
@@ -240,11 +263,11 @@
 
 .phone-auth-btn {
   width: 100%;
-  height: 80rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  height: 88rpx;
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  color: #fff;
   border: none;
-  border-radius: 40rpx;
+  border-radius: 12rpx;
   font-size: 32rpx;
   font-weight: 600;
   margin-bottom: 20rpx;
@@ -258,16 +281,60 @@
 
 .phone-auth-cancel {
   width: 100%;
-  height: 80rpx;
+  height: 88rpx;
   background: transparent;
   color: #666;
-  border: 2rpx solid #e0e0e0;
-  border-radius: 40rpx;
+  border: 1rpx solid #e5e5e5;
+  border-radius: 12rpx;
   font-size: 32rpx;
   transition: all 0.3s ease;
 }
 
 .phone-auth-cancel-hover {
-  background: #f5f5f5;
+  background: #f2f3f5;
   transform: scale(0.98);
+}
+
+/* 加载遮罩 */
+.loading-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-content {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 60rpx 80rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40rpx;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 6rpx solid #f3f3f3;
+  border-top: 6rpx solid #07c160;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
 }

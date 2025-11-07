@@ -11,7 +11,7 @@
 }
 
 /* Global theme */
-:root{--primary:#667eea;--text:#111;--muted:#8a8a8e;--bg:#f7f8fa}
+:root{--primary:#07c160;--text:#111;--muted:#8a8a8e;--bg:#f7f8fa}
 .page-bg{background: var(--bg)}
 .primary{color: var(--primary)}
 .text{color: var(--text)}

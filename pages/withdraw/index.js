@@ -78,8 +78,29 @@ Page({
     try {
       // 创建提现订单（扣除余额，但不调用第三方）
       const res = await api.createWithdraw(amountNum)
-      if (!res || !res.success || !res.data || !res.data.orderNo) {
+      if (!res || !res.success) {
+        // 检查是否是存在进行中订单的错误
+        if (res && res.code === 2004 && res.data && res.data.orderNo) {
+          const existingOrderNo = res.data.orderNo
+          wx.showModal({
+            title: '提示',
+            content: '您已存在进行中的提现订单，是否跳转到该订单？',
+            confirmText: '跳转',
+            cancelText: '取消',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                // 跳转到提现订单详情页
+                wx.navigateTo({ url: `/pages/withdraw-detail/index?orderNo=${existingOrderNo}` })
+              }
+            }
+          })
+          return
+        }
         wx.showToast({ title: res?.message || '创建订单失败', icon: 'none' })
+        return
+      }
+      if (!res.data || !res.data.orderNo) {
+        wx.showToast({ title: '创建订单失败', icon: 'none' })
         return
       }
       const orderNo = res.data.orderNo
@@ -88,6 +109,23 @@ Page({
       wx.navigateTo({ url: `/pages/withdraw-detail/index?orderNo=${orderNo}` })
     } catch (error) {
       console.error('创建提现订单失败:', error)
+      // 检查是否是存在进行中订单的错误
+      if (error && error.code === 2004 && error.data && error.data.orderNo) {
+        const existingOrderNo = error.data.orderNo
+        wx.showModal({
+          title: '提示',
+          content: '您已存在进行中的提现订单，是否跳转到该订单？',
+          confirmText: '跳转',
+          cancelText: '取消',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              // 跳转到提现订单详情页
+              wx.navigateTo({ url: `/pages/withdraw-detail/index?orderNo=${existingOrderNo}` })
+            }
+          }
+        })
+        return
+      }
       wx.showToast({ title: '创建订单失败，请重试', icon: 'none' })
     } finally {
       this.setData({ submitting: false })

@@ -9,7 +9,7 @@
 .name{font-size:34rpx;font-weight:700;color:#111}
 .phone{margin-top:6rpx;font-size:26rpx}
 .login-hint{position:absolute;right:24rpx;top:50%;transform:translateY(-50%)}
-.login-text{font-size:24rpx;color:#667eea;background:#eef0ff;border-radius:8rpx;padding:8rpx 16rpx}
+.login-text{font-size:24rpx;color:#07c160;background:#f0f9f4;border-radius:8rpx;padding:8rpx 16rpx}
 
 
 /* 快捷统计 */

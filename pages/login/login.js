@@ -10,7 +10,9 @@ Page({
     isLogin: false,
     showPhoneAuth: false,
     phoneAuthData: null,
-    redirect: ''
+    redirect: '',
+    loading: false,
+    loadingText: '处理中...'
   },
 
   onLoad(options) {
@@ -79,13 +81,16 @@ Page({
     }
 
     try {
+      this.setData({ loading: true, loadingText: '发送验证码中...' })
       const result = await api.sendSmsCode(phone)
+      this.setData({ loading: false })
       
       if (result.success) {
         // 开始倒计时
         this.startCountdown()
       }
     } catch (error) {
+      this.setData({ loading: false })
       console.error('发送验证码失败:', error)
       // 错误提示已在API工具中处理，这里不需要重复处理
     }
@@ -149,6 +154,8 @@ Page({
       desc: '用于完善用户资料',
       success: async (res) => {
         try {
+          this.setData({ loading: true, loadingText: '登录中...' })
+          
           // 获取微信授权码
           const loginRes = await wx.login()
           const code = loginRes.code
@@ -161,6 +168,7 @@ Page({
           
           // 首次登录请求（不带手机号）
           const result = await api.wechatLogin(loginData, code)
+          this.setData({ loading: false })
 
           if (result.success) {
             // 登录成功，处理结果
@@ -176,6 +184,7 @@ Page({
             }
           }
         } catch (error) {
+          this.setData({ loading: false })
           // 检查是否是3002错误码（需要手机号授权）
           if (this.isNeedPhoneAuth(error.code)) {
             // 重新构建用户信息
@@ -188,6 +197,7 @@ Page({
         }
       },
       fail: (error) => {
+        this.setData({ loading: false })
         console.error('获取用户信息失败:', error)
         wx.showToast({
           title: '获取用户信息失败',
@@ -246,6 +256,8 @@ Page({
       const { userInfo } = this.data.phoneAuthData
       
       if (e.detail.encryptedData && e.detail.iv) {
+        this.setData({ loading: true, loadingText: '授权处理中...' })
+        
         // 重新获取微信授权码（避免code重复使用）
         const loginRes = await wx.login()
         const freshCode = loginRes.code
@@ -254,6 +266,8 @@ Page({
         const decryptResult = await api.decryptPhoneNumber(e.detail.encryptedData, e.detail.iv, freshCode)
         
         if (decryptResult.success) {
+          this.setData({ loadingText: '登录中...' })
+          
           // 重新获取微信授权码用于登录（避免code重复使用）
           const loginRes = await wx.login()
           const loginCode = loginRes.code
@@ -262,6 +276,7 @@ Page({
           const loginData = this.buildLoginData(userInfo, decryptResult.data.phone)
           
           const result = await api.wechatLogin(loginData, loginCode)
+          this.setData({ loading: false })
           
           if (result.success) {
             // 登录成功，处理结果
@@ -275,6 +290,7 @@ Page({
             console.error('重新登录失败:', result)
           }
         } else {
+          this.setData({ loading: false })
           console.error('手机号解密失败:', decryptResult)
           wx.showToast({
             title: '手机号解密失败',
@@ -299,6 +315,7 @@ Page({
         }
       }
     } catch (error) {
+      this.setData({ loading: false })
       console.error('手机号授权处理失败:', error)
       wx.showToast({
         title: '手机号授权失败',
@@ -356,7 +373,9 @@ Page({
     }
 
     try {
+      this.setData({ loading: true, loadingText: '登录中...' })
       const result = await api.phoneSmsLogin(phone, code)
+      this.setData({ loading: false })
 
       if (result.success) {
         // 保存token
@@ -364,6 +383,7 @@ Page({
         this.loginSuccess()
       }
     } catch (error) {
+      this.setData({ loading: false })
       console.error('手机号登录失败:', error)
       // 错误提示已在API工具中处理，这里不需要重复处理
     }
@@ -464,8 +484,18 @@ Page({
     }, 600)
   },
 
-  // 返回首页
+  // 返回上一页或首页
   goHome() {
-    wx.switchTab({ url: '/pages/index/index' })
+    // 获取当前页面栈
+    const pages = getCurrentPages()
+    // 如果页面栈长度大于1，说明有上一页，则返回上一页
+    if (pages.length > 1) {
+      wx.navigateBack({
+        delta: 1
+      })
+    } else {
+      // 如果没有上一页，则跳转到首页
+      wx.switchTab({ url: '/pages/index/index' })
+    }
   }
 })

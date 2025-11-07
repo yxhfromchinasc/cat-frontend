@@ -12,6 +12,8 @@
     "pages/address/edit",
     "pages/address/select",
     "pages/coupon/index",
+    "pages/feedback/index",
+    "pages/service/index",
     "pages/placeholder/index",
     "pages/logs/logs",
     "pages/login/login",
@@ -31,7 +33,7 @@
   },
   "tabBar": {
     "color": "#8A8A8E",
-    "selectedColor": "#667eea",
+    "selectedColor": "#07c160",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [

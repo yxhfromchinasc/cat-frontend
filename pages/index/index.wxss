@@ -25,20 +25,20 @@ page {
 .biz-card {
   flex: 1;
   aspect-ratio: 1;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
   border-radius: 24rpx;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   padding: 24rpx;
   color: white;
-  box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8rpx 32rpx rgba(7, 193, 96, 0.3);
   position: relative;
   overflow: hidden;
 }
 
 .biz-card:first-child {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
 }
 
 .biz-card:last-child {

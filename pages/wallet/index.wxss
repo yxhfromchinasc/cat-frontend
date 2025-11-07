@@ -10,7 +10,7 @@
 
 .actions{display:flex;gap:24rpx}
 .btn{flex:1;height:88rpx;border-radius:12rpx;background:#fff;border:1px solid #eaeaea;color:#111;font-size:28rpx;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4rpx}
-.btn.primary{background:#667eea;color:#fff;border-color:#667eea}
+.btn.primary{background:#07c160;color:#fff;border-color:#07c160}
 .btn-icon{font-size:32rpx}
 .btn-text{font-size:26rpx}
 
@@ -37,6 +37,6 @@
 
 /* 加载更多 */
 .load-more{text-align:center;padding:30rpx 0}
-.load-more-btn{color:#667eea;font-size:26rpx;padding:10rpx 0}
+.load-more-btn{color:#07c160;font-size:26rpx;padding:10rpx 0}
 .load-more-text{color:#b0b0b0;font-size:24rpx}
 .load-more-loading{color:#8a8a8e;font-size:24rpx}

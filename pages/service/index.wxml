@@ -1,0 +1,70 @@
+<view class="page">
+  <view class="service-card">
+    <view class="service-header">
+      <text class="service-title">联系客服</text>
+      <text class="service-desc">我们随时为您服务</text>
+    </view>
+
+    <view class="service-content">
+      <!-- 客服电话 -->
+      <view class="service-item" wx:if="{{servicePhone}}">
+        <view class="item-left">
+          <view class="item-icon">📞</view>
+          <view class="item-content">
+            <text class="item-label">客服电话</text>
+            <text class="item-value">{{servicePhone}}</text>
+          </view>
+        </view>
+        <button class="action-btn call-btn" bindtap="makePhoneCall" data-phone="{{servicePhone}}">
+          拨打
+        </button>
+      </view>
+
+      <!-- 客服微信 -->
+      <view class="service-item" wx:if="{{serviceWechat}}">
+        <view class="item-left">
+          <view class="item-icon">💬</view>
+          <view class="item-content">
+            <text class="item-label">客服微信</text>
+            <text class="item-value">{{serviceWechat}}</text>
+          </view>
+        </view>
+        <button class="action-btn copy-btn" bindtap="copyWechat" data-wechat="{{serviceWechat}}">
+          复制
+        </button>
+      </view>
+
+      <!-- 客服邮箱 -->
+      <view class="service-item" wx:if="{{serviceEmail}}">
+        <view class="item-left">
+          <view class="item-icon">📧</view>
+          <view class="item-content">
+            <text class="item-label">客服邮箱</text>
+            <text class="item-value">{{serviceEmail}}</text>
+          </view>
+        </view>
+        <button class="action-btn copy-btn" bindtap="copyEmail" data-email="{{serviceEmail}}">
+          复制
+        </button>
+      </view>
+
+      <!-- 工作时间 -->
+      <view class="service-item" wx:if="{{workTime}}">
+        <view class="item-left">
+          <view class="item-icon">🕐</view>
+          <view class="item-content">
+            <text class="item-label">工作时间</text>
+            <text class="item-value">{{workTime}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载提示 -->
+  <view class="loading-mask" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+</view>
+

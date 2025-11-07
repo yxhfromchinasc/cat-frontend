@@ -190,7 +190,7 @@
 
 .remove-coupon {
   font-size: 24rpx;
-  color: #667eea;
+  color: #07c160;
   text-decoration: underline;
 }
 
@@ -211,7 +211,7 @@
 
 .coupon-count {
   font-size: 24rpx;
-  color: #667eea;
+  color: #07c160;
 }
 
 .arrow {
@@ -357,7 +357,7 @@
 
 .payment-item.selected {
   background: #fff;
-  border-color: #667eea;
+  border-color: #07c160;
 }
 
 .payment-info {
@@ -386,7 +386,7 @@
   width: 40rpx;
   height: 40rpx;
   border-radius: 50%;
-  background: #667eea;
+  background: #07c160;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -468,7 +468,7 @@
   font-size: 32rpx;
   font-weight: 500;
   color: #fff;
-  background: #667eea;
+  background: #07c160;
   border-radius: 44rpx;
   border: none;
 }

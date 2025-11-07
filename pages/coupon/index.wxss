@@ -25,7 +25,7 @@
 }
 
 .tab-item.active {
-  color: #667eea;
+  color: #07c160;
   font-weight: 600;
 }
 
@@ -37,7 +37,7 @@
   transform: translateX(-50%);
   width: 60rpx;
   height: 4rpx;
-  background: #667eea;
+  background: #07c160;
   border-radius: 2rpx;
 }
 
@@ -63,7 +63,7 @@
 }
 
 .filter-item.active {
-  background: #667eea;
+  background: #07c160;
   color: #fff;
 }
 
@@ -117,7 +117,7 @@
 }
 
 .coupon-card.available {
-  border: 2rpx solid #667eea;
+  border: 2rpx solid #07c160;
 }
 
 .coupon-card.expired {
@@ -150,7 +150,7 @@
 /* 卡券左侧 */
 .coupon-left {
   width: 200rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -257,7 +257,7 @@
 
 .status-unused {
   font-size: 24rpx;
-  color: #667eea;
+  color: #07c160;
   background: #eef0ff;
   padding: 8rpx 16rpx;
   border-radius: 8rpx;
@@ -285,7 +285,7 @@
 }
 
 .receive-btn {
-  background: #667eea;
+  background: #07c160;
   color: #fff;
   border: none;
   border-radius: 24rpx;

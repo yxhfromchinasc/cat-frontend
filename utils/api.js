@@ -5,7 +5,7 @@
 
 // 基础配置
 const API_CONFIG = {
-  baseURL: 'http://172.20.10.9:8080/api/user', // 后端对外统一前缀
+  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
 }
@@ -183,6 +183,22 @@ function handleResponse(response) {
         message: message || '需要手机号授权',
         data: data
       }
+    case 2003:
+      // 存在进行中的充值订单
+      return {
+        success: false,
+        code: 2003,
+        message: message || '存在进行中的充值订单',
+        data: data
+      }
+    case 2004:
+      // 存在进行中的提现订单
+      return {
+        success: false,
+        code: 2004,
+        message: message || '存在进行中的提现订单',
+        data: data
+      }
     default:
       return {
         success: false,
@@ -260,8 +276,8 @@ function request(options) {
             goLoginWithRedirect()
           } else if (result.code === 403) {
             wx.showToast({ title: '无权限访问', icon: 'none' })
-          } else if (showError && result.code !== 3002) {
-            // 其他错误（排除3002手机号授权）
+          } else if (showError && result.code !== 3002 && result.code !== 2003 && result.code !== 2004) {
+            // 其他错误（排除3002手机号授权、2003充值订单进行中、2004提现订单进行中）
             // 优先使用 message，然后是 error，最后是默认提示
             const errorMsg = result.message || result.error || '请求失败'
             wx.showToast({
@@ -476,9 +492,23 @@ function getNearestAddress(latitude, longitude) {
   return get('/address/nearest', params, { showSuccess: false })
 }
 
+  // 意见反馈相关
+  function submitFeedback(data) {
+    return post('/feedback/create', data, { showSuccess: true, successMessage: '提交成功' })
+  }
+
+  // 系统配置相关
+  function getPublicConfigs() {
+    return get('/config/public', {}, { showLoading: false, showError: false })
+  }
+
+  function getCustomerServicePhone() {
+    return get('/config/customer-service-phone', {}, { showLoading: false, showError: false })
+  }
+
 /**
  * 创建充值订单
- * 返回包含 orderNo、formData、expireTime 的结构
+ * 返回包含 orderNo、formData 的结构
  */
 function createRecharge(amount) {
   console.log('创建充值订单，金额:', amount, '支付方式: 2 (微信小程序支付)')
@@ -989,6 +1019,11 @@ module.exports = {
   setDefaultAddress,
   getDefaultAddress,
   getNearestAddress,
+  
+  // 意见反馈相关
+  submitFeedback,
+  getPublicConfigs,
+  getCustomerServicePhone,
   
   // 支付相关（充值）
   createRecharge,

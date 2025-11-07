@@ -150,8 +150,8 @@ Page({
   // 卡券相关
   goCouponCenter(){ wx.navigateTo({ url: '/pages/coupon/index' }) },
   goMyCoupons(){ wx.navigateTo({ url: '/pages/coupon/index' }) },
-  goFeedback(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
-  goService(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
+  goFeedback(){ wx.navigateTo({ url: '/pages/feedback/index' }) },
+  goService(){ wx.navigateTo({ url: '/pages/service/index' }) },
   goInvite(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
   goSettings(){ wx.navigateTo({ url: '/pages/placeholder/index' }) }
 })

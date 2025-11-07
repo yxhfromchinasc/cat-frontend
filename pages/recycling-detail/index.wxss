@@ -41,13 +41,13 @@
 }
 
 .progress-item.completed .progress-dot {
-  background: #667eea;
-  border-color: #667eea;
+  background: #07c160;
+  border-color: #07c160;
 }
 
 .progress-item.waiting .progress-dot {
   background: #fff;
-  border-color: #667eea;
+  border-color: #07c160;
   box-shadow: 0 0 0 4rpx rgba(102, 126, 234, 0.1);
 }
 
@@ -68,7 +68,7 @@
 }
 
 .progress-line.completed {
-  background: #667eea;
+  background: #07c160;
 }
 
 .progress-line.disabled {
@@ -89,12 +89,12 @@
 }
 
 .progress-label.completed {
-  color: #667eea;
+  color: #07c160;
   font-weight: 600;
 }
 
 .progress-label.waiting {
-  color: #667eea;
+  color: #07c160;
 }
 
 /* 回收员信息 */
@@ -184,8 +184,8 @@
 }
 
 .timeline-dot.completed {
-  background: #667eea;
-  border-color: #667eea;
+  background: #07c160;
+  border-color: #07c160;
 }
 
 .timeline-line {

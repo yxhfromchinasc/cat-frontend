@@ -48,7 +48,7 @@
 }
 
 .order-item .value.status {
-  color: #667eea;
+  color: #07c160;
   font-weight: 500;
 }
 
@@ -187,7 +187,7 @@
   font-size: 32rpx;
   font-weight: 500;
   color: #fff;
-  background: #667eea;
+  background: #07c160;
   border-radius: 44rpx;
   border: none;
 }
