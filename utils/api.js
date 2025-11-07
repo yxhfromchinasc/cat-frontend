@@ -506,6 +506,16 @@ function getNearestAddress(latitude, longitude) {
     return get('/config/customer-service-phone', {}, { showLoading: false, showError: false })
   }
 
+  // 获取提现金额配置列表
+  function getWithdrawAmounts() {
+    return get('/config/withdraw-amounts', {}, { showLoading: false, showError: false })
+  }
+
+  // 获取充值金额配置列表
+  function getRechargeAmounts() {
+    return get('/config/recharge-amounts', {}, { showLoading: false, showError: false })
+  }
+
 /**
  * 创建充值订单
  * 返回包含 orderNo、formData 的结构
@@ -1024,6 +1034,8 @@ module.exports = {
   submitFeedback,
   getPublicConfigs,
   getCustomerServicePhone,
+  getWithdrawAmounts,
+  getRechargeAmounts,
   
   // 支付相关（充值）
   createRecharge,

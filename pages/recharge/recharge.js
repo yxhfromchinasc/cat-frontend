@@ -4,7 +4,12 @@ Page({
   data: {
     amount: '',
     canSubmit: false,
-    submitting: false
+    submitting: false,
+    rechargeAmounts: [] // 允许的充值金额列表
+  },
+
+  onLoad() {
+    this.loadRechargeAmounts()
   },
 
   onShow() {},
@@ -91,6 +96,18 @@ Page({
     // 基础校验：>0 且两位小数
     const valid = val > 0 && Math.round(val * 100) === val * 100
     this.setData({ amount: value, canSubmit: valid })
+  },
+
+  // 加载充值金额配置
+  async loadRechargeAmounts() {
+      const res = await api.getRechargeAmounts()
+      if (res.success && res.data) {
+          const amounts = JSON.parse(res.data)
+          this.setData({ rechargeAmounts: amounts || [] })
+      } else {
+          // 如果获取失败，使用默认值
+          this.setData({ rechargeAmounts: [1, 10, 50, 100] })
+      }
   }
 })
 

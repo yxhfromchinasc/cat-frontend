@@ -10,11 +10,13 @@ Page({
     submitting: false,
     balance: null,
     balanceStr: '0.00',
-    loading: true
+    loading: true,
+    withdrawAmounts: [] // 允许的提现金额列表
   },
 
   onLoad() {
     this.loadBalance()
+    this.loadWithdrawAmounts()
   },
 
   onShow() {},
@@ -35,6 +37,13 @@ Page({
     } finally {
       this.setData({ loading: false })
     }
+  },
+
+  // 加载提现金额配置
+  async loadWithdrawAmounts() {
+      const res = await api.getWithdrawAmounts()
+      const amounts = JSON.parse(res.data)
+      this.setData({ withdrawAmounts: amounts || [] })
   },
 
   // 金额输入

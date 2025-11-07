@@ -10,10 +10,7 @@
       <input class="input" type="digit" placeholder="请输入金额，如 1.00" bindinput="onAmountInput" value="{{amount}}" />
     </view>
     <view class="quick-amounts">
-      <button size="mini" bindtap="onQuickPick" data-val="1">¥1</button>
-      <button size="mini" bindtap="onQuickPick" data-val="10">¥10</button>
-      <button size="mini" bindtap="onQuickPick" data-val="50">¥50</button>
-      <button size="mini" bindtap="onQuickPick" data-val="100">¥100</button>
+      <button wx:for="{{rechargeAmounts}}" wx:key="*this" size="mini" bindtap="onQuickPick" data-val="{{item}}">¥{{item}}</button>
     </view>
     <button class="pay-btn" type="primary" loading="{{submitting}}" disabled="{{!canSubmit || submitting}}" bindtap="onPay">立即支付</button>
   </view>
