@@ -25,7 +25,7 @@ Page({
   goAbout() {
     wx.showModal({
       title: '关于我们',
-      content: '喵呜管家\n一款便捷的生活服务小程序\n版本：' + this.data.appVersion,
+      content: '喵屋管家\n一款便捷的生活服务小程序\n版本：' + this.data.appVersion,
       showCancel: false,
       confirmText: '知道了'
     })

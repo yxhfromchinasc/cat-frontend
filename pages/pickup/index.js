@@ -589,7 +589,7 @@ Page({
     const shareImageUrl = app.getShareImageUrl()
     const sharePath = app.getSharePath()
     const shareConfig = {
-      title: '喵呜管家 - 便捷的生活服务小程序',
+      title: '喵屋管家 - 便捷的生活服务小程序',
       path: sharePath // 使用配置的分享路径
     }
     // 只有在配置了有效的分享图片URL时才设置，否则不设置imageUrl（不使用默认截图）
