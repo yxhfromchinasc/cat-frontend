@@ -37,7 +37,7 @@
 }
 
 .pay-btn {
-  margin-top: 12rpx;
+  margin-top: 48rpx;
   background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
   color: #fff;
   border: none;
@@ -46,7 +46,7 @@
 .quick-amounts {
   display: flex;
   gap: 16rpx;
-  margin: 12rpx 0 8rpx;
+  margin: 12rpx 0 16rpx;
 }
 
 .tips {

@@ -4,9 +4,11 @@ page {
 }
 
 .login-container {
-  min-height: 100vh;
+  height: 100vh;
   background: #f7f8fa;
   padding: 24rpx;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 /* 头部 */
@@ -337,4 +339,56 @@ page {
   font-size: 28rpx;
   color: #333;
   font-weight: 500;
+}
+
+/* 协议同意 */
+.protocol-section {
+  padding: 32rpx 24rpx;
+  margin-top: 40rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.protocol-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  max-width: 600rpx;
+}
+
+.checkbox {
+  width: 32rpx;
+  height: 32rpx;
+  border: 2rpx solid #ddd;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.checkbox.checked {
+  background: #07c160;
+  border-color: #07c160;
+}
+
+.checkbox-icon {
+  font-size: 20rpx;
+  color: #fff;
+  font-weight: bold;
+}
+
+.protocol-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+.protocol-link {
+  color: #07c160;
+  text-decoration: underline;
 }

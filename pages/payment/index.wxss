@@ -406,12 +406,12 @@
   right: 0;
   background: #fff;
   border-top: 1rpx solid #f0f0f0;
-  padding: 24rpx;
+  padding: 24rpx 32rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   box-shadow: 0 -4rpx 32rpx rgba(0, 0, 0, 0.08);
   z-index: 100;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 24rpx;
 }
 
@@ -420,6 +420,7 @@
   flex-direction: column;
   align-items: flex-start;
   flex: 1;
+  min-width: 0;
 }
 
 .summary-label {
@@ -456,6 +457,20 @@
   margin-left: 6rpx;
 }
 
+.payment-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  min-width: 240rpx;
+}
+
+.primary-buttons {
+  display: flex;
+  gap: 16rpx;
+  width: 100%;
+}
+
 .pay-btn {
   flex: 1;
   height: 88rpx;
@@ -467,10 +482,13 @@
   text-align: center;
   font-size: 32rpx;
   font-weight: 500;
-  color: #fff;
-  background: #07c160;
-  border-radius: 44rpx;
+  border-radius: 12rpx;
   border: none;
+}
+
+.pay-btn.primary-btn {
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  color: #fff;
 }
 
 .pay-btn:disabled {
@@ -481,6 +499,20 @@
 /* 移除小程序 button 默认边框效果，确保视觉对齐 */
 .pay-btn::after {
   border: none;
+}
+
+.secondary-buttons {
+  margin-top: 12rpx;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cancel-btn-text {
+  font-size: 28rpx;
+  color: #999;
+  padding: 8rpx 16rpx;
+  line-height: 1.5;
 }
 
 /* 加载中 */

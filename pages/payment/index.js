@@ -117,6 +117,9 @@ Page({
           action === 'CANCEL_PAYMENT'
         )
         
+        // 判断是否有取消按钮（根据后端返回的 allowedActions）
+        const hasCancelButton = allActions.includes('CANCEL_PAYMENT')
+        
         this.setData({
           paymentDetail: detail,
           originalAmount: originalAmount || 0, // 保留数字类型用于计算
@@ -131,6 +134,7 @@ Page({
           selectedPaymentMethod: paymentMethods.length > 0 ? paymentMethods[0].code : 2,
           readOnlyPayment,
           allowedActions: operateActions, // 支付页面只显示操作相关的按钮
+          hasCancelButton: hasCancelButton, // 是否有取消按钮
           loading: false
         })
         

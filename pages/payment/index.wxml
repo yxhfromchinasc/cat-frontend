@@ -127,26 +127,33 @@
   <!-- 支付按钮 -->
   <view class="payment-bar">
     <view class="payment-summary">
-    <view class="summary-main">
-      <text class="summary-label">合计：</text>
-      <text class="summary-amount">¥{{finalAmountStr || '0.00'}}</text>
+      <view class="summary-main">
+        <text class="summary-label">合计：</text>
+        <text class="summary-amount">¥{{finalAmountStr || '0.00'}}</text>
+      </view>
+      <view class="summary-remain" wx:if="{{paymentDetail && paymentDetail.paymentExpireTime && payRemainStr}}">
+        <text class="summary-remain-label">剩余：</text>
+        <text class="summary-remain-time">{{payRemainStr}}</text>
+      </view>
     </view>
-    <view class="summary-remain" wx:if="{{paymentDetail && paymentDetail.paymentExpireTime && payRemainStr}}">
-      <text class="summary-remain-label">剩余：</text>
-      <text class="summary-remain-time">{{payRemainStr}}</text>
+    <view class="payment-buttons">
+      <view class="primary-buttons">
+        <button 
+          wx:for="{{allowedActions}}" 
+          wx:key="*this"
+          wx:if="{{item === 'PAY' || item === 'CONTINUE_PAY'}}"
+          class="pay-btn primary-btn" 
+          bindtap="handleAction"
+          data-action="{{item}}"
+          disabled="{{finalAmount < 0}}"
+        >
+          {{item === 'PAY' ? '确认支付' : '继续支付'}}
+        </button>
+      </view>
+      <view class="secondary-buttons" wx:if="{{hasCancelButton}}">
+        <text class="cancel-btn-text" bindtap="handleAction" data-action="CANCEL_PAYMENT">取消本次支付</text>
+      </view>
     </view>
-  </view>
-    <button 
-      wx:for="{{allowedActions}}" 
-      wx:key="*this"
-      class="pay-btn {{item === 'PAY' || item === 'CONTINUE_PAY' ? 'pay-btn' : 'cancel-payment-btn'}}" 
-      bindtap="handleAction"
-      data-action="{{item}}"
-      disabled="{{(item === 'PAY' || item === 'CONTINUE_PAY') && finalAmount < 0}}"
-      style="{{item === 'PAY' || item === 'CONTINUE_PAY' ? '' : 'background:#f5f5f5;color:#333;'}}"
-    >
-      {{item === 'PAY' ? '确认支付' : item === 'CONTINUE_PAY' ? '继续支付' : item === 'CANCEL_PAYMENT' ? '取消本次支付' : item}}
-    </button>
   </view>
 </view>
 

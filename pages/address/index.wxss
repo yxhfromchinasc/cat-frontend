@@ -23,8 +23,46 @@
 .empty-text{font-size:30rpx;color:#111;margin-bottom:10rpx}
 .empty-desc{font-size:26rpx;color:#8a8a8e}
 
-.bottom-actions{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:20rpx 24rpx calc(24rpx + constant(safe-area-inset-bottom));padding-bottom: calc(24rpx + env(safe-area-inset-bottom));display:flex;gap:20rpx;box-shadow:0 -6rpx 18rpx rgba(0,0,0,0.08)}
-.action-btn{flex:1;height:92rpx;border-radius:999rpx;display:flex;align-items:center;justify-content:center;font-size:30rpx}
-.action-btn.primary{background:#07c160;color:#fff}
-.action-btn.secondary{background:#f2f3f5;color:#111;border:1px solid #e5e6eb}
-.btn-text{font-size:30rpx}
+.bottom-actions{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 20rpx;
+  box-shadow: 0 -4rpx 32rpx rgba(0, 0, 0, 0.08);
+}
+
+.action-btn{
+  flex: 1;
+  height: 88rpx;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  font-weight: 500;
+  border: none;
+}
+
+.action-btn.primary{
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  color: #fff;
+}
+
+.action-btn.secondary{
+  background: #f5f5f5;
+  color: #333;
+  border: 1rpx solid #e5e5e5;
+}
+
+.action-btn::after{
+  border: none;
+}
+
+.btn-text{
+  font-size: 32rpx;
+}

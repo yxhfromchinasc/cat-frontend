@@ -86,6 +86,21 @@
     </view>
   </view>
 
+  <!-- 协议同意 -->
+  <view class="protocol-section">
+    <view class="protocol-checkbox" bindtap="toggleAgreeProtocol">
+      <view class="checkbox {{agreedProtocol ? 'checked' : ''}}">
+        <text class="checkbox-icon" wx:if="{{agreedProtocol}}">✓</text>
+      </view>
+      <view class="protocol-text">
+        <text>我已阅读并同意</text>
+        <text class="protocol-link" catchtap="goUserAgreement">《用户协议》</text>
+        <text>和</text>
+        <text class="protocol-link" catchtap="goPrivacyPolicy">《隐私政策》</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 返回按钮 -->
   <view class="back-btn" hover-class="back-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="goHome">
     ←

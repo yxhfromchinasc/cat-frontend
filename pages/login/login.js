@@ -12,7 +12,8 @@ Page({
     phoneAuthData: null,
     redirect: '',
     loading: false,
-    loadingText: '处理中...'
+    loadingText: '处理中...',
+    agreedProtocol: false // 是否同意协议
   },
 
   onLoad(options) {
@@ -147,8 +148,43 @@ Page({
     return errorCode === 3002 || errorCode === '3002'
   },
 
+  // 切换协议同意状态
+  toggleAgreeProtocol() {
+    this.setData({
+      agreedProtocol: !this.data.agreedProtocol
+    })
+  },
+
+  // 跳转到用户协议
+  goUserAgreement() {
+    wx.navigateTo({ url: '/pages/settings/user-agreement' })
+  },
+
+  // 跳转到隐私政策
+  goPrivacyPolicy() {
+    wx.navigateTo({ url: '/pages/settings/privacy-policy' })
+  },
+
+  // 检查是否同意协议
+  checkAgreeProtocol() {
+    if (!this.data.agreedProtocol) {
+      wx.showToast({
+        title: '请先同意用户协议和隐私政策',
+        icon: 'none',
+        duration: 2000
+      })
+      return false
+    }
+    return true
+  },
+
   // 微信授权登录
   wechatLogin() {
+    // 检查是否同意协议
+    if (!this.checkAgreeProtocol()) {
+      return
+    }
+
     // 获取用户信息 - 必须在用户点击事件中直接调用
     wx.getUserProfile({
       desc: '用于完善用户资料',
@@ -345,6 +381,11 @@ Page({
 
   // 手机号验证码登录
   async phoneLogin() {
+    // 检查是否同意协议
+    if (!this.checkAgreeProtocol()) {
+      return
+    }
+
     const { phone, code } = this.data
     
     if (!phone) {

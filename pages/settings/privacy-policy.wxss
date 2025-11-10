@@ -1,0 +1,21 @@
+.page {
+  min-height: 100vh;
+  background: #f7f8fa;
+  padding: 32rpx;
+}
+
+.content {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.text {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+

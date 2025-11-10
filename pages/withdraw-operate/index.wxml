@@ -55,18 +55,25 @@
         <text class="summary-remain-time">{{transferRemainStr}}</text>
       </view>
     </view>
-    <button 
-      wx:for="{{allowedActions}}" 
-      wx:key="*this"
-      class="pay-btn {{item === 'WITHDRAW' || item === 'CONTINUE_WITHDRAW' ? 'pay-btn' : 'cancel-btn'}}" 
-      bindtap="handleAction"
-      data-action="{{item}}"
-      disabled="{{submitting && (item === 'WITHDRAW' || item === 'CONTINUE_WITHDRAW')}}" 
-      loading="{{submitting && (item === 'WITHDRAW' || item === 'CONTINUE_WITHDRAW')}}"
-      style="{{item === 'WITHDRAW' || item === 'CONTINUE_WITHDRAW' ? '' : 'background:#f5f5f5;color:#333;'}}"
-    >
-      {{item === 'WITHDRAW' ? '发起提现' : item === 'CONTINUE_WITHDRAW' ? '继续提现' : item === 'CANCEL_TRANSFER' ? '取消本次提现' : item === 'CANCEL' || item === 'CANCEL_WITH_REDIRECT' ? '取消订单' : item}}
-    </button>
+    <view class="payment-buttons">
+      <view class="primary-buttons">
+        <button 
+          wx:for="{{allowedActions}}" 
+          wx:key="*this"
+          wx:if="{{item === 'WITHDRAW' || item === 'CONTINUE_WITHDRAW'}}"
+          class="pay-btn primary-btn" 
+          bindtap="handleAction"
+          data-action="{{item}}"
+          disabled="{{submitting}}" 
+          loading="{{submitting}}"
+        >
+          {{item === 'WITHDRAW' ? '发起提现' : '继续提现'}}
+        </button>
+      </view>
+      <view class="secondary-buttons" wx:if="{{hasCancelButton}}">
+        <text class="cancel-btn-text" bindtap="handleAction" data-action="CANCEL_TRANSFER">取消本次提现</text>
+      </view>
+    </view>
   </view>
 </view>
 
