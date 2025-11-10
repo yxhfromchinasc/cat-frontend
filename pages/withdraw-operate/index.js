@@ -174,7 +174,7 @@ Page({
           fail: (err) => {
             console.error('调起确认收款失败:', err)
             if (err && err.errMsg && (err.errMsg.includes('cancel') || err.errMsg.includes('取消'))) {
-              reject({ cancelled: true, errMsg: err.errMsg })
+                reject({ cancelled: true, errMsg: err.errMsg })
             } else {
               reject(new Error(err.errMsg || '调起确认收款失败'))
             }

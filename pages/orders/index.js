@@ -103,8 +103,8 @@ Page({
         this.setData({ loading: false })
       } else {
         // 其他错误才显示"加载失败"
-        wx.showToast({ title: '加载失败', icon: 'none' })
-        this.setData({ loading: false })
+      wx.showToast({ title: '加载失败', icon: 'none' })
+      this.setData({ loading: false })
       }
     }
   },

@@ -57,18 +57,18 @@
     </view>
     <view class="payment-buttons">
       <view class="primary-buttons">
-        <button 
-          wx:for="{{allowedActions}}" 
-          wx:key="*this"
+    <button 
+      wx:for="{{allowedActions}}" 
+      wx:key="*this"
           wx:if="{{item === 'WITHDRAW' || item === 'CONTINUE_WITHDRAW'}}"
           class="pay-btn primary-btn" 
-          bindtap="handleAction"
-          data-action="{{item}}"
+      bindtap="handleAction"
+      data-action="{{item}}"
           disabled="{{submitting}}" 
           loading="{{submitting}}"
-        >
+    >
           {{item === 'WITHDRAW' ? '发起提现' : '继续提现'}}
-        </button>
+    </button>
       </view>
       <view class="secondary-buttons" wx:if="{{hasCancelButton}}">
         <text class="cancel-btn-text" bindtap="handleAction" data-action="CANCEL_TRANSFER">取消本次提现</text>

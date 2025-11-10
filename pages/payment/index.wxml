@@ -127,28 +127,28 @@
   <!-- 支付按钮 -->
   <view class="payment-bar">
     <view class="payment-summary">
-      <view class="summary-main">
-        <text class="summary-label">合计：</text>
-        <text class="summary-amount">¥{{finalAmountStr || '0.00'}}</text>
-      </view>
-      <view class="summary-remain" wx:if="{{paymentDetail && paymentDetail.paymentExpireTime && payRemainStr}}">
-        <text class="summary-remain-label">剩余：</text>
-        <text class="summary-remain-time">{{payRemainStr}}</text>
-      </view>
+    <view class="summary-main">
+      <text class="summary-label">合计：</text>
+      <text class="summary-amount">¥{{finalAmountStr || '0.00'}}</text>
     </view>
+    <view class="summary-remain" wx:if="{{paymentDetail && paymentDetail.paymentExpireTime && payRemainStr}}">
+      <text class="summary-remain-label">剩余：</text>
+      <text class="summary-remain-time">{{payRemainStr}}</text>
+    </view>
+  </view>
     <view class="payment-buttons">
       <view class="primary-buttons">
-        <button 
-          wx:for="{{allowedActions}}" 
-          wx:key="*this"
+    <button 
+      wx:for="{{allowedActions}}" 
+      wx:key="*this"
           wx:if="{{item === 'PAY' || item === 'CONTINUE_PAY'}}"
           class="pay-btn primary-btn" 
-          bindtap="handleAction"
-          data-action="{{item}}"
+      bindtap="handleAction"
+      data-action="{{item}}"
           disabled="{{finalAmount < 0}}"
-        >
+    >
           {{item === 'PAY' ? '确认支付' : '继续支付'}}
-        </button>
+    </button>
       </view>
       <view class="secondary-buttons" wx:if="{{hasCancelButton}}">
         <text class="cancel-btn-text" bindtap="handleAction" data-action="CANCEL_PAYMENT">取消本次支付</text>
