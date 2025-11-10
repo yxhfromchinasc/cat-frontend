@@ -516,6 +516,16 @@ function getNearestAddress(latitude, longitude) {
     return get('/config/recharge-amounts', {}, { showLoading: false, showError: false })
   }
 
+  // 获取分享图片配置
+  function getShareImage() {
+    return get('/config/value', { configKey: 'share_image' }, { showLoading: false, showError: false })
+  }
+
+  // 获取分享路径配置
+  function getSharePath() {
+    return get('/config/value', { configKey: 'share_path' }, { showLoading: false, showError: false })
+  }
+
 /**
  * 创建充值订单
  * 返回包含 orderNo、formData 的结构
@@ -1036,6 +1046,8 @@ module.exports = {
   getCustomerServicePhone,
   getWithdrawAmounts,
   getRechargeAmounts,
+  getShareImage,
+  getSharePath,
   
   // 支付相关（充值）
   createRecharge,

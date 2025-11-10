@@ -97,8 +97,15 @@ Page({
       }
     } catch (e) {
       console.error('加载订单列表失败:', e)
-      wx.showToast({ title: '加载失败', icon: 'none' })
-      this.setData({ loading: false })
+      // 如果是401未登录错误，API工具已经显示了登录弹窗，不需要再显示"加载失败"
+      if (e && e.code === 401) {
+        // 401错误已经由API工具处理，只重置loading状态
+        this.setData({ loading: false })
+      } else {
+        // 其他错误才显示"加载失败"
+        wx.showToast({ title: '加载失败', icon: 'none' })
+        this.setData({ loading: false })
+      }
     }
   },
 
@@ -205,5 +212,22 @@ Page({
       console.log('订单类型:', serviceType, '订单号:', orderNo)
       wx.showToast({ title: '暂不支持该订单类型', icon: 'none' })
     }
-  }
+  },
+
+  // 分享给好友
+  onShareAppMessage() {
+    const app = getApp()
+    const shareImageUrl = app.getShareImageUrl()
+    const sharePath = app.getSharePath()
+    const shareConfig = {
+      title: '喵呜管家 - 便捷的生活服务小程序',
+      path: sharePath // 使用配置的分享路径
+    }
+    // 只有在配置了有效的分享图片URL时才设置，否则不设置imageUrl（不使用默认截图）
+    if (shareImageUrl) {
+      shareConfig.imageUrl = shareImageUrl
+    }
+    return shareConfig
+  },
+
 })
