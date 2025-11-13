@@ -156,7 +156,8 @@ Page({
   },
 
   // 调起确认收款页面（商家转账升级版）
-  async requestUserConfirmReceipt(packageInfoStr) {
+  // 参考：https://pay.weixin.qq.com/doc/v3/merchant/4012716430
+  async requestUserConfirmReceipt(packageInfoStr, mchId, appId) {
     return new Promise((resolve, reject) => {
       try {
         if (!packageInfoStr || typeof packageInfoStr !== 'string') {
@@ -164,19 +165,40 @@ Page({
           return
         }
 
-        wx.openBusinessView({
-          businessType: 'transferConfirm',
-          queryString: 'package=' + encodeURIComponent(packageInfoStr),
+        if (!mchId || !appId) {
+          reject(new Error('商户号或AppID不能为空'))
+          return
+        }
+
+        // 检查是否支持 requestMerchantTransfer API
+        if (!wx.canIUse('requestMerchantTransfer')) {
+          const systemInfo = wx.getSystemInfoSync()
+          const SDKVersion = systemInfo.SDKVersion || '0.0.0'
+          reject(new Error(`当前微信版本不支持商家转账功能，请更新至最新版本。基础库版本: ${SDKVersion}`))
+          return
+        }
+        
+        // 使用 requestMerchantTransfer API（官方推荐方式）
+        // package_info 不需要 URL 编码，直接使用
+        wx.requestMerchantTransfer({
+          mchId: mchId,
+          appId: appId,
+          package: packageInfoStr, // package_info 直接使用，不需要编码
           success: (res) => {
-            console.log('调起确认收款成功:', res)
+            // res.err_msg 将在页面展示成功后返回应用时返回 ok，并不代表付款成功
             resolve(res)
           },
           fail: (err) => {
-            console.error('调起确认收款失败:', err)
-            if (err && err.errMsg && (err.errMsg.includes('cancel') || err.errMsg.includes('取消'))) {
+            // 直接返回微信的错误信息
+            if (err && err.errMsg) {
+              // 用户取消的情况特殊处理
+              if (err.errMsg.includes('cancel') || err.errMsg.includes('取消')) {
                 reject({ cancelled: true, errMsg: err.errMsg })
+              } else {
+                reject(new Error(err.errMsg))
+              }
             } else {
-              reject(new Error(err.errMsg || '调起确认收款失败'))
+              reject(new Error('调起确认收款失败'))
             }
           }
         })
@@ -213,17 +235,21 @@ Page({
         throw new Error(initiateRes.message || initiateRes.error || '发起转账申请失败')
       }
       
-      const { packageInfo } = initiateRes.data
+      const { packageInfo, mchId, appId } = initiateRes.data
       
       if (!packageInfo) {
         throw new Error('未获取到确认收款参数')
+      }
+      
+      if (!mchId || !appId) {
+        throw new Error('未获取到商户号或AppID')
       }
       
       api.hideLoadingToast()
       
       // 调起确认收款页面
       try {
-        await this.requestUserConfirmReceipt(packageInfo)
+        await this.requestUserConfirmReceipt(packageInfo, mchId, appId)
         
         // 确认收款调起成功，进入5秒短轮询（自定义倒计时加载，不使用系统Loading）
         // 快速确认：先触发一次直查回补，再查进度；若已得出结论则不进入倒计时
@@ -308,17 +334,21 @@ Page({
         throw new Error(continueRes.message || continueRes.error || '继续提现失败')
       }
       
-      const { packageInfo } = continueRes.data
+      const { packageInfo, mchId, appId } = continueRes.data
       
       if (!packageInfo) {
         throw new Error('未获取到确认收款参数')
+      }
+      
+      if (!mchId || !appId) {
+        throw new Error('未获取到商户号或AppID')
       }
       
       api.hideLoadingToast()
       
       // 调起确认收款页面
       try {
-        await this.requestUserConfirmReceipt(packageInfo)
+        await this.requestUserConfirmReceipt(packageInfo, mchId, appId)
         
         // 确认收款调起成功，进入5秒短轮询（自定义倒计时加载，不使用系统Loading）
         // 快速确认：先触发一次直查回补，再查进度；若已得出结论则不进入倒计时
