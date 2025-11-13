@@ -43,10 +43,26 @@ Page({
     }
   },
 
-  onNameInput(e) { this.setData({ name: e.detail.value }) },
-  onPhoneInput(e) { this.setData({ phone: e.detail.value }) },
-  onDetailInput(e) { this.setData({ detail: e.detail.value }) },
-  onDefaultChange(e) { this.setData({ isDefault: e.detail.value }) },
+  onNameInput(e) { 
+    this.setData({ name: e.detail.value }) 
+  },
+  
+  onPhoneInput(e) { 
+    // 限制只能输入数字，最多11位
+    let value = e.detail.value.replace(/\D/g, '')
+    if (value.length > 11) {
+      value = value.substring(0, 11)
+    }
+    this.setData({ phone: value }) 
+  },
+  
+  onDetailInput(e) { 
+    this.setData({ detail: e.detail.value }) 
+  },
+  
+  onDefaultChange(e) { 
+    this.setData({ isDefault: e.detail.value }) 
+  },
 
   // 地图选点
   async onChooseLocation() {
@@ -86,12 +102,46 @@ Page({
     }
   },
 
+  // 验证手机号格式
+  validatePhone(phone) {
+    if (!phone || !phone.trim()) {
+      return { valid: false, message: '请输入手机号' }
+    }
+    const phoneStr = phone.trim()
+    // 验证手机号格式：11位数字，以1开头，第二位是3-9
+    if (!/^1[3-9]\d{9}$/.test(phoneStr)) {
+      return { valid: false, message: '请输入正确的手机号（11位数字）' }
+    }
+    return { valid: true }
+  },
+
   async saveAddress() {
     const { id, isEdit, name, phone, detail, isDefault, latitude, longitude, locationName, resolvedRegion } = this.data
 
-    if (!name.trim()) return wx.showToast({ title: '请输入姓名', icon: 'none' })
-    if (!phone.trim()) return wx.showToast({ title: '请输入手机号', icon: 'none' })
-    if (!latitude || !longitude) return wx.showToast({ title: '请在地图中选点', icon: 'none' })
+    // 校验姓名
+    if (!name.trim()) {
+      wx.showToast({ title: '请输入姓名', icon: 'none' })
+      return
+    }
+
+    // 校验手机号
+    const phoneValidation = this.validatePhone(phone)
+    if (!phoneValidation.valid) {
+      wx.showToast({ title: phoneValidation.message, icon: 'none' })
+      return
+    }
+
+    // 校验地图选点
+    if (!latitude || !longitude) {
+      wx.showToast({ title: '请在地图中选点', icon: 'none' })
+      return
+    }
+
+    // 校验详细地址
+    if (!detail.trim()) {
+      wx.showToast({ title: '请输入详细地址', icon: 'none' })
+      return
+    }
 
     // 优先使用逆地理结果，失败再文本兜底
     const region = resolvedRegion || this.extractRegionFromText(locationName)

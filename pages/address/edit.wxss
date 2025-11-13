@@ -6,6 +6,7 @@
 .form-item.checkbox-item{display:flex;align-items:center;justify-content:space-between}
 
 .label{font-size:28rpx;color:#111;font-weight:600;margin-bottom:12rpx;display:block}
+.label.required::after{content:'*';color:#ff4444;margin-left:4rpx}
 .checkbox-item .label{margin-bottom:0}
 
 .input{width:100%;font-size:28rpx;color:#333;border:none;outline:none}
