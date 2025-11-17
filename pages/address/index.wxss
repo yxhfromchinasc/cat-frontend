@@ -1,6 +1,18 @@
-.page{min-height:100vh;background:#f7f8fa}
+.page{
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: #f7f8fa;
+}
 
-.address-list{padding:24rpx;padding-bottom:200rpx}
+.address-list{
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 24rpx;
+  padding-bottom: 24rpx;
+}
 
 .address-item{background:#fff;border-radius:16rpx;margin-bottom:20rpx;padding:28rpx;box-shadow:0 8rpx 24rpx rgba(0,0,0,0.06)}
 .address-content{flex:1}
@@ -20,10 +32,7 @@
 .empty-desc{font-size:26rpx;color:#8a8a8e}
 
 .bottom-actions{
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex-shrink: 0;
   background: #fff;
   padding: 24rpx 32rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));

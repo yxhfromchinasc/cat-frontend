@@ -39,8 +39,21 @@
 }
 
 /* 订单列表 */
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.status-filter {
+  flex-shrink: 0;
+}
+
 .order-list {
-  height: calc(100vh - 100rpx);
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .order-item {

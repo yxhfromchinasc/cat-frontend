@@ -15,11 +15,12 @@
   <!-- 订单列表 -->
   <scroll-view 
     class="order-list" 
-    scroll-y 
+    scroll-y="{{true}}"
     refresher-enabled="{{true}}"
-    refresher-triggered="{{false}}"
+    refresher-triggered="{{refreshing}}"
     bindrefresherrefresh="onPullDownRefresh"
-    bindscrolltolower="onReachBottom">
+    bindscrolltolower="onReachBottom"
+    lower-threshold="50">
     
     <view class="order-item" wx:for="{{orderList}}" wx:key="orderNo" bindtap="onOrderTap" data-orderno="{{item.orderNo}}" data-servicetype="{{item.serviceType}}">
       <!-- 订单头部 -->

@@ -1,5 +1,31 @@
-.page{min-height:100vh;background:#f7f8fa;padding:24rpx}
-.card{background:#fff;border-radius:16rpx;padding:32rpx;margin-bottom:16rpx;box-shadow:0 8rpx 24rpx rgba(0,0,0,0.06)}
+.page{
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: #f7f8fa;
+  padding: 24rpx;
+}
+
+.page-header {
+  flex-shrink: 0;
+}
+
+.card{
+  background:#fff;
+  border-radius:16rpx;
+  padding:32rpx;
+  margin-bottom:16rpx;
+  box-shadow:0 8rpx 24rpx rgba(0,0,0,0.06)
+}
+
+.transaction-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 0;
+}
 
 .balance-section{text-align:center}
 .label{color:#8a8a8e;font-size:26rpx}
@@ -19,7 +45,12 @@
 .empty-text{font-size:26rpx;color:#8a8a8e}
 
 /* 交易记录列表 */
-.transaction-list{margin-top:20rpx}
+.transaction-list{
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top:20rpx;
+}
 .transaction-item{display:flex;align-items:center;justify-content:space-between;padding:24rpx 0;border-bottom:1px solid #f0f0f0}
 .transaction-item:last-child{border-bottom:none}
 

@@ -25,7 +25,7 @@
     </view>
 
     <!-- 卡券列表 -->
-    <view class="coupon-list">
+    <scroll-view class="coupon-list" scroll-y="{{true}}" lower-threshold="50">
       <block wx:if="{{userCoupons.length > 0}}">
         <view class="coupon-item" wx:for="{{userCoupons}}" wx:key="id">
           <view class="coupon-card {{item.cardClass}}">
@@ -62,12 +62,12 @@
         <text class="empty-text">暂无卡券</text>
         <text class="empty-desc">快去领取优惠券吧</text>
       </view>
-    </view>
+    </scroll-view>
   </view>
 
   <!-- 可领取 -->
   <view class="tab-content" wx:if="{{currentTab === 1}}">
-    <view class="coupon-list">
+    <scroll-view class="coupon-list" scroll-y="{{true}}" lower-threshold="50">
       <block wx:if="{{couponTemplates.length > 0}}">
         <view class="coupon-item" wx:for="{{couponTemplates}}" wx:key="id">
           <view class="coupon-card {{item.cardClass}}">
@@ -106,6 +106,6 @@
         <text class="empty-text">暂无可领取的卡券</text>
         <text class="empty-desc">敬请期待更多优惠</text>
       </view>
-    </view>
+    </scroll-view>
   </view>
 </view>

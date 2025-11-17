@@ -1,6 +1,6 @@
 <view class="page">
   <!-- 地址列表 -->
-  <view class="address-list">
+  <scroll-view class="address-list" scroll-y="{{true}}">
     <block wx:if="{{addressList.length > 0}}">
       <view class="address-item" wx:for="{{addressList}}" wx:key="id" bindtap="editAddress" data-id="{{item.id}}">
         <view class="address-content">
@@ -26,7 +26,7 @@
       <text class="empty-text">暂无地址</text>
       <text class="empty-desc">点击下方按钮添加地址</text>
     </view>
-  </view>
+  </scroll-view>
 
   <!-- 底部按钮 -->
   <view class="bottom-actions">

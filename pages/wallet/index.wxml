@@ -1,31 +1,33 @@
 <view class="page">
-  <view class="card shadow">
-    <view class="balance-section">
-      <text class="label">当前余额</text>
-      <view class="amount">¥ {{balance}}</view>
-      <view class="balance-desc">可用于平台内消费</view>
+  <view class="page-header">
+    <view class="card shadow">
+      <view class="balance-section">
+        <text class="label">当前余额</text>
+        <view class="amount">¥ {{balance}}</view>
+        <view class="balance-desc">可用于平台内消费</view>
+      </view>
     </view>
-  </view>
-  
-  <view class="card">
-    <view class="section-title">账户操作</view>
-    <view class="actions">
-      <button class="btn primary" bindtap="goRecharge">
-        <text class="btn-icon">💰</text>
-        <text class="btn-text">充值</text>
-      </button>
-      <button class="btn" bindtap="goWithdraw">
-        <text class="btn-icon">💳</text>
-        <text class="btn-text">提现</text>
-      </button>
+    
+    <view class="card">
+      <view class="section-title">账户操作</view>
+      <view class="actions">
+        <button class="btn primary" bindtap="goRecharge">
+          <text class="btn-icon">💰</text>
+          <text class="btn-text">充值</text>
+        </button>
+        <button class="btn" bindtap="goWithdraw">
+          <text class="btn-icon">💳</text>
+          <text class="btn-text">提现</text>
+        </button>
+      </view>
     </view>
   </view>
 
-  <view class="card">
+  <view class="card transaction-card">
     <view class="section-title">交易记录</view>
     
     <!-- 交易记录列表 -->
-    <view class="transaction-list" wx:if="{{transactions.length > 0}}">
+    <scroll-view class="transaction-list" scroll-y="{{true}}" lower-threshold="50" bindscrolltolower="loadMore">
       <view 
         class="transaction-item" 
         wx:for="{{transactions}}" 
@@ -47,25 +49,25 @@
           </view>
         </view>
       </view>
-    </view>
-    
-    <!-- 空状态 -->
-    <view class="empty-state" wx:if="{{transactions.length === 0 && !loading}}">
-      <text class="empty-icon">📋</text>
-      <text class="empty-text">暂无交易记录</text>
-    </view>
-    
-    <!-- 加载更多 -->
-    <view class="load-more" wx:if="{{transactions.length > 0}}">
-      <view class="load-more-btn" wx:if="{{hasMore && !loading}}" bindtap="loadMore">
-        <text>加载更多</text>
+      
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{transactions.length === 0 && !loading}}">
+        <text class="empty-icon">📋</text>
+        <text class="empty-text">暂无交易记录</text>
       </view>
-      <view class="load-more-text" wx:if="{{!hasMore}}">
-        <text>没有更多了</text>
+      
+      <!-- 加载更多 -->
+      <view class="load-more" wx:if="{{transactions.length > 0}}">
+        <view class="load-more-btn" wx:if="{{hasMore && !loading}}" bindtap="loadMore">
+          <text>加载更多</text>
+        </view>
+        <view class="load-more-text" wx:if="{{!hasMore}}">
+          <text>没有更多了</text>
+        </view>
+        <view class="load-more-loading" wx:if="{{loading}}">
+          <text>加载中...</text>
+        </view>
       </view>
-      <view class="load-more-loading" wx:if="{{loading}}">
-        <text>加载中...</text>
-      </view>
-    </view>
+    </scroll-view>
   </view>
 </view>

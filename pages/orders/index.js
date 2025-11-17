@@ -16,6 +16,7 @@ Page({
     pageSize: 10,
     hasMore: true,
     loading: false,
+    refreshing: false,
     
     // 状态筛选选项（进行中放最前面，全部订单放最后面）
     statusOptions: [
@@ -109,15 +110,16 @@ Page({
     }
   },
 
-  // 下拉刷新
+  // 下拉刷新（scroll-view 的刷新）
   onPullDownRefresh() {
+    this.setData({ refreshing: true })
     this.setData({
       pageNum: 1,
       hasMore: true,
       orderList: []
     })
     this.loadOrders(true).finally(() => {
-      wx.stopPullDownRefresh()
+      this.setData({ refreshing: false })
     })
   },
 
