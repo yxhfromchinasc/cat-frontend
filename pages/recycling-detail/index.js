@@ -54,6 +54,7 @@ Page({
         detail.actualTimeFormatted = this.formatTime(detail.actualTime)
         detail.startTimeFormatted = this.formatTime(detail.startTime)
         detail.endTimeFormatted = this.formatTime(detail.endTime)
+        detail.cancelTimeFormatted = this.formatTime(detail.cancelTime)
 
         // 计算进度节点
         detail.progressSteps = this.calculateProgressSteps(detail)
@@ -85,7 +86,6 @@ Page({
     const steps = []
     const status = detail.recyclingStatus || 1
     
-    // 1. 已预约
     steps.push({
       key: 'scheduled',
       title: '已预约',
@@ -94,23 +94,31 @@ Page({
       show: true
     })
     
-    // 2. 待上门（回收员接单）
-    steps.push({
-      key: 'in_progress',
-      title: '待上门',
-      status: status >= 2 ? 'completed' : status === 1 ? 'waiting' : 'disabled',
-      time: detail.bandingTime,
-      show: true
-    })
-    
-    // 3. 已完成
-    steps.push({
-      key: 'completed',
-      title: '已完成',
-      status: status >= 3 ? 'completed' : status === 2 ? 'waiting' : 'disabled',
-      time: detail.actualTime,
-      show: true
-    })
+    if (status === 4) {
+      steps.push({
+        key: 'cancelled',
+        title: '已取消',
+        status: 'completed',
+        time: detail.cancelTime,
+        show: true
+      })
+    } else {
+      steps.push({
+        key: 'in_progress',
+        title: '待上门',
+        status: status >= 2 ? 'completed' : status === 1 ? 'waiting' : 'disabled',
+        time: detail.bandingTime,
+        show: true
+      })
+      
+      steps.push({
+        key: 'completed',
+        title: '已完成',
+        status: status >= 3 ? 'completed' : status === 2 ? 'waiting' : 'disabled',
+        time: detail.actualTime,
+        show: true
+      })
+    }
     
     // 为每个步骤添加连接线状态（基于前一个步骤的状态）
     for (let i = 0; i < steps.length; i++) {

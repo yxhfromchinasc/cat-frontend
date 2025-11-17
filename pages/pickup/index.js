@@ -74,11 +74,15 @@ Page({
   },
 
   onShow() {
-    // 如果刚刚从地址选择页面返回，且已经有地址了，就不重新加载
+    // 如果刚刚从地址选择页面返回，且已经有地址了
     if (this.data.fromAddressSelect && this.data.defaultAddress) {
       // 清除标记
       this.setData({ fromAddressSelect: false })
-      // 从地址选择页面返回，且已经有地址，说明地址选择页面已经更新了数据，不需要重新加载
+      // 确保驿站已经加载（地址选择页面可能已经调用了，但为了保险起见，再次检查）
+      if (this.data.selectedAddressId && (!this.data.selectedStationId || this.data.stationList.length === 0)) {
+        // 如果驿站还没有加载或没有选中，重新加载
+        this.loadStationsByAddress(this.data.selectedAddressId)
+      }
       return
     }
     
@@ -269,7 +273,12 @@ Page({
   async loadStationsByAddress(addressId) {
     if (!addressId) {
       console.error('loadStationsByAddress: addressId is null or undefined')
-      this.setData({ stationNames: [] })
+      this.setData({ 
+        stationList: [],
+        stationNames: [],
+        selectedStationId: null,
+        selectedStationIndex: -1
+      })
       return
     }
     
@@ -603,11 +612,6 @@ Page({
     
     if (!this.data.form.phoneTail || this.data.form.phoneTail.length !== 4) {
       wx.showToast({ title: '请输入正确的手机尾号（4位）', icon: 'none' })
-      return false
-    }
-    
-    if (!this.data.form.itemDescription || this.data.form.itemDescription.trim() === '') {
-      wx.showToast({ title: '请输入物品描述', icon: 'none' })
       return false
     }
     

@@ -41,122 +41,143 @@
     </view>
   </view>
 
-  <!-- 时间线 -->
-  <view class="timeline-section">
-    <!-- 已预约 -->
-    <view class="timeline-item">
-      <view class="timeline-node">
-        <view class="timeline-dot completed"></view>
-        <view class="timeline-line"></view>
-      </view>
-      <view class="timeline-content">
-        <view class="timeline-header">
-          <text class="timeline-title">已预约</text>
-          <text class="timeline-time" wx:if="{{orderDetail.createdAtFormatted}}">{{orderDetail.createdAtFormatted}}</text>
+  <!-- 时间线（可滚动区域） -->
+  <scroll-view class="timeline-scroll" scroll-y>
+    <view class="timeline-section">
+      <!-- 已预约 -->
+      <view class="timeline-item">
+        <view class="timeline-node">
+          <view class="timeline-dot completed"></view>
+          <view class="timeline-line"></view>
         </view>
-        <view class="timeline-info">
-          <view class="info-item" wx:if="{{orderDetail.addressDetail}}">
-            <text class="info-label">回收地址：</text>
-            <text class="info-value">{{orderDetail.addressDetail}}</text>
+        <view class="timeline-content">
+          <view class="timeline-header">
+            <text class="timeline-title">已预约</text>
+            <text class="timeline-time" wx:if="{{orderDetail.createdAtFormatted}}">{{orderDetail.createdAtFormatted}}</text>
           </view>
-          <view class="info-item" wx:if="{{orderDetail.startTimeFormatted && orderDetail.endTimeFormatted}}">
-            <text class="info-label">预约时间：</text>
-            <text class="info-value">{{orderDetail.startTimeFormatted}} - {{orderDetail.endTimeFormatted}}</text>
-          </view>
-          <view class="info-item" wx:if="{{orderDetail.estWeight}}">
-            <text class="info-label">预估重量：</text>
-            <text class="info-value">{{orderDetail.estWeight}}kg</text>
-          </view>
-          <view class="info-item" wx:if="{{orderDetail.itemDescription}}">
-            <text class="info-label">物品描述：</text>
-            <text class="info-value">{{orderDetail.itemDescription}}</text>
+          <view class="timeline-info">
+            <view class="info-item" wx:if="{{orderDetail.addressDetail}}">
+              <text class="info-label">回收地址：</text>
+              <text class="info-value">{{orderDetail.addressDetail}}</text>
+            </view>
+            <view class="info-item" wx:if="{{orderDetail.startTimeFormatted && orderDetail.endTimeFormatted}}">
+              <text class="info-label">预约时间：</text>
+              <text class="info-value">{{orderDetail.startTimeFormatted}} - {{orderDetail.endTimeFormatted}}</text>
+            </view>
+            <view class="info-item" wx:if="{{orderDetail.estWeight}}">
+              <text class="info-label">预估重量：</text>
+              <text class="info-value">{{orderDetail.estWeight}}kg</text>
+            </view>
+            <view class="info-item" wx:if="{{orderDetail.itemDescription}}">
+              <text class="info-label">物品描述：</text>
+              <text class="info-value">{{orderDetail.itemDescription}}</text>
+            </view>
           </view>
         </view>
       </view>
-    </view>
 
-    <!-- 待上门 -->
-    <view class="timeline-item" wx:if="{{orderDetail.recyclingStatus >= 2}}">
-      <view class="timeline-node">
-        <view class="timeline-dot completed"></view>
-        <view class="timeline-line" wx:if="{{orderDetail.recyclingStatus >= 3}}"></view>
-      </view>
-      <view class="timeline-content">
-        <view class="timeline-header">
-          <text class="timeline-title">待上门</text>
-          <text class="timeline-time" wx:if="{{orderDetail.bandingTimeFormatted}}">{{orderDetail.bandingTimeFormatted}}</text>
+      <!-- 待上门 -->
+      <view class="timeline-item" wx:if="{{orderDetail.recyclingStatus >= 2 && orderDetail.recyclingStatus !== 4}}">
+        <view class="timeline-node">
+          <view class="timeline-dot completed"></view>
+          <view class="timeline-line" wx:if="{{orderDetail.recyclingStatus >= 3 && orderDetail.recyclingStatus !== 4}}"></view>
         </view>
-        <view class="timeline-info">
-          <view class="info-item" wx:if="{{orderDetail.recyclerNickname}}">
-            <text class="info-label">回收员：</text>
-            <text class="info-value">{{orderDetail.recyclerNickname}}</text>
+        <view class="timeline-content">
+          <view class="timeline-header">
+            <text class="timeline-title">待上门</text>
+            <text class="timeline-time" wx:if="{{orderDetail.bandingTimeFormatted}}">{{orderDetail.bandingTimeFormatted}}</text>
+          </view>
+          <view class="timeline-info">
+            <view class="info-item" wx:if="{{orderDetail.recyclerNickname}}">
+              <text class="info-label">回收员：</text>
+              <text class="info-value">{{orderDetail.recyclerNickname}}</text>
+            </view>
           </view>
         </view>
       </view>
-    </view>
 
-    <!-- 已完成 -->
-    <view class="timeline-item" wx:if="{{orderDetail.recyclingStatus >= 3}}">
-      <view class="timeline-node">
-        <view class="timeline-dot completed"></view>
-      </view>
-      <view class="timeline-content">
-        <view class="timeline-header">
-          <text class="timeline-title">已完成</text>
-          <text class="timeline-time" wx:if="{{orderDetail.actualTimeFormatted}}">{{orderDetail.actualTimeFormatted}}</text>
+      <!-- 已完成 -->
+      <view class="timeline-item" wx:if="{{orderDetail.recyclingStatus >= 3 && orderDetail.recyclingStatus !== 4}}">
+        <view class="timeline-node">
+          <view class="timeline-dot completed"></view>
         </view>
-        <view class="timeline-info">
-          <view class="info-item" wx:if="{{orderDetail.weight}}">
-            <text class="info-label">实际重量：</text>
-            <text class="info-value">{{orderDetail.weight}}kg</text>
+        <view class="timeline-content">
+          <view class="timeline-header">
+            <text class="timeline-title">已完成</text>
+            <text class="timeline-time" wx:if="{{orderDetail.actualTimeFormatted}}">{{orderDetail.actualTimeFormatted}}</text>
           </view>
-          <view class="info-item" wx:if="{{orderDetail.price}}">
-            <text class="info-label">回收价格：</text>
-            <text class="info-value price">￥{{orderDetail.price}}</text>
+          <view class="timeline-info">
+            <view class="info-item" wx:if="{{orderDetail.weight}}">
+              <text class="info-label">实际重量：</text>
+              <text class="info-value">{{orderDetail.weight}}kg</text>
+            </view>
+            <view class="info-item" wx:if="{{orderDetail.price}}">
+              <text class="info-label">回收价格：</text>
+              <text class="info-value price">￥{{orderDetail.price}}</text>
+            </view>
+            
+            <!-- 价格组成信息 -->
+            <view class="price-breakdown" wx:if="{{orderDetail.recyclingPricePerKg}}">
+              <view class="breakdown-title">价格组成</view>
+              <view class="breakdown-item">
+                <text class="breakdown-label">回收价：</text>
+                <text class="breakdown-value">￥{{orderDetail.recyclingPricePerKg}}/kg</text>
+              </view>
+              <view class="breakdown-item" wx:if="{{orderDetail.baseAmount}}">
+                <text class="breakdown-label">基础金额：</text>
+                <text class="breakdown-value">￥{{orderDetail.baseAmount}}</text>
+              </view>
+              <view class="breakdown-item" wx:if="{{orderDetail.overtimeCompensation > 0}}">
+                <text class="breakdown-label">超时补偿：</text>
+                <text class="breakdown-value positive">+￥{{orderDetail.overtimeCompensation}}</text>
+              </view>
+              <view class="breakdown-item" wx:if="{{orderDetail.urgentFee > 0}}">
+                <text class="breakdown-label">加急费用：</text>
+                <text class="breakdown-value negative">-￥{{orderDetail.urgentFee}}</text>
+              </view>
+              <view class="breakdown-item" wx:if="{{orderDetail.urgentFeeZeroReason}}">
+                <text class="breakdown-label">加急费用说明：</text>
+                <text class="breakdown-value reason">{{orderDetail.urgentFeeZeroReason}}</text>
+              </view>
+            </view>
+            
+            <view class="info-item" wx:if="{{orderDetail.images && orderDetail.images.length > 0}}">
+              <text class="info-label">回收照片：</text>
+              <view class="image-list">
+                <image class="info-image" 
+                       wx:for="{{orderDetail.images}}" 
+                       wx:key="*this"
+                       src="{{item}}" 
+                       mode="aspectFill"
+                       bindtap="previewImage"
+                       data-url="{{item}}"
+                       data-urls="{{orderDetail.images}}"></image>
+              </view>
+            </view>
           </view>
-          
-          <!-- 价格组成信息 -->
-          <view class="price-breakdown" wx:if="{{orderDetail.recyclingPricePerKg}}">
-            <view class="breakdown-title">价格组成</view>
-            <view class="breakdown-item">
-              <text class="breakdown-label">回收价：</text>
-              <text class="breakdown-value">￥{{orderDetail.recyclingPricePerKg}}/kg</text>
-            </view>
-            <view class="breakdown-item" wx:if="{{orderDetail.baseAmount}}">
-              <text class="breakdown-label">基础金额：</text>
-              <text class="breakdown-value">￥{{orderDetail.baseAmount}}</text>
-            </view>
-            <view class="breakdown-item" wx:if="{{orderDetail.overtimeCompensation > 0}}">
-              <text class="breakdown-label">超时补偿：</text>
-              <text class="breakdown-value positive">+￥{{orderDetail.overtimeCompensation}}</text>
-            </view>
-            <view class="breakdown-item" wx:if="{{orderDetail.urgentFee > 0}}">
-              <text class="breakdown-label">加急费用：</text>
-              <text class="breakdown-value negative">-￥{{orderDetail.urgentFee}}</text>
-            </view>
-            <view class="breakdown-item" wx:if="{{orderDetail.urgentFeeZeroReason}}">
-              <text class="breakdown-label">加急费用说明：</text>
-              <text class="breakdown-value reason">{{orderDetail.urgentFeeZeroReason}}</text>
-            </view>
+        </view>
+      </view>
+
+      <!-- 已取消 -->
+      <view class="timeline-item cancelled" wx:if="{{orderDetail.recyclingStatus === 4}}">
+        <view class="timeline-node">
+          <view class="timeline-dot cancelled"></view>
+        </view>
+        <view class="timeline-content">
+          <view class="timeline-header">
+            <text class="timeline-title">已取消</text>
+            <text class="timeline-time" wx:if="{{orderDetail.cancelTimeFormatted}}">{{orderDetail.cancelTimeFormatted}}</text>
           </view>
-          
-          <view class="info-item" wx:if="{{orderDetail.images && orderDetail.images.length > 0}}">
-            <text class="info-label">回收照片：</text>
-            <view class="image-list">
-              <image class="info-image" 
-                     wx:for="{{orderDetail.images}}" 
-                     wx:key="*this"
-                     src="{{item}}" 
-                     mode="aspectFill"
-                     bindtap="previewImage"
-                     data-url="{{item}}"
-                     data-urls="{{orderDetail.images}}"></image>
+          <view class="timeline-info">
+            <view class="info-item">
+              <text class="info-label">订单状态：</text>
+              <text class="info-value">用户已取消</text>
             </view>
           </view>
         </view>
       </view>
     </view>
-  </view>
+  </scroll-view>
 
   <!-- 操作按钮区域 -->
   <view class="actions-bar" wx:if="{{orderDetail.allowedActions && orderDetail.allowedActions.length > 0}}">

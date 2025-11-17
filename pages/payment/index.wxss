@@ -1,8 +1,18 @@
 /* pages/payment/index.wxss */
 .page {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   background: #f7f8fa;
-  padding-bottom: 160rpx;
+  overflow: hidden;
+}
+
+/* 内容滚动区域 */
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 24rpx;
 }
 
 /* 通用区块 */
@@ -400,16 +410,12 @@
 
 /* 支付按钮栏 */
 .payment-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex-shrink: 0;
   background: #fff;
   border-top: 1rpx solid #f0f0f0;
   padding: 24rpx 32rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   box-shadow: 0 -4rpx 32rpx rgba(0, 0, 0, 0.08);
-  z-index: 100;
   display: flex;
   align-items: flex-start;
   gap: 24rpx;

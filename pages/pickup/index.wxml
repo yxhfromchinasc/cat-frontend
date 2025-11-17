@@ -70,7 +70,7 @@
 
       <!-- 物品备注 -->
       <view class="form-item">
-        <view class="label required">物品备注</view>
+        <view class="label">物品备注（可选）</view>
         <textarea class="textarea item-remark-textarea" placeholder="请填写物品相关信息，如：2件小箱子" value="{{form.itemDescription}}" bindinput="onInputItemRemark" maxlength="500"></textarea>
         
         <!-- 快捷选项 -->

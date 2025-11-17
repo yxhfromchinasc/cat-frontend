@@ -41,8 +41,9 @@
     </view>
   </view>
 
-  <!-- 时间线 -->
-  <view class="timeline-section">
+  <!-- 时间线（可滚动区域） -->
+  <scroll-view class="timeline-scroll" scroll-y>
+    <view class="timeline-section">
     <!-- 已预约 -->
     <view class="timeline-item">
       <view class="timeline-node">
@@ -230,40 +231,41 @@
         </view>
       </view>
     </view>
-  </view>
 
-  <!-- 价格组成信息 -->
-  <view class="price-breakdown" wx:if="{{orderDetail.expressBaseAmount}}">
-    <view class="breakdown-title">价格组成</view>
-    <view class="breakdown-item" wx:if="{{orderDetail.expressCount && orderDetail.expressPricePerItem}}">
-      <text class="breakdown-label">计费基准：</text>
-      <text class="breakdown-value">{{orderDetail.expressCount}}件 × ￥{{orderDetail.expressPricePerItem}}/件</text>
+    <!-- 价格组成信息 -->
+    <view class="price-breakdown" wx:if="{{orderDetail.expressBaseAmount}}">
+      <view class="breakdown-title">价格组成</view>
+      <view class="breakdown-item" wx:if="{{orderDetail.expressCount && orderDetail.expressPricePerItem}}">
+        <text class="breakdown-label">计费基准：</text>
+        <text class="breakdown-value">{{orderDetail.expressCount}}件 × ￥{{orderDetail.expressPricePerItem}}/件</text>
+      </view>
+      <view class="breakdown-item">
+        <text class="breakdown-label">快递代取费：</text>
+        <text class="breakdown-value">￥{{orderDetail.expressBaseAmount}}</text>
+      </view>
+      <view class="breakdown-item" wx:if="{{orderDetail.expressUrgentFee && orderDetail.expressUrgentFee > 0}}">
+        <text class="breakdown-label">加急费用：</text>
+        <text class="breakdown-value positive">+￥{{orderDetail.expressUrgentFee}}</text>
+      </view>
+      <view class="breakdown-item" wx:if="{{orderDetail.expressUrgentFeeZeroReason}}">
+        <text class="breakdown-label">加急说明：</text>
+        <text class="breakdown-value reason">{{orderDetail.expressUrgentFeeZeroReason}}</text>
+      </view>
+      <view class="breakdown-item" wx:if="{{orderDetail.expressOvertimeCompensation && orderDetail.expressOvertimeCompensation > 0}}">
+        <text class="breakdown-label">超时补偿：</text>
+        <text class="breakdown-value negative">-￥{{orderDetail.expressOvertimeCompensation}}</text>
+      </view>
+      <view class="breakdown-item" wx:if="{{orderDetail.expressCouponDiscount && orderDetail.expressCouponDiscount > 0}}">
+        <text class="breakdown-label">代金券抵扣：</text>
+        <text class="breakdown-value negative">-￥{{orderDetail.expressCouponDiscount}}</text>
+      </view>
+      <view class="breakdown-item subtotal">
+        <text class="breakdown-label">应付小计：</text>
+        <text class="breakdown-value price">￥{{orderDetail.expressSubtotalAmount || orderDetail.totalAmount}}</text>
+      </view>
     </view>
-    <view class="breakdown-item">
-      <text class="breakdown-label">快递代取费：</text>
-      <text class="breakdown-value">￥{{orderDetail.expressBaseAmount}}</text>
     </view>
-    <view class="breakdown-item" wx:if="{{orderDetail.expressUrgentFee && orderDetail.expressUrgentFee > 0}}">
-      <text class="breakdown-label">加急费用：</text>
-      <text class="breakdown-value positive">+￥{{orderDetail.expressUrgentFee}}</text>
-    </view>
-    <view class="breakdown-item" wx:if="{{orderDetail.expressUrgentFeeZeroReason}}">
-      <text class="breakdown-label">加急说明：</text>
-      <text class="breakdown-value reason">{{orderDetail.expressUrgentFeeZeroReason}}</text>
-    </view>
-    <view class="breakdown-item" wx:if="{{orderDetail.expressOvertimeCompensation && orderDetail.expressOvertimeCompensation > 0}}">
-      <text class="breakdown-label">超时补偿：</text>
-      <text class="breakdown-value negative">-￥{{orderDetail.expressOvertimeCompensation}}</text>
-    </view>
-    <view class="breakdown-item" wx:if="{{orderDetail.expressCouponDiscount && orderDetail.expressCouponDiscount > 0}}">
-      <text class="breakdown-label">代金券抵扣：</text>
-      <text class="breakdown-value negative">-￥{{orderDetail.expressCouponDiscount}}</text>
-    </view>
-    <view class="breakdown-item subtotal">
-      <text class="breakdown-label">应付小计：</text>
-      <text class="breakdown-value price">￥{{orderDetail.expressSubtotalAmount || orderDetail.totalAmount}}</text>
-    </view>
-  </view>
+  </scroll-view>
 
   <!-- 操作按钮区域 -->
   <view class="actions-bar" wx:if="{{orderDetail.allowedActions && orderDetail.allowedActions.length > 0}}">

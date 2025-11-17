@@ -1,12 +1,16 @@
 /* pages/pickup/index.wxss */
 .pickup-page {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   background: #f7f8fa;
-  padding-bottom: 120rpx;
+  overflow: hidden;
 }
 
 .scroll-area {
-  height: calc(100vh - 120rpx);
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .card {
@@ -330,10 +334,7 @@
 
 /* 底部按钮 */
 .bottom-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex-shrink: 0;
   background: #fff;
   padding: 24rpx 32rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));

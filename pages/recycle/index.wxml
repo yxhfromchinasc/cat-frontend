@@ -60,7 +60,7 @@
       
       <!-- 是否加急开关 -->
       <view class="form-item checkbox-item">
-        <view class="label">是否加急</view>
+        <view class="label">立即上门</view>
         <switch checked="{{timeType === 'immediate'}}" bindchange="onImmediateSwitchChange" color="#07c160" />
       </view>
       

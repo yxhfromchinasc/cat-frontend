@@ -525,23 +525,39 @@ Page({
       wx.hideLoading()
       
       if (res && res.success) {
-        // 钱包支付是同步的，不需要调起微信支付
+        // 余额支付：不唤起支付组件，直接进入5秒等待期（跟三方支付逻辑一样）
         if (selectedPaymentMethod === 4) {
-          // 钱包支付成功
-          wx.showToast({ 
-            title: '支付成功', 
-            icon: 'success',
-            duration: 2000
-          })
-          
-          // 延迟跳转到订单详情或订单列表
-          setTimeout(() => {
-            wx.navigateBack()
-            // 或者跳转到订单详情页面
-            // wx.redirectTo({
-            //   url: `/pages/orders/index?orderNo=${orderNo}`
-            // })
-          }, 1500)
+          // 快速确认：先触发一次直查回补，再查进度；若已得出结论则不进入倒计时
+          try {
+            try { await api.refreshPaymentStatus(orderNo) } catch (_) {}
+            const quick = await api.getPaymentProgress(orderNo)
+            if (quick && quick.success && quick.data) {
+              const st = quick.data.paymentStatus
+              if (st === 'success') {
+                wx.showToast({ title: '支付成功', icon: 'success' })
+                setTimeout(() => wx.navigateBack(), 1200)
+                return
+              } else if (st === 'failed') {
+                wx.showToast({ title: '支付失败', icon: 'none' })
+                return
+              }
+            }
+          } catch (_) { /* 忽略，进入倒计时兜底 */ }
+
+          // 进入5秒短轮询确认（展示自定义倒计时 UI）
+          try {
+            const result = await payUtils.pollPaymentProgress(orderNo, 5, this)
+            if (result.paymentStatus === 'success') {
+              wx.showToast({ title: '支付成功', icon: 'success' })
+              setTimeout(() => wx.navigateBack(), 1200)
+            } else if (result.paymentStatus === 'failed') {
+              wx.showToast({ title: '支付失败', icon: 'none' })
+            } else {
+              wx.showToast({ title: '支付处理中，请稍后在订单查看', icon: 'none' })
+            }
+          } catch (e) {
+            wx.showToast({ title: '确认支付结果失败', icon: 'none' })
+          }
         } else {
           // 微信小程序支付：调起并进入5秒短轮询（自定义倒计时加载，不使用系统Loading）
           const paymentParams = res.data.paymentParams
