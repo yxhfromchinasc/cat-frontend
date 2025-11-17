@@ -82,7 +82,8 @@
 
 /* 物品备注文本框 */
 .item-remark-textarea {
-  min-height: 180rpx;
+  min-height: 50rpx;
+  max-height: 80rpx;
 }
 
 /* 快捷选项 */

@@ -49,13 +49,13 @@
 
       <!-- 取件码 -->
       <view class="form-item">
-        <view class="label">取件码（可选）</view>
+        <view class="label">取件码（选填）</view>
         <textarea class="textarea pick-codes-textarea" placeholder="可填写多个，用逗号分隔" value="{{form.pickCodesStr}}" bindinput="onInputPickCodes" maxlength="200"></textarea>
       </view>
 
       <!-- 取件照片 -->
       <view class="form-item">
-        <view class="label">取件照片（可选）</view>
+        <view class="label">取件码截图（选填）</view>
         <view class="pic-list">
           <view class="pic-item" wx:for="{{form.pickPics}}" wx:key="index">
             <image class="pic-image" src="{{item}}" mode="aspectFill"></image>
@@ -70,7 +70,7 @@
 
       <!-- 物品备注 -->
       <view class="form-item">
-        <view class="label">物品备注（可选）</view>
+        <view class="label">备注（选填）</view>
         <textarea class="textarea item-remark-textarea" placeholder="请填写物品相关信息，如：2件小箱子" value="{{form.itemDescription}}" bindinput="onInputItemRemark" maxlength="500"></textarea>
         
         <!-- 快捷选项 -->

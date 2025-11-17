@@ -354,16 +354,28 @@
   text-align: center;
   font-size: 32rpx;
   font-weight: 500;
-  border-radius: 44rpx;
+  border-radius: 12rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn::after {
   border: none;
 }
 
 .pay-btn {
-  background: #07c160;
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
   color: #fff;
 }
 
 .cancel-btn {
+  background: #f7f8fa;
+  color: #666;
+}
+
+.cancel-payment-btn {
   background: #f7f8fa;
   color: #666;
 }
