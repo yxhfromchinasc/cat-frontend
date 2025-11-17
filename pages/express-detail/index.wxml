@@ -44,189 +44,129 @@
   <!-- 时间线（可滚动区域） -->
   <scroll-view class="timeline-scroll" scroll-y>
     <view class="timeline-section">
-    <!-- 已预约 -->
-    <view class="timeline-item">
+    <!-- 使用后端返回的时间线数据动态渲染 -->
+    <view class="timeline-item" wx:for="{{orderDetail.timeline}}" wx:key="type" wx:for-index="idx" wx:for-item="event">
       <view class="timeline-node">
-        <view class="timeline-dot completed"></view>
-        <view class="timeline-line"></view>
+        <view class="timeline-dot {{event.status === 'completed' ? 'completed' : event.status === 'waiting' ? 'waiting' : event.status === 'cancelled' ? 'cancelled' : 'disabled'}}"></view>
+        <view class="timeline-line" wx:if="{{idx < orderDetail.timeline.length - 1}}"></view>
       </view>
       <view class="timeline-content">
         <view class="timeline-header">
-          <text class="timeline-title">已预约</text>
-          <text class="timeline-time" wx:if="{{orderDetail.createdAtFormatted}}">{{orderDetail.createdAtFormatted}}</text>
+          <text class="timeline-title">{{event.title}}</text>
+          <text class="timeline-time" wx:if="{{event.timeFormatted}}">{{event.timeFormatted}}</text>
         </view>
-        <view class="urgent-tag" wx:if="{{orderDetail.isUrgent}}">
+        <!-- 加急标签（仅CREATED事件显示） -->
+        <view class="urgent-tag" wx:if="{{event.type === 'CREATED' && event.data.isUrgent}}">
           <text>加急</text>
         </view>
         <view class="timeline-info">
-          <view class="info-item" wx:if="{{orderDetail.stationName}}">
+          <!-- CREATED事件的数据 -->
+          <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.stationName}}">
             <text class="info-label">取件驿站：</text>
-            <text class="info-value">{{orderDetail.stationName}}</text>
+            <text class="info-value">{{event.data.stationName}}</text>
           </view>
-          <view class="info-item" wx:if="{{orderDetail.phoneTail}}">
+          <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.phoneTail}}">
             <text class="info-label">取件手机尾号：</text>
-            <text class="info-value">{{orderDetail.phoneTail}}</text>
+            <text class="info-value">{{event.data.phoneTail}}</text>
           </view>
-          <view class="info-item" wx:if="{{orderDetail.pickCodes && orderDetail.pickCodes.length > 0}}">
+          <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.pickCodes && event.data.pickCodes.length > 0}}">
             <text class="info-label">取件码：</text>
-            <text class="info-value">{{orderDetail.pickCodes.join('、')}}</text>
+            <text class="info-value">{{event.data.pickCodes.join('、')}}</text>
           </view>
-          <view class="info-item" wx:if="{{orderDetail.pickPics && orderDetail.pickPics.length > 0}}">
+          <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.pickPics && event.data.pickPics.length > 0}}">
             <text class="info-label">取件图片：</text>
             <view class="image-list">
               <image class="info-image" 
-                     wx:for="{{orderDetail.pickPics}}" 
+                     wx:for="{{event.data.pickPics}}" 
                      wx:key="*this"
                      src="{{item}}" 
                      mode="aspectFill"
                      bindtap="previewImage"
                      data-url="{{item}}"
-                     data-urls="{{orderDetail.pickPics}}"></image>
+                     data-urls="{{event.data.pickPics}}"></image>
             </view>
           </view>
-          <view class="info-item" wx:if="{{orderDetail.itemDescription}}">
+          <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.itemDescription}}">
             <text class="info-label">物品备注：</text>
-            <text class="info-value">{{orderDetail.itemDescription}}</text>
+            <text class="info-value">{{event.data.itemDescription}}</text>
           </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 待取件 -->
-    <view class="timeline-item" wx:if="{{orderDetail.expressStatus >= 2}}">
-      <view class="timeline-node">
-        <view class="timeline-dot completed"></view>
-        <view class="timeline-line" wx:if="{{orderDetail.expressStatus >= 3}}"></view>
-      </view>
-      <view class="timeline-content">
-        <view class="timeline-header">
-          <text class="timeline-title">待取件</text>
-          <text class="timeline-time" wx:if="{{orderDetail.bandingTimeFormatted}}">{{orderDetail.bandingTimeFormatted}}</text>
-        </view>
-        <view class="timeline-info">
-          <view class="info-item" wx:if="{{orderDetail.courierNickname}}">
+          
+          <!-- BANDING事件的数据 -->
+          <view class="info-item" wx:if="{{event.type === 'BANDING' && event.data.courierNickname}}">
             <text class="info-label">业务员：</text>
-            <text class="info-value">{{orderDetail.courierNickname}}</text>
+            <text class="info-value">{{event.data.courierNickname}}</text>
           </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 取件成功 -->
-    <view class="timeline-item" wx:if="{{orderDetail.expressStatus >= 3}}">
-      <view class="timeline-node">
-        <view class="timeline-dot completed"></view>
-        <view class="timeline-line" wx:if="{{orderDetail.expressStatus >= 4}}"></view>
-      </view>
-      <view class="timeline-content">
-        <view class="timeline-header">
-          <text class="timeline-title">取件成功</text>
-          <text class="timeline-time" wx:if="{{orderDetail.actPickTimeFormatted}}">{{orderDetail.actPickTimeFormatted}}</text>
-        </view>
-        <view class="timeline-info">
-          <view class="info-item" wx:if="{{orderDetail.expressCount}}">
+          
+          <!-- GET事件的数据 -->
+          <view class="info-item" wx:if="{{event.type === 'GET' && event.data.expressCount}}">
             <text class="info-label">取件数量：</text>
-            <text class="info-value">{{orderDetail.expressCount}}件</text>
+            <text class="info-value">{{event.data.expressCount}}件</text>
           </view>
-          <view class="info-item" wx:if="{{orderDetail.expressPrice}}">
+          <view class="info-item" wx:if="{{event.type === 'GET' && event.data.expressPrice}}">
             <text class="info-label">快递费用：</text>
-            <text class="info-value price">￥{{orderDetail.expressPrice}}</text>
+            <text class="info-value price">￥{{event.data.expressPrice}}</text>
           </view>
-          <view class="info-item" wx:if="{{orderDetail.expressPics && orderDetail.expressPics.length > 0}}">
+          <view class="info-item" wx:if="{{event.type === 'GET' && event.data.expressPics && event.data.expressPics.length > 0}}">
             <text class="info-label">取件照片：</text>
             <view class="image-list">
               <image class="info-image" 
-                     wx:for="{{orderDetail.expressPics}}" 
+                     wx:for="{{event.data.expressPics}}" 
                      wx:key="*this"
                      src="{{item}}" 
                      mode="aspectFill"
                      bindtap="previewImage"
                      data-url="{{item}}"
-                     data-urls="{{orderDetail.expressPics}}"></image>
+                     data-urls="{{event.data.expressPics}}"></image>
             </view>
           </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 送达 -->
-    <view class="timeline-item" wx:if="{{orderDetail.expressStatus >= 4}}">
-      <view class="timeline-node">
-        <view class="timeline-dot completed"></view>
-        <view class="timeline-line" wx:if="{{orderDetail.expressStatus >= 5}}"></view>
-      </view>
-      <view class="timeline-content">
-        <view class="timeline-header">
-          <text class="timeline-title">送达</text>
-          <text class="timeline-time" wx:if="{{orderDetail.sendSucTimeFormatted}}">{{orderDetail.sendSucTimeFormatted}}</text>
-        </view>
-        <view class="timeline-info">
-          <view class="info-item" wx:if="{{orderDetail.addressDetail}}">
+          
+          <!-- SEND_SUC事件的数据 -->
+          <view class="info-item" wx:if="{{event.type === 'SEND_SUC' && event.data.addressDetail}}">
             <text class="info-label">送达地址：</text>
-            <text class="info-value">{{orderDetail.addressDetail}}</text>
+            <text class="info-value">{{event.data.addressDetail}}</text>
           </view>
-          <view class="info-item" wx:if="{{orderDetail.sendSucPics && orderDetail.sendSucPics.length > 0}}">
+          <view class="info-item" wx:if="{{event.type === 'SEND_SUC' && event.data.sendSucPics && event.data.sendSucPics.length > 0}}">
             <text class="info-label">送达照片：</text>
             <view class="image-list">
               <image class="info-image" 
-                     wx:for="{{orderDetail.sendSucPics}}" 
+                     wx:for="{{event.data.sendSucPics}}" 
                      wx:key="*this"
                      src="{{item}}" 
                      mode="aspectFill"
                      bindtap="previewImage"
                      data-url="{{item}}"
-                     data-urls="{{orderDetail.sendSucPics}}"></image>
+                     data-urls="{{event.data.sendSucPics}}"></image>
             </view>
           </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 支付中 -->
-    <view class="timeline-item" wx:if="{{orderDetail.expressStatus === 7}}">
-      <view class="timeline-node">
-        <view class="timeline-dot waiting"></view>
-      </view>
-      <view class="timeline-content">
-        <view class="timeline-header">
-          <text class="timeline-title">支付中</text>
-          <text class="timeline-time"></text>
-        </view>
-        <view class="timeline-info">
-          <view class="info-item" wx:if="{{orderDetail.totalAmount}}">
+          
+          <!-- START_PAY事件的数据 -->
+          <view class="info-item" wx:if="{{event.type === 'START_PAY' && event.data.totalAmount}}">
             <text class="info-label">支付金额：</text>
-            <text class="info-value price">￥{{orderDetail.totalAmount}}</text>
+            <text class="info-value price">￥{{event.data.totalAmount}}</text>
           </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 已支付 -->
-    <view class="timeline-item" wx:if="{{orderDetail.expressStatus === 5}}">
-      <view class="timeline-node">
-        <view class="timeline-dot completed"></view>
-      </view>
-      <view class="timeline-content">
-        <view class="timeline-header">
-          <text class="timeline-title">已支付</text>
-          <text class="timeline-time" wx:if="{{orderDetail.paidAtFormatted}}">{{orderDetail.paidAtFormatted}}</text>
-        </view>
-        <view class="timeline-info">
-          <view class="info-item">
+          
+          <!-- PAID事件的数据 -->
+          <view class="info-item" wx:if="{{event.type === 'PAID' && event.data.totalAmount}}">
             <text class="info-label">订单金额：</text>
-            <text class="info-value">¥{{originalAmountStr || amountStr || '0.00'}}</text>
+            <text class="info-value">¥{{event.data.totalAmount}}</text>
           </view>
-          <view class="info-item" wx:if="{{hasDiscount}}">
+          <view class="info-item" wx:if="{{event.type === 'PAID' && event.data.discountAmount && event.data.discountAmount > 0}}">
             <text class="info-label">优惠金额：</text>
-            <text class="info-value discount">-¥{{discountAmountStr || '0.00'}}</text>
+            <text class="info-value discount">-¥{{event.data.discountAmount}}</text>
           </view>
-          <view class="info-item" wx:if="{{couponName}}">
+          <view class="info-item" wx:if="{{event.type === 'PAID' && event.data.couponName}}">
             <text class="info-label">使用优惠券：</text>
-            <text class="info-value">{{couponName}}</text>
+            <text class="info-value">{{event.data.couponName}}</text>
           </view>
-          <view class="info-item">
+          <view class="info-item" wx:if="{{event.type === 'PAID' && event.data.actualAmount}}">
             <text class="info-label">实付金额：</text>
-            <text class="info-value price">¥{{finalAmountStr || originalAmountStr || amountStr || '0.00'}}</text>
+            <text class="info-value price">¥{{event.data.actualAmount}}</text>
+          </view>
+          
+          <!-- CANCEL事件的数据 -->
+          <view class="info-item" wx:if="{{event.type === 'CANCEL' && event.data.reason}}">
+            <text class="info-label">取消原因：</text>
+            <text class="info-value">{{event.data.reason}}</text>
           </view>
         </view>
       </view>

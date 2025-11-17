@@ -199,6 +199,17 @@
   border-color: #07c160;
 }
 
+.timeline-dot.waiting {
+  background: #fff;
+  border-color: #07c160;
+  box-shadow: 0 0 0 4rpx rgba(7, 193, 96, 0.1);
+}
+
+.timeline-dot.cancelled {
+  background: #999;
+  border-color: #999;
+}
+
 .timeline-item.cancelled .timeline-dot {
   background: #fa5151;
   border-color: #fa5151;
@@ -352,7 +363,14 @@
   text-align: center;
   font-size: 32rpx;
   font-weight: 500;
-  border-radius: 44rpx;
+  border-radius: 12rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn::after {
   border: none;
 }
 

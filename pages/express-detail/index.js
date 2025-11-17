@@ -83,21 +83,26 @@ Page({
         detail.amount = amountNum
         const amountStr = amount.formatAmount(amountNum)
 
-        // 预处理时间字段，格式化后直接存储在对象中
+        // 预处理时间字段，格式化后直接存储在对象中（保留用于兼容）
         detail.createdAtFormatted = this.formatTime(detail.createdAt)
         detail.bandingTimeFormatted = this.formatTime(detail.bandingTime)
         detail.actPickTimeFormatted = this.formatTime(detail.actPickTime)
         detail.sendSucTimeFormatted = this.formatTime(detail.sendSucTime)
         detail.paidAtFormatted = this.formatTime(detail.paidAt)
         
-        console.log('格式化后的时间:')
-        console.log('createdAtFormatted:', detail.createdAtFormatted)
-        console.log('bandingTimeFormatted:', detail.bandingTimeFormatted)
-        console.log('actPickTimeFormatted:', detail.actPickTimeFormatted)
-        console.log('sendSucTimeFormatted:', detail.sendSucTimeFormatted)
-        console.log('paidAtFormatted:', detail.paidAtFormatted)
+        // 处理时间线事件记录（后端返回）
+        if (detail.timeline && Array.isArray(detail.timeline)) {
+          // 为每个时间线事件格式化时间
+          detail.timeline.forEach(event => {
+            if (event.time) {
+              event.timeFormatted = this.formatTime(event.time)
+            }
+          })
+        } else {
+          detail.timeline = []
+        }
 
-        // 计算进度节点
+        // 计算进度节点（保留用于进度条显示）
         detail.progressSteps = this.calculateProgressSteps(detail)
 
         // 基于订单详情接口直接渲染金额与优惠信息（后端已返回 actualAmount/couponId/couponName/discountAmount）

@@ -48,15 +48,27 @@ Page({
         detail.amount = amountNum
         const amountStr = amount.formatAmount(amountNum)
 
-        // 预处理时间字段，格式化后直接存储在对象中
+        // 预处理时间字段，格式化后直接存储在对象中（保留用于兼容）
         detail.createdAtFormatted = this.formatTime(detail.createdAt)
         detail.bandingTimeFormatted = this.formatTime(detail.bandingTime)
         detail.actualTimeFormatted = this.formatTime(detail.actualTime)
         detail.startTimeFormatted = this.formatTime(detail.startTime)
         detail.endTimeFormatted = this.formatTime(detail.endTime)
         detail.cancelTimeFormatted = this.formatTime(detail.cancelTime)
+        
+        // 处理时间线事件记录（后端返回）
+        if (detail.timeline && Array.isArray(detail.timeline)) {
+          // 为每个时间线事件格式化时间
+          detail.timeline.forEach(event => {
+            if (event.time) {
+              event.timeFormatted = this.formatTime(event.time)
+            }
+          })
+        } else {
+          detail.timeline = []
+        }
 
-        // 计算进度节点
+        // 计算进度节点（保留用于进度条显示）
         detail.progressSteps = this.calculateProgressSteps(detail)
         
         this.setData({

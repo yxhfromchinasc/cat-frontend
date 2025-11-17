@@ -199,6 +199,17 @@
   border-color: #07c160;
 }
 
+.timeline-dot.waiting {
+  background: #fff;
+  border-color: #07c160;
+  box-shadow: 0 0 0 4rpx rgba(7, 193, 96, 0.1);
+}
+
+.timeline-dot.cancelled {
+  background: #999;
+  border-color: #999;
+}
+
 .timeline-line {
   width: 2rpx;
   flex: 1;
