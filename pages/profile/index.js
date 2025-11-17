@@ -7,7 +7,8 @@ Page({
     isLogin: false,
     balance: 0, // 钱包余额
     couponCount: 0, // 卡券数量
-    addressCount: 0 // 地址数量
+    addressCount: 0, // 地址数量
+    avatarSrc: '/assets/tabbar/profile.png' // 头像地址
   },
 
   onShow(){
@@ -37,6 +38,8 @@ Page({
           userInfo: res.data, 
           isLogin: true 
         })
+        // 更新头像显示
+        this.updateAvatarSrc()
       } else {
         // 如果接口返回失败，清除登录状态
         this.setData({ 
@@ -44,7 +47,8 @@ Page({
           isLogin: false,
           balance: 0,
           couponCount: 0,
-          addressCount: 0
+          addressCount: 0,
+          avatarSrc: '/assets/tabbar/profile.png'
         })
       }
     } catch (e) {
@@ -55,7 +59,26 @@ Page({
         isLogin: false,
         balance: 0,
         couponCount: 0,
-        addressCount: 0
+        addressCount: 0,
+        avatarSrc: '/assets/tabbar/profile.png'
+      })
+    }
+  },
+
+  // 更新头像显示
+  updateAvatarSrc() {
+    const userInfo = this.data.userInfo
+    if (userInfo && userInfo.avatarUrl) {
+      // 如果有头像URL，添加时间戳防止缓存
+      const avatarUrl = userInfo.avatarUrl
+      const separator = avatarUrl.includes('?') ? '&' : '?'
+      this.setData({
+        avatarSrc: `${avatarUrl}${separator}t=${Date.now()}`
+      })
+    } else {
+      // 没有头像，使用默认头像
+      this.setData({
+        avatarSrc: '/assets/tabbar/profile.png'
       })
     }
   },
@@ -151,9 +174,131 @@ Page({
   goCouponCenter(){ wx.navigateTo({ url: '/pages/coupon/index' }) },
   goMyCoupons(){ wx.navigateTo({ url: '/pages/coupon/index' }) },
   goFeedback(){ wx.navigateTo({ url: '/pages/feedback/index' }) },
-  goService(){ wx.navigateTo({ url: '/pages/service/index' }) },
+  async goService(){
+    try {
+      // 获取客服电话
+      const res = await api.getPublicConfigs()
+      if (res && res.success && res.data) {
+        const phone = res.data.customer_service_phone
+        if (phone) {
+          // 显示拨打电话弹窗
+          wx.showModal({
+            title: '联系客服',
+            content: `确定要拨打 ${phone} 吗？`,
+            confirmText: '拨打',
+            cancelText: '取消',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                wx.makePhoneCall({
+                  phoneNumber: phone,
+                  success: () => {
+                    console.log('拨打电话成功')
+                  },
+                  fail: (err) => {
+                    console.error('拨打电话失败:', err)
+                    if (err.errMsg && err.errMsg.includes('cancel')) {
+                      return
+                    }
+                    api.showError('拨打电话失败，请稍后重试')
+                  }
+                })
+              }
+            }
+          })
+        } else {
+          api.showError('暂未配置客服电话')
+        }
+      } else {
+        api.showError('获取客服信息失败')
+      }
+    } catch (e) {
+      console.error('获取客服信息失败:', e)
+      api.showError('获取客服信息失败，请稍后重试')
+    }
+  },
   goInvite(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
   goSettings(){ wx.navigateTo({ url: '/pages/settings/index' }) },
+
+  // 上传头像
+  async uploadAvatar() {
+    if (!this.data.isLogin) {
+      return
+    }
+    
+    try {
+      // 选择图片
+      const res = await new Promise((resolve, reject) => {
+        wx.chooseImage({
+          count: 1,
+          sizeType: ['compressed'],
+          sourceType: ['album', 'camera'],
+          success: resolve,
+          fail: reject
+        })
+      })
+      
+      if (!res.tempFilePaths || res.tempFilePaths.length === 0) {
+        return
+      }
+      
+      const tempFilePath = res.tempFilePaths[0]
+      
+      // 显示上传中提示
+      wx.showLoading({ title: '上传中...', mask: true })
+      
+      try {
+        // 上传图片
+        const uploadRes = await api.uploadImage(tempFilePath, 'avatar')
+        
+        console.log('上传结果:', uploadRes)
+        
+        if (uploadRes.success && uploadRes.data) {
+          // 获取图片URL（可能是 uploadRes.data.url 或 uploadRes.data）
+          let avatarUrl = uploadRes.data.url || uploadRes.data
+          
+          if (!avatarUrl) {
+            wx.showToast({ title: '上传失败：未获取到图片地址', icon: 'none' })
+            return
+          }
+          
+          console.log('准备更新头像，URL:', avatarUrl)
+          
+          // 更新头像
+          const updateRes = await api.updateAvatar(avatarUrl)
+          console.log('更新头像结果:', updateRes)
+          
+          // 立即更新本地数据，避免等待接口返回
+          if (this.data.userInfo) {
+            this.setData({
+              'userInfo.avatarUrl': avatarUrl
+            })
+          }
+          
+          // 更新头像显示（立即生效）
+          this.updateAvatarSrc()
+          
+          // 刷新用户信息（确保数据同步）
+          await this.loadUserInfo()
+          
+          wx.showToast({ title: '头像更新成功', icon: 'success' })
+        } else {
+          wx.showToast({ title: '上传失败，请重试', icon: 'none' })
+        }
+      } catch (e) {
+        console.error('上传头像失败:', e)
+        wx.showToast({ title: e.error || '上传失败，请重试', icon: 'none' })
+      } finally {
+        wx.hideLoading()
+      }
+    } catch (e) {
+      if (e.errMsg && e.errMsg.includes('cancel')) {
+        // 用户取消选择，不显示错误
+        return
+      }
+      console.error('选择图片失败:', e)
+      wx.showToast({ title: '选择图片失败', icon: 'none' })
+    }
+  },
 
   // 分享给好友
   onShareAppMessage() {

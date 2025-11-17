@@ -1,10 +1,10 @@
 <view class="page">
   <!-- 顶部用户卡片 -->
   <view class="card header-card shadow" bindtap="{{isLogin ? '' : 'goLogin'}}">
-    <image class="avatar" src="/assets/tabbar/profile.png" mode="aspectFill"></image>
+    <image class="avatar" src="{{avatarSrc}}" mode="aspectFill" bindtap="{{isLogin ? 'uploadAvatar' : ''}}" catchtap="{{isLogin ? 'uploadAvatar' : ''}}"></image>
     <view class="header-meta">
-      <text class="name">{{ isLogin ? (userInfo.nickname || userInfo.username || '用户') : '未登录' }}</text>
-      <text class="phone muted">{{ isLogin ? (userInfo.phone || '') : '点击登录以享受完整服务' }}</text>
+      <text class="phone">{{ isLogin ? (userInfo.phone || '') : '未登录' }}</text>
+      <text class="hint muted" wx:if="{{!isLogin}}">点击登录以享受完整服务</text>
     </view>
     <view class="login-hint" wx:if="{{!isLogin}}">
       <text class="login-text">登录</text>

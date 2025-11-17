@@ -983,6 +983,14 @@ function checkLogin() {
   return !!token
 }
 
+/**
+ * 更新用户头像
+ * @param {string} avatarUrl 头像URL
+ */
+function updateAvatar(avatarUrl) {
+  return post('/user/profile/avatar', { avatarUrl }, { showSuccess: false })
+}
+
 function getCouponDetail(id) {
   return get('/coupon/detail', { id }, { showSuccess: false })
 }
@@ -1012,6 +1020,7 @@ module.exports = {
   getToken,
   setToken,
   clearToken,
+  updateAvatar,
 
   // 地图相关
   reverseGeocode,
