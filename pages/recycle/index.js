@@ -3,9 +3,12 @@ const { api } = require('../../utils/util.js')
 
 Page({
   data: {
-    // 地址相关
-    deliveryAddressList: [],
+    // 地址相关（只显示默认地址）
+    defaultAddress: null,
     selectedAddressId: null,
+    
+    // 标记：是否刚刚从地址选择页面返回（避免重新加载默认地址）
+    fromAddressSelect: false,
     
     // 回收点相关
     recyclingPointList: [],
@@ -13,8 +16,7 @@ Page({
     
     // 表单数据
     form: {
-      estWeight: '', // 预估重量
-      itemDescription: '', // 物品描述
+      images: [], // 上传的图片URL列表
       startTime: null, // 开始时间（用于提交）
       endTime: null, // 结束时间（用于提交）
       startTimeStr: '' // 开始时间显示字符串
@@ -27,6 +29,7 @@ Page({
     quickOptions: ['易拉罐', '纸壳子', '旧家电', '金属', '塑料瓶', '旧衣服', '废旧电池'],
     
     // 时间选择相关
+    timeType: 'appointment', // 'immediate' 立即上门 或 'appointment' 预约时间
     dateOptions: [], // 日期选项（今天、明天）
     timeSlotOptions: [], // 时间段选项（14:30-15:00等）
     todayTimeSlots: [], // 今天的时间段列表
@@ -39,75 +42,106 @@ Page({
     // 优先从URL参数获取预选地址ID
     let addressId = options.addressId ? parseInt(options.addressId) : null
     
-    // 加载用户地址列表（内部会加载回收点）
+    // 加载默认地址（内部会加载回收点）
     await this.loadUserAddresses(addressId)
     
-    // 初始化时间选择器
+    // 默认选择预约时间，初始化时间选择器
     this.initTimeSlots()
   },
 
-  // 加载用户地址列表
-  async loadUserAddresses(preselectAddressId) {
+  onShow() {
+    // 如果刚刚从地址选择页面返回，且已经有地址了，就不重新加载
+    if (this.data.fromAddressSelect && this.data.defaultAddress) {
+      // 清除标记
+      this.setData({ fromAddressSelect: false })
+      // 从地址选择页面返回，且已经有地址，说明地址选择页面已经更新了数据，不需要重新加载
+      return
+    }
+    
+    // 从地址编辑页返回后，刷新默认地址
+    this.loadDefaultAddress()
+  },
+
+  // 加载默认地址
+  async loadDefaultAddress() {
     try {
-      wx.showLoading({ title: '加载地址...' })
-      const res = await api.getAddressList(1, 100)
-      const list = res.success ? (res.data.list || []).filter(addr => addr.status === 1) : []
-      this.setData({ deliveryAddressList: list })
-      
-      // 确定默认选中的地址
-      let selectedId = null
-      if (preselectAddressId) {
-        const exists = list.some(a => a.id === preselectAddressId)
-        if (exists) selectedId = preselectAddressId
+      const res = await api.getDefaultAddress()
+      if (res.success && res.data) {
+        const defaultAddress = res.data
+        this.setData({
+          defaultAddress: defaultAddress,
+          selectedAddressId: defaultAddress.id
+        })
+        // 如果有默认地址，加载其回收点
+        this.loadRecyclingPointsByAddress(defaultAddress.id)
+        // 更新提交状态
+        this.updateCanSubmit()
+      } else {
+        // 没有默认地址
+        this.setData({
+          defaultAddress: null,
+          selectedAddressId: null,
+          recyclingPointList: [],
+          recyclingPointName: null
+        })
+        // 更新提交状态
+        this.updateCanSubmit()
       }
-      if (!selectedId) {
-        // 先选默认地址
-        const def = list.find(a => a.isDefault)
-        if (def) selectedId = def.id
-      }
-      if (!selectedId && list.length > 0) {
-        selectedId = list[0].id
-      }
-      if (selectedId) {
-        this.setData({ selectedAddressId: selectedId })
-        
-        // 加载该地址的回收点
-        this.loadRecyclingPointsByAddress(selectedId)
-      }
-      
-      // 更新提交状态
-      this.updateCanSubmit()
     } catch (e) {
-      console.error('加载用户地址失败:', e)
-      this.setData({ deliveryAddressList: [] })
-    } finally {
-      wx.hideLoading()
+      console.error('加载默认地址失败:', e)
+      this.setData({
+        defaultAddress: null,
+        selectedAddressId: null
+      })
+      this.updateCanSubmit()
+    }
+  },
+
+  // 加载用户地址列表（兼容旧逻辑，保留用于预选地址）
+  async loadUserAddresses(preselectAddressId) {
+    // 优先加载默认地址
+    await this.loadDefaultAddress()
+    
+    // 如果有预选地址且与默认地址不同，使用预选地址
+    if (preselectAddressId && this.data.selectedAddressId !== preselectAddressId) {
+      try {
+        const addressDetail = await api.getAddressDetail(preselectAddressId)
+        if (addressDetail.success && addressDetail.data) {
+          this.setData({
+            defaultAddress: addressDetail.data,
+            selectedAddressId: preselectAddressId
+          })
+          this.loadRecyclingPointsByAddress(preselectAddressId)
+          this.updateCanSubmit()
+        }
+      } catch (e) {
+        console.error('加载预选地址失败:', e)
+      }
     }
   },
 
   // 更新是否可以提交状态
   updateCanSubmit() {
     const canSubmit = this.data.selectedAddressId && 
-                     this.data.form.itemDescription && 
-                     this.data.form.itemDescription.trim() &&
                      this.data.form.startTime && 
                      this.data.form.endTime &&
                      this.data.recyclingPointName
     this.setData({ canSubmitData: canSubmit })
   },
 
-  // 选择地址
-  selectDeliveryAddress(e) {
-    const addressId = parseInt(e.currentTarget.dataset.id)
-    if (addressId === this.data.selectedAddressId) return
-    
-    this.setData({ selectedAddressId: addressId })
-    
-    // 加载该地址的回收点
-    this.loadRecyclingPointsByAddress(addressId)
-    
-    // 更新提交状态
-    this.updateCanSubmit()
+  // 选择地址（跳转到地址选择页面）
+  selectDeliveryAddress() {
+    if (!this.data.defaultAddress) {
+      // 没有地址，跳转到地址编辑页面
+      wx.navigateTo({
+        url: '/pages/address/edit'
+      })
+    } else {
+      // 有默认地址，跳转到地址选择页面
+      wx.navigateTo({
+        url: `/pages/address/select?currentAddressId=${this.data.selectedAddressId}`
+      })
+    }
   },
 
   // 根据地址ID加载回收点列表
@@ -163,7 +197,58 @@ Page({
     }
   },
 
-  // 初始化时间选择器
+  // 立即上门开关变化
+  onImmediateSwitchChange(e) {
+    const checked = e.detail.value
+    const timeType = checked ? 'immediate' : 'appointment'
+    
+    this.setData({ timeType })
+    
+    if (timeType === 'immediate') {
+      // 立即上门：当前时间到半小时后
+      this.setImmediateTime()
+    } else {
+      // 预约时间：初始化时间选择器
+      this.initTimeSlots()
+    }
+  },
+
+  // 设置立即上门时间（当前时间到半小时后）
+  setImmediateTime() {
+    const now = new Date()
+    const startTime = new Date(now)
+    const endTime = new Date(now.getTime() + 30 * 60 * 1000) // 半小时后
+    
+    const formatTime = (date) => {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      return `${year}-${month}-${day}T${hours}:${minutes}:00`
+    }
+    
+    const formatDisplayTime = (date) => {
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      return `${hours}:${minutes}`
+    }
+    
+    const startTimeStr = formatTime(startTime)
+    const endTimeStr = formatTime(endTime)
+    const displayText = `立即上门（${formatDisplayTime(startTime)} - ${formatDisplayTime(endTime)}）`
+    
+    this.setData({
+      'form.startTime': startTimeStr,
+      'form.endTime': endTimeStr,
+      'form.startTimeStr': displayText
+    })
+    
+    // 更新提交状态
+    this.updateCanSubmit()
+  },
+
+  // 初始化时间选择器（预约时间）
   initTimeSlots() {
     const now = new Date()
     
@@ -357,54 +442,79 @@ Page({
     return `${year}-${month}-${day}T${timeStr}:00`
   },
 
-  // 输入预估重量
-  onInputEstWeight(e) {
-    this.setData({
-      'form.estWeight': e.detail.value
-    })
-  },
-
-  // 输入物品描述
-  onInputItemDescription(e) {
-    this.setData({
-      'form.itemDescription': e.detail.value
-    })
+  // 选择图片
+  async chooseImages() {
+    const remainingCount = 9 - this.data.form.images.length
+    if (remainingCount <= 0) {
+      wx.showToast({ title: '最多只能上传9张图片', icon: 'none' })
+      return
+    }
     
-    // 更新提交状态
-    this.updateCanSubmit()
+    try {
+      wx.chooseImage({
+        count: remainingCount,
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera'],
+        success: async (res) => {
+          const tempFilePaths = res.tempFilePaths
+          wx.showLoading({ title: '上传图片中...', mask: true })
+          
+          try {
+            // 上传所有图片
+            const uploadPromises = tempFilePaths.map(filePath => 
+              api.uploadImage(filePath, 'recycling')
+            )
+            
+            const uploadResults = await Promise.all(uploadPromises)
+            
+            // 获取所有上传成功的URL
+            const uploadedUrls = uploadResults
+              .filter(result => result.success)
+              .map(result => result.data.url)
+            
+            if (uploadedUrls.length > 0) {
+              const images = [...this.data.form.images, ...uploadedUrls]
+              this.setData({ 'form.images': images })
+              wx.showToast({ title: `成功上传${uploadedUrls.length}张图片`, icon: 'success' })
+            } else {
+              wx.showToast({ title: '图片上传失败', icon: 'none' })
+            }
+          } catch (e) {
+            console.error('上传图片失败:', e)
+            wx.showToast({ title: e.error || '上传失败', icon: 'none' })
+          } finally {
+            wx.hideLoading()
+          }
+        }
+      })
+    } catch (e) {
+      console.error('选择图片失败:', e)
+    }
   },
 
-    // 添加快捷选项
-    addQuickOption(e) {
-      const text = e.currentTarget.dataset.text
-      if (!text) return
-      
-      const currentDesc = this.data.form.itemDescription || ''
-      
-      // 检查是否已经包含该选项
-      if (currentDesc.includes(text)) {
-        return
-      }
-      
-      // 追加到物品描述
-      const newDesc = currentDesc ? `${currentDesc}、${text}` : text
-      this.setData({
-        'form.itemDescription': newDesc
-      })
-      
-      // 更新提交状态
-      this.updateCanSubmit()
-    },
+  // 预览图片
+  previewImage(e) {
+    const url = e.currentTarget.dataset.url
+    const index = e.currentTarget.dataset.index
+    const urls = this.data.form.images
+    
+    wx.previewImage({
+      current: url,
+      urls: urls
+    })
+  },
+
+  // 删除图片
+  deleteImage(e) {
+    const index = parseInt(e.currentTarget.dataset.index)
+    const images = this.data.form.images.filter((_, i) => i !== index)
+    this.setData({ 'form.images': images })
+  },
 
   // 验证表单
   validateForm() {
     if (!this.data.selectedAddressId) {
       wx.showToast({ title: '请选择收货地址', icon: 'none' })
-      return false
-    }
-    
-    if (!this.data.form.itemDescription || !this.data.form.itemDescription.trim()) {
-      wx.showToast({ title: '请填写物品描述', icon: 'none' })
       return false
     }
     
@@ -435,19 +545,22 @@ Page({
     try {
       wx.showLoading({ title: '提交中...' })
       
+      const isUrgent = this.data.timeType === 'immediate'
       const payload = {
         addressId: this.data.selectedAddressId,
-        itemDescription: this.data.form.itemDescription.trim(),
-        startTime: this.data.form.startTime,
-        endTime: this.data.form.endTime
+        // 加急订单不传时间，后端自动计算
+        startTime: isUrgent ? null : this.data.form.startTime,
+        endTime: isUrgent ? null : this.data.form.endTime,
+        // 后端需要这些字段，但前端已隐藏，传默认值
+        estWeight: null,
+        itemDescription: '废品回收',
+        // 是否加急（立即上门）
+        isUrgent: isUrgent
       }
       
-      // 如果有预估重量，添加到请求中
-      if (this.data.form.estWeight && this.data.form.estWeight.trim()) {
-        const weight = parseFloat(this.data.form.estWeight)
-        if (!isNaN(weight) && weight > 0) {
-          payload.estWeight = weight
-        }
+      // 如果有图片，添加到请求中
+      if (this.data.form.images && this.data.form.images.length > 0) {
+        payload.images = this.data.form.images
       }
       
       const res = await api.createRecyclingOrder(payload)

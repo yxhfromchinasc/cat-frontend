@@ -2,8 +2,8 @@
 
 .address-list{padding:24rpx;padding-bottom:200rpx}
 
-.address-item{background:#fff;border-radius:16rpx;margin-bottom:20rpx;padding:28rpx;display:flex;align-items:flex-start;box-shadow:0 8rpx 24rpx rgba(0,0,0,0.06)}
-.address-content{flex:1;margin-right:16rpx}
+.address-item{background:#fff;border-radius:16rpx;margin-bottom:20rpx;padding:28rpx;box-shadow:0 8rpx 24rpx rgba(0,0,0,0.06)}
+.address-content{flex:1}
 
 .address-region{font-size:26rpx;color:#8a8a8e;margin-bottom:10rpx;line-height:1.4}
 .address-detail{font-size:30rpx;color:#111;font-weight:700;margin-bottom:10rpx;line-height:1.5}
@@ -13,10 +13,6 @@
 .address-tag{font-size:22rpx;padding:6rpx 10rpx;border-radius:8rpx;margin-left:8rpx}
 .address-tag.default{color:#ff7a45;background:#fff2ed}
 .address-tag.common{color:#ff7a45;background:#fff2ed}
-
-.address-actions{display:flex;align-items:center;margin-top:8rpx}
-.edit-btn{width:64rpx;height:64rpx;border-radius:32rpx;background:#f5f5f5;display:flex;align-items:center;justify-content:center}
-.edit-icon{font-size:26rpx}
 
 .empty-state{text-align:center;padding:120rpx 0}
 .empty-icon{font-size:88rpx;display:block;margin-bottom:18rpx}

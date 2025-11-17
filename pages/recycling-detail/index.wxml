@@ -114,6 +114,32 @@
             <text class="info-label">回收价格：</text>
             <text class="info-value price">￥{{orderDetail.price}}</text>
           </view>
+          
+          <!-- 价格组成信息 -->
+          <view class="price-breakdown" wx:if="{{orderDetail.recyclingPricePerKg}}">
+            <view class="breakdown-title">价格组成</view>
+            <view class="breakdown-item">
+              <text class="breakdown-label">回收价：</text>
+              <text class="breakdown-value">￥{{orderDetail.recyclingPricePerKg}}/kg</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{orderDetail.baseAmount}}">
+              <text class="breakdown-label">基础金额：</text>
+              <text class="breakdown-value">￥{{orderDetail.baseAmount}}</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{orderDetail.overtimeCompensation > 0}}">
+              <text class="breakdown-label">超时补偿：</text>
+              <text class="breakdown-value positive">+￥{{orderDetail.overtimeCompensation}}</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{orderDetail.urgentFee > 0}}">
+              <text class="breakdown-label">加急费用：</text>
+              <text class="breakdown-value negative">-￥{{orderDetail.urgentFee}}</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{orderDetail.urgentFeeZeroReason}}">
+              <text class="breakdown-label">加急费用说明：</text>
+              <text class="breakdown-value reason">{{orderDetail.urgentFeeZeroReason}}</text>
+            </view>
+          </view>
+          
           <view class="info-item" wx:if="{{orderDetail.images && orderDetail.images.length > 0}}">
             <text class="info-label">回收照片：</text>
             <view class="image-list">

@@ -30,6 +30,9 @@
   </view>
 
   <view class="bottom-bar">
+    <button wx:if="{{isEdit}}" class="delete-btn" bindtap="deleteAddress">
+      <text class="btn-text">删除地址</text>
+    </button>
     <button class="save-btn" bindtap="saveAddress">
       <text class="btn-text">{{isEdit ? '保存修改' : '保存地址'}}</text>
     </button>

@@ -187,5 +187,37 @@ Page({
         } finally {
             wx.hideLoading()
         }
+    },
+
+    // 删除地址
+    async deleteAddress() {
+        const { id } = this.data
+        
+        if (!id) {
+            wx.showToast({ title: '地址ID不存在', icon: 'none' })
+            return
+        }
+
+        wx.showModal({
+            title: '确认删除',
+            content: '确定要删除这个地址吗？删除后无法恢复。',
+            confirmText: '删除',
+            confirmColor: '#ff4757',
+            success: async (res) => {
+                if (res.confirm) {
+                    try {
+                        wx.showLoading({ title: '删除中...' })
+                        await api.deleteAddress(id)
+                        wx.hideLoading()
+                        wx.showToast({ title: '删除成功', icon: 'success' })
+                        setTimeout(() => wx.navigateBack(), 800)
+                    } catch (error) {
+                        wx.hideLoading()
+                        const errorMsg = error?.message || error?.data?.message || '删除失败，请重试'
+                        wx.showToast({ title: errorMsg, icon: 'none', duration: 2000 })
+                    }
+                }
+            }
+        })
     }
 })

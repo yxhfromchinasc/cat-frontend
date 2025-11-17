@@ -86,7 +86,7 @@ Page({
         const discountAmountStr = hasDiscount ? amount.formatAmount(originalAmount - actualAmount) : '0.00'
         
         // 构建支付方式列表（根据后端返回的 supportedPaymentMethods）
-        // PaymentMethod: 1=WECHAT_NATIVE, 2=WECHAT_MINIPROGRAM, 3=ALIPAY, 4=WALLET
+        // PaymentMethod: 1=WECHAT_NATIVE, 2=WECHAT_MINIPROGRAM, 4=WALLET
         const paymentMethodsMap = {
           2: { code: 2, name: '微信支付', icon: '💳' },
           4: { code: 4, name: '钱包余额', icon: '💰' } // PaymentMethod.WALLET = 4

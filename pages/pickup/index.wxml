@@ -1,33 +1,27 @@
 <!-- pages/pickup/index.wxml -->
 <view class="pickup-page">
   <scroll-view class="scroll-area" scroll-y>
-  <!-- 收货地址选择（先选地址） -->
+  <!-- 收货地址选择 -->
     <view class="card">
       <view class="card-title">收货地址</view>
-      <view class="address-list" wx:if="{{deliveryAddressList.length > 0}}">
-        <view 
-        class="address-item {{selectedAddressId === item.id ? 'selected' : ''}}" 
-          wx:for="{{deliveryAddressList}}" 
-          wx:key="id"
-          bindtap="selectDeliveryAddress" 
-          data-id="{{item.id}}">
-          <view class="address-content">
-            <view class="address-line">
-              <text class="contact-name">{{item.contactName}}</text>
-              <text class="contact-phone">{{item.contactPhone}}</text>
-            </view>
-            <view class="address-detail">
-              {{item.province}}{{item.city}}{{item.district}}{{item.street}} {{item.detailAddress}}
-            </view>
-          <view class="address-tags" wx:if="{{item.isDefault}}">
+      <!-- 有默认地址时显示 -->
+      <view class="address-single" wx:if="{{defaultAddress}}" bindtap="selectDeliveryAddress">
+        <view class="address-content">
+          <view class="address-line">
+            <text class="contact-name">{{defaultAddress.contactName}}</text>
+            <text class="contact-phone">{{defaultAddress.contactPhone}}</text>
             <text class="tag default">默认</text>
           </view>
+          <view class="address-detail">
+            {{defaultAddress.province}}{{defaultAddress.city}}{{defaultAddress.district}}{{defaultAddress.street}} {{defaultAddress.detailAddress}}
           </view>
-        <view class="address-check" wx:if="{{selectedAddressId === item.id}}">✓</view>
         </view>
+        <view class="address-arrow">›</view>
       </view>
-      <view class="empty-tip" wx:else>
-      <text>暂无地址，请先添加收货地址</text>
+      <!-- 没有地址时显示添加按钮 -->
+      <view class="address-empty" wx:else bindtap="selectDeliveryAddress">
+        <text class="empty-text">去添加地址</text>
+        <view class="address-arrow">›</view>
       </view>
     </view>
 
@@ -92,33 +86,50 @@
     <view class="card">
       <view class="card-title">送达时间范围</view>
       
-      <view class="time-selector-row">
-        <!-- 日期选择 -->
-        <view class="time-selector-item">
-          <view class="label required">日期</view>
-          <picker mode="selector" range="{{dateOptions}}" range-key="label" value="{{selectedDateIndex}}" bindchange="onDateChange">
-            <view class="picker-field">
-              <text wx:if="{{selectedDateIndex >= 0}}">{{dateOptions[selectedDateIndex].label}}</text>
-              <text wx:else class="placeholder-text">请选择日期</text>
-            </view>
-          </picker>
+      <!-- 加急服务 -->
+      <view class="urgent-row">
+        <view class="urgent-text">
+          <view class="label">是否加急</view>
+          <view class="urgent-desc">选择后优先安排取件与送达</view>
         </view>
-
-        <!-- 时间段选择 -->
-        <view class="time-selector-item">
-          <view class="label required">时间段</view>
-          <picker mode="selector" range="{{timeSlotOptions}}" range-key="label" value="{{selectedTimeSlotIndex}}" bindchange="onTimeSlotChange">
-            <view class="picker-field">
-              <text wx:if="{{selectedTimeSlotIndex >= 0}}">{{timeSlotOptions[selectedTimeSlotIndex].label}}</text>
-              <text wx:else class="placeholder-text">请选择时间段</text>
-            </view>
-          </picker>
-        </view>
+        <switch checked="{{form.isUrgent}}" bindchange="onUrgentSwitchChange" color="#07c160" />
       </view>
       
-      <!-- 显示选择的时间 -->
-      <view class="selected-time-display" wx:if="{{form.startTimeStr}}">
-        <text class="selected-time-text">{{form.startTimeStr}}</text>
+      <!-- 加急订单：显示"20分钟内送达" -->
+      <view class="urgent-time-display" wx:if="{{form.isUrgent}}">
+        <text class="urgent-time-text">20分钟内送达</text>
+      </view>
+      
+      <!-- 非加急订单：显示时间选择器 -->
+      <view wx:if="{{!form.isUrgent}}">
+        <view class="time-selector-row">
+          <!-- 日期选择 -->
+          <view class="time-selector-item">
+            <view class="label required">日期</view>
+            <picker mode="selector" range="{{dateOptions}}" range-key="label" value="{{selectedDateIndex}}" bindchange="onDateChange">
+              <view class="picker-field">
+                <text wx:if="{{selectedDateIndex >= 0}}">{{dateOptions[selectedDateIndex].label}}</text>
+                <text wx:else class="placeholder-text">请选择日期</text>
+              </view>
+            </picker>
+          </view>
+
+          <!-- 时间段选择 -->
+          <view class="time-selector-item">
+            <view class="label required">时间段</view>
+            <picker mode="selector" range="{{timeSlotOptions}}" range-key="label" value="{{selectedTimeSlotIndex}}" bindchange="onTimeSlotChange">
+              <view class="picker-field">
+                <text wx:if="{{selectedTimeSlotIndex >= 0}}">{{timeSlotOptions[selectedTimeSlotIndex].label}}</text>
+                <text wx:else class="placeholder-text">请选择时间段</text>
+              </view>
+            </picker>
+          </view>
+        </view>
+        
+        <!-- 显示选择的时间 -->
+        <view class="selected-time-display" wx:if="{{form.startTimeStr}}">
+          <text class="selected-time-text">{{form.startTimeStr}}</text>
+        </view>
       </view>
     </view>
   </scroll-view>

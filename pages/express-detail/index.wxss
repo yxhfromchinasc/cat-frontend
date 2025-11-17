@@ -226,6 +226,17 @@
   gap: 16rpx;
 }
 
+.urgent-tag {
+  align-self: flex-start;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  background: #fff4e6;
+  color: #ff7a45;
+  font-size: 24rpx;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+}
+
 .info-item {
   display: flex;
   flex-direction: column;
@@ -246,6 +257,59 @@
 .info-value.price {
   color: #ff4757;
   font-weight: 600;
+}
+
+.price-breakdown {
+  margin: 24rpx;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  background: #fff;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.breakdown-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+  color: #111;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 28rpx;
+  margin-top: 12rpx;
+  color: #444;
+}
+
+.breakdown-label {
+  color: #666;
+}
+
+.breakdown-value {
+  font-weight: 600;
+  color: #111;
+}
+
+.breakdown-value.positive {
+  color: #fa5151;
+}
+
+.breakdown-value.negative {
+  color: #07c160;
+}
+
+.breakdown-value.reason {
+  font-size: 24rpx;
+  font-weight: 400;
+  color: #999;
+  text-align: right;
+}
+
+.breakdown-item.subtotal {
+  margin-top: 20rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #f0f0f0;
 }
 
 .image-list {

@@ -2,8 +2,8 @@
   <!-- 地址列表 -->
   <view class="address-list">
     <block wx:if="{{addressList.length > 0}}">
-      <view class="address-item" wx:for="{{addressList}}" wx:key="id">
-        <view class="address-content" bindtap="editAddress" data-id="{{item.id}}">
+      <view class="address-item" wx:for="{{addressList}}" wx:key="id" bindtap="editAddress" data-id="{{item.id}}">
+        <view class="address-content">
           <!-- 省市区街道 -->
           <view class="address-region">
             {{item.province}} {{item.city}} {{item.district}} {{item.street}}
@@ -16,11 +16,6 @@
             <text class="contact-phone">{{item.contactPhone}}</text>
             <text class="address-tag default" wx:if="{{item.isDefault}}">默认</text>
             <text class="address-tag common" wx:elif="{{item.addressType === 1}}">常用地址</text>
-          </view>
-        </view>
-        <view class="address-actions">
-          <view class="edit-btn" bindtap="editAddress" data-id="{{item.id}}">
-            <text class="edit-icon">✏️</text>
           </view>
         </view>
       </view>

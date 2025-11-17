@@ -65,18 +65,4 @@ Page({
     }
   },
 
-  // 删除地址（预留）
-  async deleteAddress(e) {
-    const id = e.currentTarget.dataset.id
-    wx.showModal({
-      title: '确认删除',
-      content: '确定要删除这个地址吗？',
-      success: async (res) => {
-        if (res.confirm) {
-          await api.deleteAddress(id)
-          this.loadAddressList()
-        }
-      }
-    })
-  }
 })

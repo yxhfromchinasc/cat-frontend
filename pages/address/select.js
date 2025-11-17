@@ -40,13 +40,31 @@ Page({
     // 更新选中状态
     this.setData({ selectedId: addressId })
     
-    // 返回首页，并更新首页的地址信息
+    // 获取上一页（可能是首页、订单发起页等）
     const pages = getCurrentPages()
-    const prevPage = pages[pages.length - 2] // 上一页是首页
+    const prevPage = pages[pages.length - 2]
     
-    if (prevPage && prevPage.route === 'pages/index/index') {
-      // 更新首页的地址
-      prevPage.setData({ currentAddress: address })
+    if (prevPage) {
+      // 如果是首页，更新首页的地址
+      if (prevPage.route === 'pages/index/index') {
+        prevPage.setData({ currentAddress: address })
+      }
+      // 如果是订单发起页面（快递或回收），更新其地址
+      else if (prevPage.route === 'pages/pickup/index' || prevPage.route === 'pages/recycle/index') {
+        prevPage.setData({
+          defaultAddress: address,
+          selectedAddressId: addressId,
+          fromAddressSelect: true // 标记从地址选择页面返回
+        })
+        // 如果是快递订单页面，需要重新加载驿站
+        if (prevPage.route === 'pages/pickup/index' && typeof prevPage.loadStationsByAddress === 'function') {
+          prevPage.loadStationsByAddress(addressId)
+        }
+        // 如果是回收订单页面，需要重新加载回收点
+        else if (prevPage.route === 'pages/recycle/index' && typeof prevPage.loadRecyclingPointsByAddress === 'function') {
+          prevPage.loadRecyclingPointsByAddress(addressId)
+        }
+      }
     }
     
     // 延迟返回，让用户看到选中效果

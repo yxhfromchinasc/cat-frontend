@@ -12,9 +12,12 @@ Page({
     selectedStationId: null,
     selectedStationIndex: -1,
     
-    // 收货地址列表（根据驿站筛选）
-    deliveryAddressList: [],
+    // 收货地址（只显示默认地址）
+    defaultAddress: null,
     selectedAddressId: null,
+    
+    // 标记：是否刚刚从地址选择页面返回（避免重新加载默认地址）
+    fromAddressSelect: false,
     
     // 表单数据
     form: {
@@ -26,7 +29,8 @@ Page({
       startTime: null, // 开始时间（LocalDateTime格式）
       endTime: null, // 结束时间（LocalDateTime格式）
       startTimeStr: '', // 开始时间显示字符串
-      endTimeStr: '' // 结束时间显示字符串
+      endTimeStr: '', // 结束时间显示字符串
+      isUrgent: false // 是否加急
     },
     
     // 快捷选项
@@ -70,39 +74,69 @@ Page({
   },
 
   onShow() {
-    // 如果从地址选择页返回，可在此根据全局或上一页状态刷新（如需要）
+    // 如果刚刚从地址选择页面返回，且已经有地址了，就不重新加载
+    if (this.data.fromAddressSelect && this.data.defaultAddress) {
+      // 清除标记
+      this.setData({ fromAddressSelect: false })
+      // 从地址选择页面返回，且已经有地址，说明地址选择页面已经更新了数据，不需要重新加载
+      return
+    }
+    
+    // 从地址编辑页返回后，刷新默认地址
+    this.loadDefaultAddress()
   },
 
-  // 加载用户地址列表
-  async loadUserAddresses(preselectAddressId) {
+  // 加载默认地址
+  async loadDefaultAddress() {
     try {
-      wx.showLoading({ title: '加载地址...' })
-      const res = await api.getAddressList(1, 100)
-      const list = res.success ? (res.data.list || []).filter(addr => addr.status === 1) : []
-      this.setData({ deliveryAddressList: list })
-      
-      // 确定默认选中的地址
-      let selectedId = null
-      if (preselectAddressId) {
-        const exists = list.some(a => a.id === preselectAddressId)
-        if (exists) selectedId = preselectAddressId
-      }
-      if (!selectedId) {
-        // 先选默认地址
-        const def = list.find(a => a.isDefault)
-        if (def) selectedId = def.id
-      }
-      if (!selectedId && list.length > 0) {
-        selectedId = list[0].id
-      }
-      if (selectedId) {
-        this.setData({ selectedAddressId: selectedId })
+      const res = await api.getDefaultAddress()
+      if (res.success && res.data) {
+        const defaultAddress = res.data
+        this.setData({
+          defaultAddress: defaultAddress,
+          selectedAddressId: defaultAddress.id
+        })
+        // 如果有默认地址，加载其可服务的驿站
+        this.loadStationsByAddress(defaultAddress.id)
+      } else {
+        // 没有默认地址
+        this.setData({
+          defaultAddress: null,
+          selectedAddressId: null,
+          stationList: [],
+          stationNames: [],
+          selectedStationId: null,
+          selectedStationIndex: -1
+        })
       }
     } catch (e) {
-      console.error('加载用户地址失败:', e)
-      this.setData({ deliveryAddressList: [] })
-    } finally {
-      wx.hideLoading()
+      console.error('加载默认地址失败:', e)
+      this.setData({
+        defaultAddress: null,
+        selectedAddressId: null
+      })
+    }
+  },
+
+  // 加载用户地址列表（兼容旧逻辑，保留用于预选地址）
+  async loadUserAddresses(preselectAddressId) {
+    // 优先加载默认地址
+    await this.loadDefaultAddress()
+    
+    // 如果有预选地址且与默认地址不同，使用预选地址
+    if (preselectAddressId && this.data.selectedAddressId !== preselectAddressId) {
+      try {
+        const addressDetail = await api.getAddressDetail(preselectAddressId)
+        if (addressDetail.success && addressDetail.data) {
+          this.setData({
+            defaultAddress: addressDetail.data,
+            selectedAddressId: preselectAddressId
+          })
+          this.loadStationsByAddress(preselectAddressId)
+        }
+      } catch (e) {
+        console.error('加载预选地址失败:', e)
+      }
     }
   },
 
@@ -303,25 +337,19 @@ Page({
 
   // 不再按驿站加载地址（逻辑已调整为先选地址）
 
-  // 选择收货地址
-  selectDeliveryAddress(e) {
-    const addressId = parseInt(e.currentTarget.dataset.id)
-    this.setData({ 
-      selectedAddressId: addressId,
-      selectedStationId: null,
-      selectedStationIndex: -1,
-      stationList: [],
-      stationNames: []
-    })
-    // 根据选中的地址加载可服务驿站
-    this.loadStationsByAddress(addressId)
-  },
-
-  // 选择送件地址（从地址列表选择）
-  chooseAddress() {
-    wx.navigateTo({
-      url: '/pages/address/select'
-    })
+  // 选择收货地址（跳转到地址选择页面）
+  selectDeliveryAddress() {
+    if (!this.data.defaultAddress) {
+      // 没有地址，跳转到地址编辑页面
+      wx.navigateTo({
+        url: '/pages/address/edit'
+      })
+    } else {
+      // 有默认地址，跳转到地址选择页面
+      wx.navigateTo({
+        url: `/pages/address/select?currentAddressId=${this.data.selectedAddressId}`
+      })
+    }
   },
 
   // 输入手机尾号
@@ -372,6 +400,13 @@ Page({
     const newText = currentText.trim() + ' ' + quickText
     this.setData({
       'form.itemDescription': newText
+    })
+  },
+
+  // 加急服务开关
+  onUrgentSwitchChange(e) {
+    this.setData({
+      'form.isUrgent': e.detail.value
     })
   },
 
@@ -509,6 +544,51 @@ Page({
     this.setData({ 'form.pickPics': pickPics })
   },
 
+  // 加急开关变化处理
+  onUrgentSwitchChange(e) {
+    const isUrgent = e.detail.value
+    this.setData({
+      'form.isUrgent': isUrgent
+    })
+    
+    if (isUrgent) {
+      // 加急订单：自动设置当前时间到20分钟后
+      this.setUrgentTime()
+    } else {
+      // 非加急订单：恢复时间选择器
+      // 如果之前没有选择时间，初始化时间选择器
+      if (this.data.selectedDateIndex === -1 || this.data.selectedTimeSlotIndex === -1) {
+        this.initTimeSlots()
+      }
+    }
+  },
+  
+  // 设置加急订单时间（当前时间到20分钟后）
+  setUrgentTime() {
+    const now = new Date()
+    const endTime = new Date(now.getTime() + 20 * 60 * 1000) // 20分钟后
+    
+    // 格式化为 LocalDateTime 格式（YYYY-MM-DDTHH:mm:ss）
+    const formatDateTime = (date) => {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      const seconds = String(date.getSeconds()).padStart(2, '0')
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
+    }
+    
+    const startTime = formatDateTime(now)
+    const endTimeStr = formatDateTime(endTime)
+    
+    this.setData({
+      'form.startTime': startTime,
+      'form.endTime': endTimeStr,
+      'form.startTimeStr': '20分钟内送达'
+    })
+  },
+
   // 表单校验
   validateForm() {
     if (!this.data.selectedStationId) {
@@ -531,14 +611,23 @@ Page({
       return false
     }
     
-    if (this.data.selectedDateIndex === -1 || this.data.selectedTimeSlotIndex === -1) {
-      wx.showToast({ title: '请选择送达时间范围', icon: 'none' })
-      return false
-    }
-    
-    if (!this.data.form.startTime || !this.data.form.endTime) {
-      wx.showToast({ title: '请选择送达时间范围', icon: 'none' })
-      return false
+    // 如果是加急订单，不需要验证时间选择器的选择
+    if (!this.data.form.isUrgent) {
+      if (this.data.selectedDateIndex === -1 || this.data.selectedTimeSlotIndex === -1) {
+        wx.showToast({ title: '请选择送达时间范围', icon: 'none' })
+        return false
+      }
+      
+      if (!this.data.form.startTime || !this.data.form.endTime) {
+        wx.showToast({ title: '请选择送达时间范围', icon: 'none' })
+        return false
+      }
+    } else {
+      // 加急订单必须有时间
+      if (!this.data.form.startTime || !this.data.form.endTime) {
+        wx.showToast({ title: '时间设置异常，请重试', icon: 'none' })
+        return false
+      }
     }
     
     return true
@@ -560,8 +649,10 @@ Page({
         pickPics: this.data.form.pickPics.length > 0 ? this.data.form.pickPics : null, // 如果为空传null
         pickCodes: this.data.form.pickCodes.length > 0 ? this.data.form.pickCodes : null, // 如果为空传null
         itemDescription: this.data.form.itemDescription,
-        startTime: this.data.form.startTime,
-        endTime: this.data.form.endTime
+        // 加急订单不传时间，后端自动计算
+        startTime: this.data.form.isUrgent ? null : this.data.form.startTime,
+        endTime: this.data.form.isUrgent ? null : this.data.form.endTime,
+        isUrgent: this.data.form.isUrgent
       }
       
       console.log('提交订单数据:', orderData)

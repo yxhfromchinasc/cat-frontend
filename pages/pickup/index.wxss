@@ -283,6 +283,51 @@
   color: #999;
 }
 
+/* 单个地址显示 */
+.address-single {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx;
+  background: #f7f8fa;
+  border-radius: 12rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.3s;
+}
+
+.address-single:active {
+  background: #f0f4ff;
+}
+
+.address-arrow {
+  font-size: 32rpx;
+  color: #999;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
+/* 去添加地址按钮 */
+.address-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx;
+  background: #f7f8fa;
+  border-radius: 12rpx;
+  border: 2rpx dashed #ddd;
+  transition: all 0.3s;
+}
+
+.address-empty:active {
+  background: #f0f4ff;
+  border-color: #07c160;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #07c160;
+}
+
 /* 底部按钮 */
 .bottom-bar {
   position: fixed;
@@ -290,19 +335,19 @@
   left: 0;
   right: 0;
   background: #fff;
-  padding: 20rpx 24rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.08);
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 32rpx rgba(0, 0, 0, 0.08);
 }
 
 .submit-btn {
   width: 100%;
   height: 88rpx;
-  background: #07c160;
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
   color: #fff;
-  border-radius: 999rpx;
+  border-radius: 12rpx;
   font-size: 32rpx;
-  font-weight: 700;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -335,4 +380,38 @@
   font-size: 28rpx;
   color: #07c160;
   font-weight: 600;
+}
+
+.urgent-row {
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.urgent-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.urgent-desc {
+  font-size: 24rpx;
+  color: #969799;
+}
+
+/* 加急订单时间显示 */
+.urgent-time-display {
+  margin-top: 0;
+  padding: 20rpx 24rpx;
+  background: #fff2ed;
+  border: 2rpx solid #ff7a45;
+  border-radius: 12rpx;
+  text-align: center;
+}
+
+.urgent-time-text {
+  font-size: 30rpx;
+  color: #ff7a45;
+  font-weight: 700;
 }
