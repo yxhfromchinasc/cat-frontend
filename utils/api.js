@@ -913,65 +913,150 @@ function getRechargeOrderDetail(orderNo) {
 }
 
 /**
- * 上传图片
+ * 压缩图片（小程序端）
  * @param {string} filePath 图片临时路径
- * @param {string} category 图片分类，默认为 'express'
- * @returns {Promise} 返回上传结果，包含图片URL
+ * @returns {Promise<string>} 压缩后的图片路径
  */
-function uploadImage(filePath, category = 'express') {
+function compressImage(filePath) {
   return new Promise((resolve, reject) => {
-    const token = getToken()
-    
-    wx.uploadFile({
-      url: `${API_CONFIG.baseURL}/media/upload/image`,
+    // 先获取原图大小
+    wx.getFileInfo({
       filePath: filePath,
-      name: 'file',
-      formData: {
-        category: category
-      },
-      header: {
-        'Authorization': token ? `Bearer ${token}` : ''
-      },
-      success: (res) => {
-        try {
-          const data = JSON.parse(res.data)
-          if (data.code === 200) {
-            resolve({
-              success: true,
-              data: data.data,
-              message: '上传成功'
+      success: (fileInfo) => {
+        const originalSize = fileInfo.size
+        const originalSizeMB = (originalSize / 1024 / 1024).toFixed(2)
+        
+        // 压缩图片
+        wx.compressImage({
+          src: filePath,
+          quality: 80, // 压缩质量 0-100，80 是较好的平衡点
+          success: (res) => {
+            // 获取压缩后图片大小
+            wx.getFileInfo({
+              filePath: res.tempFilePath,
+              success: (compressedInfo) => {
+                const compressedSize = compressedInfo.size
+                const compressedSizeMB = (compressedSize / 1024 / 1024).toFixed(2)
+                const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(1)
+                
+                console.log('图片压缩完成:', {
+                  原始大小: `${originalSizeMB}MB (${originalSize} bytes)`,
+                  压缩后大小: `${compressedSizeMB}MB (${compressedSize} bytes)`,
+                  压缩率: `${compressionRatio}%`
+                })
+                
+                resolve(res.tempFilePath)
+              },
+              fail: () => {
+                // 获取压缩后大小失败，但压缩成功，仍然返回压缩后的路径
+                console.log('图片压缩完成，但无法获取压缩后大小')
+                resolve(res.tempFilePath)
+              }
             })
-          } else if (data.code === 401) {
-            clearToken()
-            goLoginWithRedirect()
-            reject({
-              success: false,
-              error: '未授权',
-              code: 401
-            })
-          } else {
-            reject({
-              success: false,
-              error: data.message || '上传失败',
-              code: data.code
-            })
+          },
+          fail: (error) => {
+            console.warn('图片压缩失败，使用原图:', error)
+            // 压缩失败时使用原图
+            resolve(filePath)
           }
-        } catch (e) {
-          reject({
-            success: false,
-            error: '解析响应失败',
-            code: -1
-          })
-        }
+        })
       },
-      fail: (error) => {
-        reject({
-          success: false,
-          error: '上传失败，请检查网络',
-          code: -1
+      fail: () => {
+        // 获取原图大小失败，仍然尝试压缩
+        wx.compressImage({
+          src: filePath,
+          quality: 80,
+          success: (res) => {
+            console.log('图片压缩完成（无法获取原图大小）')
+            resolve(res.tempFilePath)
+          },
+          fail: (error) => {
+            console.warn('图片压缩失败，使用原图:', error)
+            resolve(filePath)
+          }
         })
       }
     })
+  })
+}
+
+/**
+ * 上传图片（自动压缩）
+ * @param {string} filePath 图片临时路径
+ * @param {string} category 图片分类，默认为 'express'
+ * @param {boolean} enableCompress 是否启用压缩，默认 true
+ * @returns {Promise} 返回上传结果，包含图片URL
+ */
+function uploadImage(filePath, category = 'express', enableCompress = true) {
+  return new Promise((resolve, reject) => {
+    const token = getToken()
+    
+    // 先压缩图片（如果启用）
+    const processUpload = (finalFilePath) => {
+      wx.uploadFile({
+        url: `${API_CONFIG.baseURL}/media/upload/image`,
+        filePath: finalFilePath,
+        name: 'file',
+        formData: {
+          category: category
+        },
+        header: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        success: (res) => {
+          try {
+            const data = JSON.parse(res.data)
+            if (data.code === 200) {
+              resolve({
+                success: true,
+                data: data.data,
+                message: '上传成功'
+              })
+            } else if (data.code === 401) {
+              clearToken()
+              goLoginWithRedirect()
+              reject({
+                success: false,
+                error: '未授权',
+                code: 401
+              })
+            } else {
+              reject({
+                success: false,
+                error: data.message || '上传失败',
+                code: data.code
+              })
+            }
+          } catch (e) {
+            reject({
+              success: false,
+              error: '解析响应失败',
+              code: -1
+            })
+          }
+        },
+        fail: (error) => {
+          reject({
+            success: false,
+            error: '上传失败，请检查网络',
+            code: -1
+          })
+        }
+      })
+    }
+    
+    // 如果需要压缩，先压缩再上传
+    if (enableCompress) {
+      compressImage(filePath).then(compressedPath => {
+        processUpload(compressedPath)
+      }).catch(error => {
+        // 压缩失败时使用原图
+        console.warn('图片压缩失败，使用原图:', error)
+        processUpload(filePath)
+      })
+    } else {
+      processUpload(filePath)
+    }
   })
 }
 
