@@ -1,88 +1,22 @@
 <!--pages/login/login.wxml-->
 <view class="login-container">
-  <!-- 头部Logo -->
+  <!-- Logo和标题 -->
   <view class="header">
+    <view class="logo-wrapper">
+      <view class="logo-icon">🐱</view>
+    </view>
     <view class="title">喵屋管家</view>
-    <view class="subtitle">欢迎回来</view>
+    <view class="subtitle">MIAOWU HOUSEKEEPER</view>
   </view>
 
-  <!-- 登录卡片 -->
-  <view class="card login-card shadow">
-    <!-- 登录方式切换 -->
-    <view class="tabs">
-      <view 
-        class="tab {{loginType === 'wechat' ? 'active' : ''}}"
-        data-type="wechat"
-        bindtap="switchLoginType"
-      >
-        微信登录
-      </view>
-      <view 
-        class="tab {{loginType === 'phone' ? 'active' : ''}}"
-        data-type="phone"
-        bindtap="switchLoginType"
-      >
-        手机登录
-      </view>
-    </view>
-
-    <!-- 微信登录 -->
-    <view class="content" wx:if="{{loginType === 'wechat'}}">
-      <view class="wechat-info">
-        <view class="wechat-icon">💬</view>
-        <view class="wechat-text">使用微信账号快速登录</view>
-      </view>
-      <button class="wechat-btn" hover-class="wechat-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="wechatLogin">
-        微信授权登录
-      </button>
-    </view>
-
-    <!-- 手机号登录 -->
-    <view class="content" wx:if="{{loginType === 'phone'}}">
-      <view class="form-group">
-        <view class="label">手机号</view>
-        <input 
-          class="input"
-          type="number"
-          placeholder="请输入手机号"
-          maxlength="11"
-          value="{{phone}}"
-          bindinput="onPhoneInput"
-        />
-      </view>
-      
-      <view class="form-group">
-        <view class="label">验证码</view>
-        <view class="code-row">
-          <input 
-            class="input code-input"
-            type="number"
-            placeholder="请输入验证码"
-            maxlength="6"
-            value="{{code}}"
-            bindinput="onCodeInput"
-          />
-          <button 
-            class="send-btn {{countdown > 0 ? 'disabled' : ''}}"
-            disabled="{{countdown > 0 || !phone}}"
-            bindtap="sendCode"
-          >
-            {{countdown > 0 ? countdown + 's' : '发送验证码'}}
-          </button>
-        </view>
-      </view>
-      
-      <button 
-        class="login-btn {{!phone || !code ? 'disabled' : ''}}"
-        hover-class="login-btn-hover"
-        hover-start-time="0"
-        hover-stay-time="70"
-        disabled="{{!phone || !code}}"
-        bindtap="phoneLogin"
-      >
-        登录
-      </button>
-    </view>
+  <!-- 登录按钮区域 -->
+  <view class="login-section">
+    <button class="wechat-btn" hover-class="wechat-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="wechatLogin">
+      微信登录
+    </button>
+    <button class="skip-btn" hover-class="skip-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="goHome">
+      暂不登录
+    </button>
   </view>
 
   <!-- 协议同意 -->
@@ -93,9 +27,7 @@
       </view>
       <view class="protocol-text">
         <text>我已阅读并同意</text>
-        <text class="protocol-link" catchtap="goUserAgreement">《用户协议》</text>
-        <text>和</text>
-        <text class="protocol-link" catchtap="goPrivacyPolicy">《隐私政策》</text>
+        <text class="protocol-link" catchtap="goPrivacyPolicy">《用户隐私协议》</text>
       </view>
     </view>
   </view>

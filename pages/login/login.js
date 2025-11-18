@@ -3,10 +3,6 @@ const api = require('../../utils/api.js')
 
 Page({
   data: {
-    loginType: 'wechat', // 'wechat' | 'phone'
-    phone: '',
-    code: '',
-    countdown: 0,
     isLogin: false,
     showPhoneAuth: false,
     phoneAuthData: null,
@@ -35,81 +31,6 @@ Page({
     }
   },
 
-  // 切换登录方式
-  switchLoginType(e) {
-    const type = e.currentTarget.dataset.type
-    this.setData({
-      loginType: type,
-      phone: '',
-      code: '',
-      countdown: 0
-    })
-  },
-
-  // 输入手机号
-  onPhoneInput(e) {
-    this.setData({
-      phone: e.detail.value
-    })
-  },
-
-  // 输入验证码
-  onCodeInput(e) {
-    this.setData({
-      code: e.detail.value
-    })
-  },
-
-  // 发送验证码
-  async sendCode() {
-    const { phone } = this.data
-    
-    if (!phone) {
-      wx.showToast({
-        title: '请输入手机号',
-        icon: 'none'
-      })
-      return
-    }
-
-    // 验证手机号格式
-    if (!/^1[3-9]\d{9}$/.test(phone)) {
-      wx.showToast({
-        title: '请输入正确的手机号',
-        icon: 'none'
-      })
-      return
-    }
-
-    try {
-      this.setData({ loading: true, loadingText: '发送验证码中...' })
-      const result = await api.sendSmsCode(phone)
-      this.setData({ loading: false })
-      
-      if (result.success) {
-        // 开始倒计时
-        this.startCountdown()
-      }
-    } catch (error) {
-      this.setData({ loading: false })
-      console.error('发送验证码失败:', error)
-      // 错误提示已在API工具中处理，这里不需要重复处理
-    }
-  },
-
-  // 开始倒计时
-  startCountdown() {
-    this.setData({ countdown: 60 })
-    
-    const timer = setInterval(() => {
-      const countdown = this.data.countdown - 1
-      this.setData({ countdown })
-      
-      if (countdown <= 0) {
-        clearInterval(timer)
-      }
-    }, 1000)
-  },
 
   // 构建用户信息对象
   buildUserInfo(userInfo) {
@@ -377,57 +298,6 @@ Page({
     wx.navigateTo({
       url: '/pages/bind-phone/bind-phone'
     })
-  },
-
-  // 手机号验证码登录
-  async phoneLogin() {
-    // 检查是否同意协议
-    if (!this.checkAgreeProtocol()) {
-      return
-    }
-
-    const { phone, code } = this.data
-    
-    if (!phone) {
-      wx.showToast({
-        title: '请输入手机号',
-        icon: 'none'
-      })
-      return
-    }
-
-    if (!code) {
-      wx.showToast({
-        title: '请输入验证码',
-        icon: 'none'
-      })
-      return
-    }
-
-    // 验证验证码格式
-    if (!/^\d{6}$/.test(code)) {
-      wx.showToast({
-        title: '请输入6位数字验证码',
-        icon: 'none'
-      })
-      return
-    }
-
-    try {
-      this.setData({ loading: true, loadingText: '登录中...' })
-      const result = await api.phoneSmsLogin(phone, code)
-      this.setData({ loading: false })
-
-      if (result.success) {
-        // 保存token
-        api.setToken(result.data.accessToken)
-        this.loginSuccess()
-      }
-    } catch (error) {
-      this.setData({ loading: false })
-      console.error('手机号登录失败:', error)
-      // 错误提示已在API工具中处理，这里不需要重复处理
-    }
   },
 
   // 处理登录成功

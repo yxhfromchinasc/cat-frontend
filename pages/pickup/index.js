@@ -349,9 +349,9 @@ Page({
   // 选择收货地址（跳转到地址选择页面）
   selectDeliveryAddress() {
     if (!this.data.defaultAddress) {
-      // 没有地址，跳转到地址编辑页面
+      // 没有地址，跳转到地址管理页面
       wx.navigateTo({
-        url: '/pages/address/edit'
+        url: '/pages/address/index'
       })
     } else {
       // 有默认地址，跳转到地址选择页面
