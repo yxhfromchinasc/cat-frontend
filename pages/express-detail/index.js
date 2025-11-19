@@ -267,6 +267,25 @@ Page({
     })
   },
 
+  // 拨打业务员电话
+  callCourier(e) {
+    const phone = e.currentTarget.dataset.phone
+    if (!phone) {
+      wx.showToast({ title: '电话号码不存在', icon: 'none' })
+      return
+    }
+    wx.makePhoneCall({
+      phoneNumber: phone,
+      success: () => {
+        console.log('拨打电话成功')
+      },
+      fail: (err) => {
+        console.error('拨打电话失败:', err)
+        wx.showToast({ title: '拨打电话失败', icon: 'none' })
+      }
+    })
+  },
+
   // 处理操作按钮点击
   async handleAction(e) {
     const action = e.currentTarget.dataset.action

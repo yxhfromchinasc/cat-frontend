@@ -106,11 +106,15 @@
   background: #fff;
   padding: 32rpx 24rpx;
   margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .courier-info {
   display: flex;
   align-items: center;
+  flex: 1;
 }
 
 .courier-avatar {
@@ -152,6 +156,35 @@
 .courier-rating .star {
   font-size: 26rpx;
   color: #ffcc00;
+}
+
+.courier-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.phone-btn {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: #fff;
+  border: 2rpx solid #4ad97b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 12rpx rgba(19, 194, 107, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.phone-btn:active {
+  transform: scale(0.92);
+  box-shadow: 0 4rpx 12rpx rgba(19, 194, 107, 0.25);
+}
+
+.phone-icon {
+  width: 36rpx;
+  height: 36rpx;
 }
 
 /* 时间线滚动区域 */

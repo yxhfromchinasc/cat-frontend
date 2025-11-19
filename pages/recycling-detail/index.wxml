@@ -39,6 +39,11 @@
         <text class="courier-desc">回收员</text>
       </view>
     </view>
+    <view class="courier-actions" wx:if="{{orderDetail.recyclerPhone}}">
+      <view class="phone-btn" bindtap="callRecycler" data-phone="{{orderDetail.recyclerPhone}}">
+        <image class="phone-icon" src="/assets/tabbar/call.png" mode="aspectFit" />
+      </view>
+    </view>
   </view>
 
   <!-- 时间线（可滚动区域） -->
@@ -57,6 +62,10 @@
         </view>
         <view class="timeline-info">
           <!-- CREATED事件的数据 -->
+          <view class="info-item" wx:if="{{event.type === 'CREATED' && orderDetail.orderNo}}">
+            <text class="info-label">订单号：</text>
+            <text class="info-value">{{orderDetail.orderNo}}</text>
+          </view>
           <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.addressDetail}}">
             <text class="info-label">回收地址：</text>
             <text class="info-value">{{event.data.addressDetail}}</text>

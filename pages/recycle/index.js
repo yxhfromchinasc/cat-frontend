@@ -566,10 +566,19 @@ Page({
       const res = await api.createRecyclingOrder(payload)
       
       if (res.success) {
+        const orderNo = res.data?.orderNo || res.data?.order?.orderNo || res.orderNo
         wx.showToast({ title: '提交成功', icon: 'success' })
         setTimeout(() => {
-          wx.navigateBack()
-        }, 1500)
+          if (orderNo) {
+            wx.redirectTo({
+              url: `/pages/recycling-detail/index?orderNo=${orderNo}`
+            })
+          } else {
+            wx.redirectTo({
+              url: '/pages/orders/index'
+            })
+          }
+        }, 800)
       } else {
         wx.showToast({ title: res.message || '提交失败', icon: 'none' })
       }

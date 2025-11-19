@@ -5,8 +5,8 @@
 
 // 基础配置
 const API_CONFIG = {
-  baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
-  // baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
+  // baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
+  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
 
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
@@ -855,6 +855,14 @@ function getNearbyStations(latitude, longitude, radius = 3) {
 }
 
 /**
+ * 查询未支付的快递订单
+ * @returns {Promise} 返回未支付的订单号，如果没有则返回null
+ */
+function getPendingExpressOrder() {
+  return get('/express/pending-order', {}, { showSuccess: false })
+}
+
+/**
  * 创建快递代取订单
  */
 function createExpressOrder(payload) {
@@ -1117,6 +1125,7 @@ module.exports = {
   getStationsByAddress,
   getAddressesByStation,
   getNearbyStations,
+  getPendingExpressOrder,
   createExpressOrder,
   cancelExpressOrder,
   

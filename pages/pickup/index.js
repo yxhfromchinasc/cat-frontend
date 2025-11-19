@@ -46,6 +46,12 @@ Page({
   },
 
   async onLoad(options) {
+    // 检查是否有未支付的快递订单
+    const hasPendingOrder = await this.checkUnpaidExpressOrder()
+    if (hasPendingOrder) {
+      return
+    }
+    
     // 优先从URL参数获取预选地址ID
     let addressId = options.addressId ? parseInt(options.addressId) : null
     
@@ -59,6 +65,39 @@ Page({
     
     // 初始化时间选择器
     this.initTimeSlots()
+  },
+
+  // 检查是否有未支付的快递订单
+  async checkUnpaidExpressOrder() {
+    try {
+      const res = await api.getPendingExpressOrder()
+      if (res.success && res.data && res.data.orderNo) {
+        const orderNo = res.data.orderNo
+        wx.showModal({
+          title: '提示',
+          content: '当前有订单未支付，请前往详情页支付',
+          confirmText: '前往支付',
+          cancelText: '取消',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              // 跳转到快递订单详情页
+              wx.redirectTo({
+                url: `/pages/express-detail/index?orderNo=${orderNo}`
+              })
+            } else {
+              // 用户取消，返回上一页
+              wx.navigateBack()
+            }
+          }
+        })
+        return true
+      }
+      return false
+    } catch (e) {
+      console.error('检查未支付订单失败:', e)
+      // 检查失败不影响正常流程，继续加载页面
+      return false
+    }
   },
 
   // 加载地址详情
@@ -664,11 +703,19 @@ Page({
       const res = await api.createExpressOrder(orderData)
       
       if (res.success) {
+        const orderNo = res.data?.orderNo || res.data?.order?.orderNo || res.orderNo
         wx.showToast({ title: '提交成功', icon: 'success' })
-        // TODO: 跳转到订单详情页或订单列表页
         setTimeout(() => {
-          wx.navigateBack()
-        }, 1500)
+          if (orderNo) {
+            wx.redirectTo({
+              url: `/pages/express-detail/index?orderNo=${orderNo}`
+            })
+          } else {
+            wx.redirectTo({
+              url: '/pages/orders/index'
+            })
+          }
+        }, 800)
       }
     } catch (e) {
       console.error('提交订单失败:', e)
