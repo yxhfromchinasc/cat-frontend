@@ -725,9 +725,11 @@ Page({
       if (this.data.form.startTime && this.data.form.endTime) {
         try {
           const checkRes = await api.checkTimeSlotAvailability(3, this.data.form.startTime, this.data.form.endTime)
-          if (!checkRes.success || !checkRes.data?.isAvailable) {
+          console.log('提交前检查时间段可用性结果:', checkRes)
+          // 注意：checkRes.data 是 {available: true/false, message: "..."}
+          if (!checkRes.success || !checkRes.data?.available) {
             wx.showToast({ 
-              title: checkRes.message || '该时间段已约满，请选择其他时间段', 
+              title: checkRes.data?.message || checkRes.message || '该时间段已约满，请选择其他时间段', 
               icon: 'none' 
             })
             // 重置选择
@@ -767,10 +769,18 @@ Page({
         payload.images = this.data.form.images
       }
       
+      console.log('提交订单数据:', payload)
+      
       const res = await api.createRecyclingOrder(payload)
       
+      console.log('提交订单响应:', res)
+      
       if (res.success) {
+        console.log('订单提交成功')
         const orderNo = res.data?.orderNo || res.data?.order?.orderNo || res.orderNo
+        console.log('订单号:', orderNo)
+        // createRecyclingOrder 已经设置了 showSuccess: true，会自动显示成功提示
+        // 但为了确保用户体验，我们仍然显示一次
         wx.showToast({ title: '提交成功', icon: 'success' })
         setTimeout(() => {
           if (orderNo) {
@@ -784,18 +794,26 @@ Page({
           }
         }, 800)
       } else {
-        wx.showToast({ title: res.message || '提交失败', icon: 'none' })
+        console.log('订单提交失败（success=false）:', res)
+        // 如果 success 为 false，但进入了这里（不应该发生，因为会 reject），显示错误
+        wx.showToast({ 
+          title: res.message || res.error || '提交失败', 
+          icon: 'none',
+          duration: 2000
+        })
       }
     } catch (e) {
-      console.error('提交订单失败:', e)
+      console.error('提交订单异常:', e)
       // 优先显示后端返回的错误消息
       const errorMsg = e.message || e.error || '提交失败，请稍后重试'
+      console.log('显示错误消息:', errorMsg)
       wx.showToast({ 
         title: errorMsg, 
         icon: 'none',
         duration: 2000
       })
     } finally {
+      console.log('提交流程结束，隐藏loading')
       wx.hideLoading()
     }
   },

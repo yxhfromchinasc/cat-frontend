@@ -59,6 +59,15 @@ function reverseGeocode(latitude, longitude) {
 }
 
 /**
+ * 地理编码：根据地址文本获取经纬度
+ * @param {string} address 地址文本（完整地址）
+ * @returns {Promise} 返回经纬度信息，包含 latitude, longitude
+ */
+function geocode(address) {
+  return get('/map/geocode', { address }, { showLoading: false, showError: false })
+}
+
+/**
  * 获取存储的token
  */
 function getToken() {
@@ -1117,6 +1126,7 @@ module.exports = {
 
   // 地图相关
   reverseGeocode,
+  geocode,
   
   // 图片上传
   uploadImage,
