@@ -14,19 +14,7 @@ Page({
 
   onShow() {},
 
-  onAmountInput(e) {
-    const val = e.detail.value.trim()
-    // 只允许数字与小数点，且两位小数
-    const normalized = val.replace(/[^\d.]/g, '')
-    const parts = normalized.split('.')
-    let fixed = parts[0]
-    if (parts.length > 1) {
-      fixed += '.' + parts[1].slice(0, 2)
-    }
-    const num = Number(fixed)
-    const valid = fixed !== '' && !isNaN(num) && num > 0
-    this.setData({ amount: fixed, canSubmit: valid })
-  },
+  // 已移除 onAmountInput 方法，用户只能从预设金额中选择
 
   async onPay() {
     if (!this.data.canSubmit) return
@@ -93,8 +81,8 @@ Page({
   onQuickPick(e) {
     const val = Number(e.currentTarget.dataset.val)
     const value = val.toFixed(2)
-    // 基础校验：>0 且两位小数
-    const valid = val > 0 && Math.round(val * 100) === val * 100
+    // 从预设金额中选择，直接设置为有效
+    const valid = val > 0
     this.setData({ amount: value, canSubmit: valid })
   },
 
@@ -103,10 +91,22 @@ Page({
       const res = await api.getRechargeAmounts()
       if (res.success && res.data) {
           const amounts = JSON.parse(res.data)
-          this.setData({ rechargeAmounts: amounts || [] })
+          // 将金额转换为对象格式，方便在 wxml 中比较和显示
+          const formattedAmounts = (amounts || []).map(amt => ({
+            value: amt,
+            display: amt.toFixed(2),
+            key: amt.toFixed(2)
+          }))
+          this.setData({ rechargeAmounts: formattedAmounts })
       } else {
           // 如果获取失败，使用默认值
-          this.setData({ rechargeAmounts: [1, 10, 50, 100] })
+          const defaultAmounts = [1, 10, 50, 100]
+          const formattedAmounts = defaultAmounts.map(amt => ({
+            value: amt,
+            display: amt.toFixed(2),
+            key: amt.toFixed(2)
+          }))
+          this.setData({ rechargeAmounts: formattedAmounts })
       }
   },
 

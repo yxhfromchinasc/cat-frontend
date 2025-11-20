@@ -7,16 +7,29 @@
   <view class="form">
     <view class="form-item">
       <text class="label">充值金额（元）</text>
-      <input class="input" type="digit" placeholder="请输入金额，如 1.00" bindinput="onAmountInput" value="{{amount}}" />
+      <view class="selected-amount" wx:if="{{amount}}">
+        <text class="selected-amount-text">已选择：¥{{amount}}</text>
+      </view>
+      <view class="selected-amount-placeholder" wx:else>
+        <text class="placeholder-text">请选择充值金额</text>
+      </view>
     </view>
     <view class="quick-amounts">
-      <button wx:for="{{rechargeAmounts}}" wx:key="*this" size="mini" bindtap="onQuickPick" data-val="{{item}}">¥{{item}}</button>
+      <view 
+        wx:for="{{rechargeAmounts}}" 
+        wx:key="key" 
+        class="amount-btn {{amount == item.key ? 'active' : ''}}" 
+        bindtap="onQuickPick" 
+        data-val="{{item.value}}"
+      >
+        ¥{{item.display}}
+      </view>
     </view>
     <button class="pay-btn" type="primary" loading="{{submitting}}" disabled="{{!canSubmit || submitting}}" bindtap="onPay">立即支付</button>
   </view>
 
   <view class="tips">
-    <text>· 金额须为正数，最多两位小数</text>
+    <text>· 请从上方选择充值金额</text>
     <text>· 支付结果以订单查询为准</text>
   </view>
 </view>

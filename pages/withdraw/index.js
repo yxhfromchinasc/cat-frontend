@@ -43,29 +43,23 @@ Page({
   async loadWithdrawAmounts() {
       const res = await api.getWithdrawAmounts()
       const amounts = JSON.parse(res.data)
-      this.setData({ withdrawAmounts: amounts || [] })
+      // 将金额转换为对象格式，方便在 wxml 中比较和显示
+      const formattedAmounts = (amounts || []).map(amt => ({
+        value: amt,
+        display: amt.toFixed(2),
+        key: amt.toFixed(2)
+      }))
+      this.setData({ withdrawAmounts: formattedAmounts })
   },
 
-  // 金额输入
-  onAmountInput(e) {
-    const val = e.detail.value.trim()
-    const normalized = val.replace(/[^\d.]/g, '')
-    const parts = normalized.split('.')
-    let fixed = parts[0]
-    if (parts.length > 1) {
-      fixed += '.' + parts[1].slice(0, 2)
-    }
-    const num = Number(fixed)
-    const valid = fixed !== '' && !isNaN(num) && num > 0
-    const amountStr = valid ? amount.formatAmount(num) : '0.00'
-    this.setData({ amount: fixed, amountStr, canSubmit: valid })
-  },
+  // 已移除 onAmountInput 方法，用户只能从预设金额中选择
 
   // 快捷选择金额
   onQuickPick(e) {
     const val = Number(e.currentTarget.dataset.val)
     const value = val.toFixed(2)
     const amountStr = amount.formatAmount(val)
+    // 从预设金额中选择，直接设置为有效
     this.setData({ amount: value, amountStr, canSubmit: true })
   },
 

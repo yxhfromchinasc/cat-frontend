@@ -4,41 +4,17 @@ const { api } = require('../../utils/util.js')
 Page({
   data: {
     name: '',
-    gender: '',
     phone: '',
     content: '',
     submitting: false
   },
 
   onLoad() {
-    // 如果已登录，尝试填充用户信息
-    if (api.checkLogin()) {
-      this.loadUserInfo()
-    }
-  },
-
-  async loadUserInfo() {
-    try {
-      const res = await api.getUserInfo()
-      if (res && res.success && res.data) {
-        const user = res.data
-        this.setData({
-          name: user.nickname || user.username || '',
-          phone: user.phone || ''
-        })
-      }
-    } catch (e) {
-      console.error('加载用户信息失败:', e)
-    }
+    // 不预填充任何信息，让用户自己填写
   },
 
   onNameInput(e) {
     this.setData({ name: e.detail.value })
-  },
-
-  selectGender(e) {
-    const gender = e.currentTarget.dataset.gender
-    this.setData({ gender })
   },
 
   onPhoneInput(e) {
@@ -50,18 +26,13 @@ Page({
   },
 
   async submitFeedback() {
-    const { name, gender, phone, content, submitting } = this.data
+    const { name, phone, content, submitting } = this.data
 
     if (submitting) return
 
     // 表单验证
     if (!name || !name.trim()) {
       wx.showToast({ title: '请输入您的称呼', icon: 'none' })
-      return
-    }
-
-    if (!gender) {
-      wx.showToast({ title: '请选择您的性别', icon: 'none' })
       return
     }
 
@@ -92,7 +63,6 @@ Page({
     try {
       const res = await api.submitFeedback({
         name: name.trim(),
-        gender: gender === 'male' ? 1 : 2, // 1-男，2-女
         phone: phone.trim(),
         content: content.trim()
       })

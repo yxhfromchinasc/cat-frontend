@@ -36,11 +36,35 @@
   font-weight: 500;
 }
 
-.input {
+.selected-amount {
+  border: 2rpx solid #07c160;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  background-color: #f0f9f4;
+  min-height: 80rpx;
+  display: flex;
+  align-items: center;
+}
+
+.selected-amount-text {
+  font-size: 32rpx;
+  color: #07c160;
+  font-weight: 500;
+}
+
+.selected-amount-placeholder {
   border: 1rpx solid #e5e5e5;
   border-radius: 12rpx;
   padding: 20rpx;
-  font-size: 32rpx;
+  background-color: #f5f5f5;
+  min-height: 80rpx;
+  display: flex;
+  align-items: center;
+}
+
+.placeholder-text {
+  font-size: 28rpx;
+  color: #999;
 }
 
 .pay-btn {
@@ -52,8 +76,29 @@
 
 .quick-amounts {
   display: flex;
+  flex-wrap: wrap;
   gap: 16rpx;
-  margin: 12rpx 0 16rpx;
+  margin: 24rpx 0 16rpx;
+}
+
+.amount-btn {
+  flex: 1;
+  min-width: 140rpx;
+  padding: 24rpx 32rpx;
+  border: 2rpx solid #e5e5e5;
+  border-radius: 12rpx;
+  background-color: #fff;
+  text-align: center;
+  font-size: 32rpx;
+  color: #333;
+  transition: all 0.3s;
+}
+
+.amount-btn.active {
+  border-color: #07c160;
+  background-color: #07c160;
+  color: #fff;
+  font-weight: 500;
 }
 
 .tips {

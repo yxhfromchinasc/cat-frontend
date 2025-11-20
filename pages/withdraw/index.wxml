@@ -11,16 +11,29 @@
     </view>
     <view class="form-item">
       <text class="label">提现金额（元）</text>
-      <input class="input" type="digit" placeholder="请输入金额，如 1.00" bindinput="onAmountInput" value="{{amount}}" />
+      <view class="selected-amount" wx:if="{{amount}}">
+        <text class="selected-amount-text">已选择：¥{{amountStr || amount}}</text>
+      </view>
+      <view class="selected-amount-placeholder" wx:else>
+        <text class="placeholder-text">请选择提现金额</text>
+      </view>
     </view>
     <view class="quick-amounts">
-      <button wx:for="{{withdrawAmounts}}" wx:key="*this" size="mini" bindtap="onQuickPick" data-val="{{item}}">¥{{item}}</button>
+      <view 
+        wx:for="{{withdrawAmounts}}" 
+        wx:key="key" 
+        class="amount-btn {{amount == item.key ? 'active' : ''}}" 
+        bindtap="onQuickPick" 
+        data-val="{{item.value}}"
+      >
+        ¥{{item.display}}
+      </view>
     </view>
     <button class="pay-btn" type="primary" loading="{{submitting}}" disabled="{{!canSubmit || submitting}}" bindtap="onWithdraw">确认提现</button>
   </view>
 
   <view class="tips">
-    <text>· 金额须为正数，最多两位小数</text>
+    <text>· 请从上方选择提现金额</text>
     <text>· 提现后需要确认收款才会到账</text>
     <text>· 24小时内未确认收款将自动退款</text>
   </view>

@@ -34,8 +34,8 @@ Page({
       isUrgent: false // 是否加急
     },
     
-    // 快捷选项
-    quickOptions: ['轻拿轻放', '大件', '放门口别敲门', '易碎品', '需要当面验收'],
+    // 快捷选项（从后端获取）
+    quickOptions: [],
     
     // 时间选择相关
     dateOptions: [], // 日期选项（今天、明天）
@@ -54,6 +54,9 @@ Page({
       return
     }
     
+    // 加载备注快捷选项
+    await this.loadRemarkOptions()
+    
     // 优先从URL参数获取预选地址ID
     let addressId = options.addressId ? parseInt(options.addressId) : null
     
@@ -67,6 +70,24 @@ Page({
     
     // 初始化时间选择器
     this.initTimeSlots()
+  },
+
+  // 加载备注快捷选项
+  async loadRemarkOptions() {
+    try {
+      const res = await api.getExpressRemarkOptions()
+      if (res.success && res.data) {
+        const options = JSON.parse(res.data)
+        this.setData({ quickOptions: options || [] })
+      } else {
+        // 如果获取失败，使用默认值
+        this.setData({ quickOptions: ['轻拿轻放', '大件', '放门口别敲门', '易碎品', '需要当面验收'] })
+      }
+    } catch (e) {
+      console.error('加载备注快捷选项失败:', e)
+      // 如果获取失败，使用默认值
+      this.setData({ quickOptions: ['轻拿轻放', '大件', '放门口别敲门', '易碎品', '需要当面验收'] })
+    }
   },
 
   // 检查是否有未支付的快递订单

@@ -26,8 +26,8 @@ Page({
     // 是否可以提交（用于按钮禁用状态）
     canSubmitData: false,
     
-    // 快捷选项
-    quickOptions: ['易拉罐', '纸壳子', '旧家电', '金属', '塑料瓶', '旧衣服', '废旧电池'],
+    // 快捷选项（从后端获取）
+    quickOptions: [],
     
     // 时间选择相关
     timeType: 'appointment', // 'immediate' 立即上门 或 'appointment' 预约时间
@@ -41,6 +41,9 @@ Page({
   },
 
   async onLoad(options) {
+    // 加载备注快捷选项
+    await this.loadRemarkOptions()
+    
     // 优先从URL参数获取预选地址ID
     let addressId = options.addressId ? parseInt(options.addressId) : null
     
@@ -62,6 +65,24 @@ Page({
     
     // 从地址编辑页返回后，刷新默认地址
     this.loadDefaultAddress()
+  },
+
+  // 加载备注快捷选项
+  async loadRemarkOptions() {
+    try {
+      const res = await api.getRecyclingRemarkOptions()
+      if (res.success && res.data) {
+        const options = JSON.parse(res.data)
+        this.setData({ quickOptions: options || [] })
+      } else {
+        // 如果获取失败，使用默认值
+        this.setData({ quickOptions: ['易拉罐', '纸壳子', '旧家电', '金属', '塑料瓶', '旧衣服', '废旧电池'] })
+      }
+    } catch (e) {
+      console.error('加载备注快捷选项失败:', e)
+      // 如果获取失败，使用默认值
+      this.setData({ quickOptions: ['易拉罐', '纸壳子', '旧家电', '金属', '塑料瓶', '旧衣服', '废旧电池'] })
+    }
   },
 
   // 加载默认地址

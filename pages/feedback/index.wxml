@@ -6,18 +6,6 @@
     </view>
 
     <view class="form-item">
-      <text class="label">您的性别</text>
-      <view class="gender-group">
-        <view class="gender-item {{gender === 'male' ? 'active' : ''}}" bindtap="selectGender" data-gender="male">
-          <text class="gender-text">男</text>
-        </view>
-        <view class="gender-item {{gender === 'female' ? 'active' : ''}}" bindtap="selectGender" data-gender="female">
-          <text class="gender-text">女</text>
-        </view>
-      </view>
-    </view>
-
-    <view class="form-item">
       <text class="label">您的联系方式</text>
       <input class="input" placeholder="请输入手机号" value="{{phone}}" bindinput="onPhoneInput" type="number" maxlength="11" />
     </view>
