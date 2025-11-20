@@ -34,6 +34,19 @@
   margin-top: 12rpx;
 }
 
+/* 驿站提示复用回收样式 */
+.recycling-point-tip {
+  margin-top: 16rpx;
+  padding: 12rpx 16rpx;
+  border-radius: 8rpx;
+  background: #f7f8fa;
+}
+
+.tip-text {
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
 .form-item {
   margin-bottom: 32rpx;
 }

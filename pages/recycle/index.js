@@ -13,6 +13,7 @@ Page({
     // 回收点相关
     recyclingPointList: [],
     recyclingPointName: null,
+    selectedRecyclingPointId: null, // 选中的回收点ID
     
     // 表单数据
     form: {
@@ -126,7 +127,7 @@ Page({
     const canSubmit = this.data.selectedAddressId && 
                      this.data.form.startTime && 
                      this.data.form.endTime &&
-                     this.data.recyclingPointName
+                     this.data.selectedRecyclingPointId
     this.setData({ canSubmitData: canSubmit })
   },
 
@@ -150,7 +151,8 @@ Page({
     if (!addressId) {
       this.setData({ 
         recyclingPointList: [],
-        recyclingPointName: null
+        recyclingPointName: null,
+        selectedRecyclingPointId: null
       })
       return
     }
@@ -161,16 +163,24 @@ Page({
       if (res.success && res.data) {
         const recyclingPointList = res.data || []
         
-        // 显示第一个回收点的名称
+        // 显示第一个回收点的名称和ID
         let recyclingPointName = null
+        let selectedRecyclingPointId = null
         if (recyclingPointList.length > 0) {
           recyclingPointName = recyclingPointList[0].pointName
+          selectedRecyclingPointId = recyclingPointList[0].id
         }
         
         this.setData({
           recyclingPointList,
-          recyclingPointName
+          recyclingPointName,
+          selectedRecyclingPointId
         })
+        
+        // 自动选择第一个回收点后，检查时间段可用性
+        if (selectedRecyclingPointId) {
+          this.checkAllTimeSlotsAvailability()
+        }
         
         // 更新提交状态
         this.updateCanSubmit()
@@ -178,7 +188,8 @@ Page({
         // 如果没有数据，设置为空
         this.setData({
           recyclingPointList: [],
-          recyclingPointName: null
+          recyclingPointName: null,
+          selectedRecyclingPointId: null
         })
         
         // 更新提交状态
@@ -188,7 +199,8 @@ Page({
       console.error('加载回收点失败:', e)
       this.setData({
         recyclingPointList: [],
-        recyclingPointName: null
+        recyclingPointName: null,
+        selectedRecyclingPointId: null
       })
       
       // 更新提交状态
@@ -389,8 +401,11 @@ Page({
       selectedDateIndex: defaultDateIndex
     })
     
-    // 检查所有时间段的可用性
-    this.checkAllTimeSlotsAvailability()
+    // 检查所有时间段的可用性（需要先选择回收点）
+    // 如果已选择回收点，则检查可用性；否则在回收点加载后会自动检查
+    if (this.data.selectedRecyclingPointId) {
+      this.checkAllTimeSlotsAvailability()
+    }
     
     // 默认选择第一个可用时间段
     if (defaultTimeSlotOptions.length > 0) {
@@ -421,6 +436,11 @@ Page({
   // 检查所有时间段的可用性（优化：分批检查，避免一次性请求太多）
   async checkAllTimeSlotsAvailability() {
     if (this.data.checkingAvailability) return
+    // 如果没有选择回收点，不检查可用性
+    if (!this.data.selectedRecyclingPointId) {
+      console.log('未选择回收点，跳过时间段可用性检查')
+      return
+    }
     this.setData({ checkingAvailability: true })
     
     try {
@@ -435,7 +455,8 @@ Page({
           const startTime = this.formatDateTime(slot.startTime, false)
           const endTime = this.formatDateTime(slot.endTime, false)
           try {
-            const res = await api.checkTimeSlotAvailability(3, startTime, endTime) // 3=上门回收
+            // 3=上门回收，需要传递recyclingPointId
+            const res = await api.checkTimeSlotAvailability(3, startTime, endTime, null, this.data.selectedRecyclingPointId)
             return {
               slot,
               available: res.success && res.data && res.data.available
@@ -471,7 +492,8 @@ Page({
           const startTime = this.formatDateTime(slot.startTime, true)
           const endTime = this.formatDateTime(slot.endTime, true)
           try {
-            const res = await api.checkTimeSlotAvailability(3, startTime, endTime) // 3=上门回收
+            // 3=上门回收，需要传递recyclingPointId
+            const res = await api.checkTimeSlotAvailability(3, startTime, endTime, null, this.data.selectedRecyclingPointId)
             return {
               slot,
               available: res.success && res.data && res.data.available
@@ -669,6 +691,11 @@ Page({
       return false
     }
     
+    if (!this.data.selectedRecyclingPointId) {
+      wx.showToast({ title: '未找到服务该地址的回收点', icon: 'none' })
+      return false
+    }
+    
     // 加急订单不需要验证时间段
     if (this.data.timeType !== 'immediate') {
       if (!this.data.form.startTime || !this.data.form.endTime) {
@@ -724,7 +751,8 @@ Page({
       // 提交前再次检查时间段可用性（防止在用户选择后时间段被其他用户占用）
       if (this.data.form.startTime && this.data.form.endTime) {
         try {
-          const checkRes = await api.checkTimeSlotAvailability(3, this.data.form.startTime, this.data.form.endTime)
+          // 3=上门回收，需要传递recyclingPointId
+          const checkRes = await api.checkTimeSlotAvailability(3, this.data.form.startTime, this.data.form.endTime, null, this.data.selectedRecyclingPointId)
           console.log('提交前检查时间段可用性结果:', checkRes)
           // 注意：checkRes.data 是 {available: true/false, message: "..."}
           if (!checkRes.success || !checkRes.data?.available) {
@@ -760,6 +788,8 @@ Page({
         // 后端需要这些字段，但前端已隐藏，传默认值
         estWeight: null,
         itemDescription: '废品回收',
+        // 回收点ID（如果前端没有选择，后端会根据地址自动选择第一个）
+        recyclingPointId: this.data.selectedRecyclingPointId,
         // 是否加急（立即上门）
         isUrgent: isUrgent
       }

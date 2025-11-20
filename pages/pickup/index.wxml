@@ -35,6 +35,9 @@
         </view>
       </picker>
       <view class="card-tip" wx:if="{{selectedAddressId && stationNames.length === 0}}">该地址附近暂无可服务驿站</view>
+      <view class="recycling-point-tip" wx:if="{{selectedStationName}}">
+        <text class="tip-text success">当前驿站：{{selectedStationName}}</text>
+      </view>
     </view>
 
     <!-- 包裹信息 -->

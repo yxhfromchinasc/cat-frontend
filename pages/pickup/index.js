@@ -10,6 +10,7 @@ Page({
     stationList: [],
     stationNames: [],
     selectedStationId: null,
+    selectedStationName: '',
     selectedStationIndex: -1,
     
     // 收货地址（只显示默认地址）
@@ -325,8 +326,11 @@ Page({
       selectedDateIndex: defaultDateIndex
     })
     
-    // 检查所有时间段的可用性
-    this.checkAllTimeSlotsAvailability()
+    // 检查所有时间段的可用性（需要先选择驿站）
+    // 如果已选择驿站，则检查可用性；否则在驿站选择后会自动检查
+    if (this.data.selectedStationId) {
+      this.checkAllTimeSlotsAvailability()
+    }
     
     // 默认选择第一个可用时间段
     if (defaultTimeSlotOptions.length > 0) {
@@ -356,6 +360,11 @@ Page({
   // 检查所有时间段的可用性（优化：分批检查，避免一次性请求太多）
   async checkAllTimeSlotsAvailability() {
     if (this.data.checkingAvailability) return
+    // 如果没有选择驿站，不检查可用性
+    if (!this.data.selectedStationId) {
+      console.log('未选择驿站，跳过时间段可用性检查')
+      return
+    }
     this.setData({ checkingAvailability: true })
     
     try {
@@ -370,7 +379,8 @@ Page({
           const startTime = this.formatDateTime(slot.startTime, false)
           const endTime = this.formatDateTime(slot.endTime, false)
           try {
-            const res = await api.checkTimeSlotAvailability(2, startTime, endTime) // 2=快递代取
+            // 2=快递代取，需要传递stationId
+            const res = await api.checkTimeSlotAvailability(2, startTime, endTime, this.data.selectedStationId, null)
             return {
               slot,
               available: res.success && res.data && res.data.available
@@ -406,7 +416,8 @@ Page({
           const startTime = this.formatDateTime(slot.startTime, true)
           const endTime = this.formatDateTime(slot.endTime, true)
           try {
-            const res = await api.checkTimeSlotAvailability(2, startTime, endTime) // 2=快递代取
+            // 2=快递代取，需要传递stationId
+            const res = await api.checkTimeSlotAvailability(2, startTime, endTime, this.data.selectedStationId, null)
             return {
               slot,
               available: res.success && res.data && res.data.available
@@ -453,6 +464,7 @@ Page({
         stationList: [],
         stationNames: [],
         selectedStationId: null,
+        selectedStationName: '',
         selectedStationIndex: -1
       })
       return
@@ -467,9 +479,11 @@ Page({
         
         // 自动选择第一个驿站
         let selectedStationId = null
+        let selectedStationName = ''
         let selectedStationIndex = -1
         if (stationList.length > 0) {
           selectedStationId = stationList[0].id
+          selectedStationName = stationList[0].stationName || ''
           selectedStationIndex = 0
         }
         
@@ -477,14 +491,21 @@ Page({
           stationList,
           stationNames,
           selectedStationId,
+          selectedStationName,
           selectedStationIndex
         })
+        
+        // 自动选择第一个驿站后，检查时间段可用性
+        if (selectedStationId) {
+          this.checkAllTimeSlotsAvailability()
+        }
       } else {
         // 如果没有数据，设置为空数组
         this.setData({
           stationList: [],
           stationNames: [],
           selectedStationId: null,
+          selectedStationName: '',
           selectedStationIndex: -1
         })
       }
@@ -495,6 +516,7 @@ Page({
         stationList: [],
         stationNames: [],
         selectedStationId: null,
+        selectedStationName: '',
         selectedStationIndex: -1
       })
     } finally {
@@ -515,8 +537,10 @@ Page({
     if (station) {
       this.setData({
         selectedStationId: station.id,
+        selectedStationName: station.stationName || '',
         selectedStationIndex: index
       })
+      this.checkAllTimeSlotsAvailability()
     }
   },
 
@@ -877,7 +901,8 @@ Page({
       if (this.data.form.startTime && this.data.form.endTime) {
         try {
           console.log('提交前检查时间段可用性:', this.data.form.startTime, this.data.form.endTime)
-          const checkRes = await api.checkTimeSlotAvailability(2, this.data.form.startTime, this.data.form.endTime)
+          // 2=快递代取，需要传递stationId
+          const checkRes = await api.checkTimeSlotAvailability(2, this.data.form.startTime, this.data.form.endTime, this.data.selectedStationId, null)
           console.log('提交前检查时间段可用性结果:', checkRes)
           // 注意：checkRes.data 是 {available: true/false, message: "..."}
           if (!checkRes.success || !checkRes.data?.available) {
