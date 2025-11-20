@@ -111,8 +111,8 @@
               <text class="label">实际重量：</text>
               <text class="value">{{item.weight}}kg</text>
             </view>
-            <!-- 已完成状态：显示回收价格 -->
-            <view class="order-info-item" wx:if="{{item.recyclingStatus === 3 && item.price}}">
+            <!-- 打款中或已完成状态：显示回收价格 -->
+            <view class="order-info-item" wx:if="(item.recyclingStatus === 5 || item.recyclingStatus === 3) && item.price">
               <text class="label">回收价格：</text>
               <text class="value price">￥{{item.price}}</text>
             </view>

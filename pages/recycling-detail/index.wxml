@@ -151,6 +151,16 @@
             </view>
           </view>
           
+          <!-- PAYMENT事件的数据（打款完成） -->
+          <view class="info-item" wx:if="{{event.type === 'PAYMENT' && event.data.amount}}">
+            <text class="info-label">打款金额：</text>
+            <text class="info-value price">￥{{event.data.amount}}</text>
+          </view>
+          <view class="info-item" wx:if="{{event.type === 'PAYMENT' && event.data.paymentTime}}">
+            <text class="info-label">打款时间：</text>
+            <text class="info-value">{{event.data.paymentTime}}</text>
+          </view>
+          
           <!-- CANCEL事件的数据 -->
           <view class="info-item" wx:if="{{event.type === 'CANCEL' && event.data.reason}}">
             <text class="info-label">取消原因：</text>

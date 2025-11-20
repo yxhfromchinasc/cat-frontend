@@ -123,10 +123,19 @@ Page({
         show: true
       })
       
+      // 添加"打款中"步骤
+      steps.push({
+        key: 'paying',
+        title: '打款中',
+        status: status === 5 ? 'waiting' : status >= 3 ? 'completed' : status === 2 ? 'waiting' : 'disabled',
+        time: detail.actualTime, // 使用实际回收时间
+        show: status >= 2
+      })
+      
       steps.push({
         key: 'completed',
         title: '已完成',
-        status: status >= 3 ? 'completed' : status === 2 ? 'waiting' : 'disabled',
+        status: status === 3 ? 'completed' : status === 5 ? 'waiting' : status >= 3 ? 'completed' : 'disabled',
         time: detail.actualTime,
         show: true
       })
