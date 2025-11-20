@@ -35,7 +35,8 @@ Page({
     todayTimeSlots: [], // 今天的时间段列表
     tomorrowTimeSlots: [], // 明天的时间段列表
     selectedDateIndex: -1, // 选中的日期索引
-    selectedTimeSlotIndex: -1 // 选中的时间段索引
+    selectedTimeSlotIndex: -1, // 选中的时间段索引
+    checkingAvailability: false // 是否正在检查可用性
   },
 
   async onLoad(options) {
@@ -249,7 +250,7 @@ Page({
   },
 
   // 初始化时间选择器（预约时间）
-  initTimeSlots() {
+  async initTimeSlots() {
     const now = new Date()
     
     // 初始化日期选项（今天、明天）
@@ -258,32 +259,68 @@ Page({
       { label: '明天', isToday: false }
     ]
     
-    // 计算今天的起始时间
-    let startHour = now.getHours()
-    let startMinute = now.getMinutes()
-    
-    // 计算今天的起始时间：从下一个半小时开始
-    let todayHasSlots = true
-    if (startMinute > 0 && startMinute < 30) {
-      startMinute = 30
-    } else if (startMinute >= 30) {
-      startHour += 1
-      if (startHour >= 24) {
-        todayHasSlots = false
-        startHour = 0
-        startMinute = 0
-      } else {
-        startMinute = 0
+    // 从后端获取可预约时间范围
+    let appointmentTimeRange = '09:00-18:00' // 默认值
+    try {
+      const res = await api.getRecyclingAppointmentTime()
+      if (res.success && res.data) {
+        appointmentTimeRange = res.data
       }
-    } else {
-      startMinute = 30
+    } catch (e) {
+      console.error('获取可预约时间配置失败:', e)
     }
     
-    // 生成今天的时间段
+    // 解析时间范围（格式：HH:mm-HH:mm）
+    const [startTimeStr, endTimeStr] = appointmentTimeRange.split('-')
+    const [startHour, startMinute] = startTimeStr.split(':').map(Number)
+    const [endHour, endMinute] = endTimeStr.split(':').map(Number)
+    const configStartMinutes = startHour * 60 + startMinute
+    const configEndMinutes = endHour * 60 + endMinute
+    
+    // 计算今天的起始时间
+    let todayStartHour = now.getHours()
+    let todayStartMinute = now.getMinutes()
+    let todayHasSlots = true
+    
+    // 计算今天的起始时间：从下一个半小时开始，但不能早于配置的开始时间
+    if (todayStartMinute > 0 && todayStartMinute < 30) {
+      todayStartMinute = 30
+    } else if (todayStartMinute >= 30) {
+      todayStartHour += 1
+      if (todayStartHour >= 24) {
+        todayHasSlots = false
+        todayStartHour = startHour
+        todayStartMinute = startMinute
+      } else {
+        todayStartMinute = 0
+      }
+    } else {
+      todayStartMinute = 30
+    }
+    
+    // 确保今天的起始时间不早于配置的开始时间
+    const todayStartMinutes = todayStartHour * 60 + todayStartMinute
+    if (todayStartMinutes < configStartMinutes) {
+      todayStartHour = startHour
+      todayStartMinute = startMinute
+    } else if (todayStartMinutes >= configEndMinutes) {
+      // 如果当前时间已经超过配置的结束时间，今天没有可选时间段
+      todayHasSlots = false
+    }
+    
+    // 生成时间段选项（30分钟一个时间段）
+    // 今天的时间段
     const todaySlots = []
     if (todayHasSlots) {
-      for (let hour = startHour; hour < 24; hour++) {
-        for (let minute = (hour === startHour ? startMinute : 0); minute < 60; minute += 30) {
+      const actualStartMinutes = Math.max(todayStartHour * 60 + todayStartMinute, configStartMinutes)
+      const actualStartHour = Math.floor(actualStartMinutes / 60)
+      const actualStartMin = actualStartMinutes % 60
+      
+      for (let hour = actualStartHour; hour <= endHour; hour++) {
+        const minStart = (hour === actualStartHour ? actualStartMin : 0)
+        const minEnd = (hour === endHour ? endMinute : 60)
+        
+        for (let minute = minStart; minute < minEnd; minute += 30) {
           const startTime = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
           let endHour = hour
           let endMinute = minute + 30
@@ -291,7 +328,9 @@ Page({
             endHour += 1
             endMinute = 0
           }
-          if (endHour >= 24) {
+          // 如果结束时间超过配置的结束时间，跳过
+          const endMinutes = endHour * 60 + endMinute
+          if (endMinutes > configEndMinutes) {
             break
           }
           const endTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`
@@ -299,16 +338,21 @@ Page({
             label: `${startTime} - ${endTime}`,
             startTime: startTime,
             endTime: endTime,
-            isToday: true
+            isToday: true,
+            available: true,
+            disabled: false
           })
         }
       }
     }
     
-    // 明天的时间段
+    // 明天的时间段（从配置的开始时间到结束时间）
     const tomorrowSlots = []
-    for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
+    for (let hour = startHour; hour <= endHour; hour++) {
+      const minStart = (hour === startHour ? startMinute : 0)
+      const minEnd = (hour === endHour ? endMinute : 60)
+      
+      for (let minute = minStart; minute < minEnd; minute += 30) {
         const startTime = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
         let endHour = hour
         let endMinute = minute + 30
@@ -316,7 +360,9 @@ Page({
           endHour += 1
           endMinute = 0
         }
-        if (endHour >= 24) {
+        // 如果结束时间超过配置的结束时间，跳过
+        const endMinutes = endHour * 60 + endMinute
+        if (endMinutes > configEndMinutes) {
           break
         }
         const endTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`
@@ -324,7 +370,9 @@ Page({
           label: `${startTime} - ${endTime}`,
           startTime: startTime,
           endTime: endTime,
-          isToday: false
+          isToday: false,
+          available: true,
+          disabled: false
         })
       }
     }
@@ -341,26 +389,124 @@ Page({
       selectedDateIndex: defaultDateIndex
     })
     
-    // 默认选择第一个时间段
+    // 检查所有时间段的可用性
+    this.checkAllTimeSlotsAvailability()
+    
+    // 默认选择第一个可用时间段
     if (defaultTimeSlotOptions.length > 0) {
-      const firstTimeSlot = defaultTimeSlotOptions[0]
-      const isToday = defaultDateIndex === 0
+      const firstAvailableSlot = defaultTimeSlotOptions.find(slot => slot.available && !slot.disabled)
+      if (firstAvailableSlot) {
+        const firstIndex = defaultTimeSlotOptions.indexOf(firstAvailableSlot)
+        const isToday = defaultDateIndex === 0
+        
+        const startTime = this.formatDateTime(firstAvailableSlot.startTime, !isToday)
+        const endTime = this.formatDateTime(firstAvailableSlot.endTime, !isToday)
+        
+        const dateLabel = defaultDateIndex === 0 ? '今天' : '明天'
+        const displayText = `${dateLabel} ${firstAvailableSlot.label}`
+        
+        this.setData({
+          selectedTimeSlotIndex: firstIndex,
+          'form.startTime': startTime,
+          'form.endTime': endTime,
+          'form.startTimeStr': displayText
+        })
+        
+        // 更新提交状态
+        this.updateCanSubmit()
+      }
+    }
+  },
+
+  // 检查所有时间段的可用性（优化：分批检查，避免一次性请求太多）
+  async checkAllTimeSlotsAvailability() {
+    if (this.data.checkingAvailability) return
+    this.setData({ checkingAvailability: true })
+    
+    try {
+      // 分批检查，每批10个时间段
+      const batchSize = 10
       
-      const startTime = this.formatDateTime(firstTimeSlot.startTime, !isToday)
-      const endTime = this.formatDateTime(firstTimeSlot.endTime, !isToday)
+      // 检查今天的时间段
+      const todaySlots = [...this.data.todayTimeSlots]
+      for (let i = 0; i < todaySlots.length; i += batchSize) {
+        const batch = todaySlots.slice(i, i + batchSize)
+        const promises = batch.map(async (slot) => {
+          const startTime = this.formatDateTime(slot.startTime, false)
+          const endTime = this.formatDateTime(slot.endTime, false)
+          try {
+            const res = await api.checkTimeSlotAvailability(3, startTime, endTime) // 3=上门回收
+            return {
+              slot,
+              available: res.success && res.data && res.data.available
+            }
+          } catch (e) {
+            console.error('检查时间段可用性失败:', e)
+            return { slot, available: true } // 检查失败时默认可用
+          }
+        })
+        const results = await Promise.all(promises)
+        
+        // 更新当前批次的时间段
+        const updatedSlots = this.data.todayTimeSlots.map(slot => {
+          const result = results.find(r => r.slot.startTime === slot.startTime && r.slot.endTime === slot.endTime)
+          if (result) {
+            return {
+              ...slot,
+              available: result.available,
+              disabled: !result.available,
+              label: !result.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : slot.label
+            }
+          }
+          return slot
+        })
+        this.setData({ todayTimeSlots: updatedSlots })
+      }
       
-      const dateLabel = defaultDateIndex === 0 ? '今天' : '明天'
-      const displayText = `${dateLabel} ${firstTimeSlot.label}`
+      // 检查明天的时间段
+      const tomorrowSlots = [...this.data.tomorrowTimeSlots]
+      for (let i = 0; i < tomorrowSlots.length; i += batchSize) {
+        const batch = tomorrowSlots.slice(i, i + batchSize)
+        const promises = batch.map(async (slot) => {
+          const startTime = this.formatDateTime(slot.startTime, true)
+          const endTime = this.formatDateTime(slot.endTime, true)
+          try {
+            const res = await api.checkTimeSlotAvailability(3, startTime, endTime) // 3=上门回收
+            return {
+              slot,
+              available: res.success && res.data && res.data.available
+            }
+          } catch (e) {
+            console.error('检查时间段可用性失败:', e)
+            return { slot, available: true } // 检查失败时默认可用
+          }
+        })
+        const results = await Promise.all(promises)
+        
+        // 更新当前批次的时间段
+        const updatedSlots = this.data.tomorrowTimeSlots.map(slot => {
+          const result = results.find(r => r.slot.startTime === slot.startTime && r.slot.endTime === slot.endTime)
+          if (result) {
+            return {
+              ...slot,
+              available: result.available,
+              disabled: !result.available,
+              label: !result.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : slot.label
+            }
+          }
+          return slot
+        })
+        this.setData({ tomorrowTimeSlots: updatedSlots })
+      }
       
-      this.setData({
-        selectedTimeSlotIndex: 0,
-        'form.startTime': startTime,
-        'form.endTime': endTime,
-        'form.startTimeStr': displayText
-      })
-      
-      // 更新提交状态
-      this.updateCanSubmit()
+      // 更新当前显示的时间段选项
+      const currentDateIndex = this.data.selectedDateIndex
+      const currentTimeSlotOptions = currentDateIndex === 0 ? this.data.todayTimeSlots : this.data.tomorrowTimeSlots
+      this.setData({ timeSlotOptions: currentTimeSlotOptions })
+    } catch (e) {
+      console.error('批量检查时间段可用性失败:', e)
+    } finally {
+      this.setData({ checkingAvailability: false })
     }
   },
 
@@ -372,41 +518,32 @@ Page({
     // 根据选择的日期更新时间段选项
     const timeSlotOptions = isToday ? this.data.todayTimeSlots : this.data.tomorrowTimeSlots
     
+    // 自动选择第一个可用时间段
+    const firstAvailableSlot = timeSlotOptions.find(slot => slot.available && !slot.disabled)
+    let selectedIndex = -1
+    let startTime = null
+    let endTime = null
+    let startTimeStr = ''
+    
+    if (firstAvailableSlot) {
+      selectedIndex = timeSlotOptions.indexOf(firstAvailableSlot)
+      startTime = this.formatDateTime(firstAvailableSlot.startTime, !isToday)
+      endTime = this.formatDateTime(firstAvailableSlot.endTime, !isToday)
+      const dateLabel = index === 0 ? '今天' : '明天'
+      startTimeStr = `${dateLabel} ${firstAvailableSlot.label}`
+    }
+    
     this.setData({
       selectedDateIndex: index,
       timeSlotOptions,
-      selectedTimeSlotIndex: -1 // 重置时间段选择
+      selectedTimeSlotIndex: selectedIndex,
+      'form.startTime': startTime,
+      'form.endTime': endTime,
+      'form.startTimeStr': startTimeStr
     })
     
-    // 如果新的时间段列表有数据，自动选择第一个
-    if (timeSlotOptions.length > 0) {
-      const firstTimeSlot = timeSlotOptions[0]
-      const startTime = this.formatDateTime(firstTimeSlot.startTime, !isToday)
-      const endTime = this.formatDateTime(firstTimeSlot.endTime, !isToday)
-      
-      const dateLabel = index === 0 ? '今天' : '明天'
-      const displayText = `${dateLabel} ${firstTimeSlot.label}`
-      
-      this.setData({
-        selectedTimeSlotIndex: 0,
-        'form.startTime': startTime,
-        'form.endTime': endTime,
-        'form.startTimeStr': displayText
-      })
-      
-      // 更新提交状态
-      this.updateCanSubmit()
-    } else {
-      // 如果没有可选时间段，清空时间
-      this.setData({
-        'form.startTime': null,
-        'form.endTime': null,
-        'form.startTimeStr': ''
-      })
-      
-      // 更新提交状态
-      this.updateCanSubmit()
-    }
+    // 更新提交状态
+    this.updateCanSubmit()
   },
 
   // 时间段选择变化
@@ -414,6 +551,20 @@ Page({
     const index = parseInt(e.detail.value)
     const timeSlot = this.data.timeSlotOptions[index]
     if (!timeSlot) return
+    
+    // 检查是否已约满
+    if (timeSlot.disabled || !timeSlot.available) {
+      wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
+      // 重置选择
+      this.setData({
+        selectedTimeSlotIndex: -1,
+        'form.startTime': null,
+        'form.endTime': null,
+        'form.startTimeStr': ''
+      })
+      this.updateCanSubmit()
+      return
+    }
     
     const isToday = this.data.selectedDateIndex === 0
     const startTime = this.formatDateTime(timeSlot.startTime, !isToday)

@@ -130,6 +130,11 @@
   color: #999;
 }
 
+.disabled-text {
+  color: #999;
+  text-decoration: line-through;
+}
+
 /* 图片列表 */
 .pic-list {
   display: flex;

@@ -87,8 +87,8 @@
           <view class="time-selector-item">
             <view class="label required">时间</view>
             <picker mode="selector" range="{{timeSlotOptions}}" range-key="label" value="{{selectedTimeSlotIndex}}" bindchange="onTimeSlotChange">
-              <view class="picker-field">
-                <text wx:if="{{selectedTimeSlotIndex >= 0}}">{{timeSlotOptions[selectedTimeSlotIndex].label}}</text>
+              <view class="picker-field {{selectedTimeSlotIndex >= 0 && timeSlotOptions[selectedTimeSlotIndex].disabled ? 'disabled' : ''}}">
+                <text wx:if="{{selectedTimeSlotIndex >= 0}}" class="{{timeSlotOptions[selectedTimeSlotIndex].disabled ? 'disabled-text' : ''}}">{{timeSlotOptions[selectedTimeSlotIndex].label}}</text>
                 <text wx:else class="placeholder-text">请选择时间</text>
               </view>
             </picker>

@@ -332,6 +332,11 @@
   color: #999;
 }
 
+.disabled-text {
+  color: #999;
+  text-decoration: line-through;
+}
+
 .selected-time-display {
   margin-top: 16rpx;
   padding: 16rpx;

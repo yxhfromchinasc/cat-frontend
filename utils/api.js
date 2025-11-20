@@ -1206,5 +1206,24 @@ module.exports = {
   hideLoadingToast,
   
   // 配置
-  API_CONFIG
+  API_CONFIG,
+  
+  // 时间段可用性检查
+  checkTimeSlotAvailability(serviceType, startTime, endTime) {
+    return get('/schedule/check-availability', {
+      serviceType,
+      startTime,
+      endTime
+    }, { showLoading: false, showError: false })
+  },
+
+  // 获取快递代取可预约时间范围
+  getExpressAppointmentTime() {
+    return get('/config/appointment-time/express', {}, { showLoading: false, showError: false })
+  },
+
+  // 获取上门回收可预约时间范围
+  getRecyclingAppointmentTime() {
+    return get('/config/appointment-time/recycling', {}, { showLoading: false, showError: false })
+  }
 }
