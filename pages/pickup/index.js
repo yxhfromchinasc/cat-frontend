@@ -829,6 +829,13 @@ Page({
         wx.showToast({ title: '请选择送达时间范围', icon: 'none' })
         return false
       }
+      
+      // 检查选择的时间段是否已约满
+      const selectedTimeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
+      if (selectedTimeSlot && (selectedTimeSlot.disabled || !selectedTimeSlot.available)) {
+        wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
+        return false
+      }
     } else {
       // 加急订单必须有时间
       if (!this.data.form.startTime || !this.data.form.endTime) {
@@ -844,6 +851,46 @@ Page({
   async onSubmit() {
     if (!this.validateForm()) {
       return
+    }
+    
+    // 再次检查时间段是否已约满（防止用户通过其他方式选择了已约满的时间）
+    if (!this.data.form.isUrgent) {
+      const selectedTimeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
+      if (selectedTimeSlot && (selectedTimeSlot.disabled || !selectedTimeSlot.available)) {
+        wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
+        // 重置选择
+        this.setData({
+          selectedTimeSlotIndex: -1,
+          'form.startTime': null,
+          'form.endTime': null,
+          'form.startTimeStr': ''
+        })
+        return
+      }
+      
+      // 提交前再次检查时间段可用性（防止在用户选择后时间段被其他用户占用）
+      if (this.data.form.startTime && this.data.form.endTime) {
+        try {
+          const checkRes = await api.checkTimeSlotAvailability(2, this.data.form.startTime, this.data.form.endTime)
+          if (!checkRes.success || !checkRes.data?.isAvailable) {
+            wx.showToast({ 
+              title: checkRes.message || '该时间段已约满，请选择其他时间段', 
+              icon: 'none' 
+            })
+            // 重置选择
+            this.setData({
+              selectedTimeSlotIndex: -1,
+              'form.startTime': null,
+              'form.endTime': null,
+              'form.startTimeStr': ''
+            })
+            return
+          }
+        } catch (e) {
+          console.error('检查时间段可用性失败:', e)
+          // 检查失败不影响提交，继续提交让后端验证
+        }
+      }
     }
     
     try {
@@ -883,7 +930,13 @@ Page({
       }
     } catch (e) {
       console.error('提交订单失败:', e)
-      wx.showToast({ title: e.message || e.error || '提交失败', icon: 'none' })
+      // 优先显示后端返回的错误消息
+      const errorMsg = e.message || e.error || '提交失败'
+      wx.showToast({ 
+        title: errorMsg, 
+        icon: 'none',
+        duration: 2000
+      })
     } finally {
       wx.hideLoading()
     }

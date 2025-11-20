@@ -669,9 +669,19 @@ Page({
       return false
     }
     
-    if (!this.data.form.startTime || !this.data.form.endTime) {
-      wx.showToast({ title: '请选择上门时间范围', icon: 'none' })
-      return false
+    // 加急订单不需要验证时间段
+    if (this.data.timeType !== 'immediate') {
+      if (!this.data.form.startTime || !this.data.form.endTime) {
+        wx.showToast({ title: '请选择上门时间范围', icon: 'none' })
+        return false
+      }
+      
+      // 检查选择的时间段是否已约满
+      const selectedTimeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
+      if (selectedTimeSlot && (selectedTimeSlot.disabled || !selectedTimeSlot.available)) {
+        wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
+        return false
+      }
     }
     
     return true
@@ -693,10 +703,53 @@ Page({
       return
     }
     
+    const isUrgent = this.data.timeType === 'immediate'
+    
+    // 再次检查时间段是否已约满（防止用户通过其他方式选择了已约满的时间）
+    if (!isUrgent) {
+      const selectedTimeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
+      if (selectedTimeSlot && (selectedTimeSlot.disabled || !selectedTimeSlot.available)) {
+        wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
+        // 重置选择
+        this.setData({
+          selectedTimeSlotIndex: -1,
+          'form.startTime': null,
+          'form.endTime': null,
+          'form.startTimeStr': ''
+        })
+        this.updateCanSubmit()
+        return
+      }
+      
+      // 提交前再次检查时间段可用性（防止在用户选择后时间段被其他用户占用）
+      if (this.data.form.startTime && this.data.form.endTime) {
+        try {
+          const checkRes = await api.checkTimeSlotAvailability(3, this.data.form.startTime, this.data.form.endTime)
+          if (!checkRes.success || !checkRes.data?.isAvailable) {
+            wx.showToast({ 
+              title: checkRes.message || '该时间段已约满，请选择其他时间段', 
+              icon: 'none' 
+            })
+            // 重置选择
+            this.setData({
+              selectedTimeSlotIndex: -1,
+              'form.startTime': null,
+              'form.endTime': null,
+              'form.startTimeStr': ''
+            })
+            this.updateCanSubmit()
+            return
+          }
+        } catch (e) {
+          console.error('检查时间段可用性失败:', e)
+          // 检查失败不影响提交，继续提交让后端验证
+        }
+      }
+    }
+    
     try {
       wx.showLoading({ title: '提交中...' })
       
-      const isUrgent = this.data.timeType === 'immediate'
       const payload = {
         addressId: this.data.selectedAddressId,
         // 加急订单不传时间，后端自动计算
@@ -735,7 +788,13 @@ Page({
       }
     } catch (e) {
       console.error('提交订单失败:', e)
-      wx.showToast({ title: '提交失败，请稍后重试', icon: 'none' })
+      // 优先显示后端返回的错误消息
+      const errorMsg = e.message || e.error || '提交失败，请稍后重试'
+      wx.showToast({ 
+        title: errorMsg, 
+        icon: 'none',
+        duration: 2000
+      })
     } finally {
       wx.hideLoading()
     }
