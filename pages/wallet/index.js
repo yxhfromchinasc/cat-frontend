@@ -129,14 +129,24 @@ Page({
   formatTransaction(tx) {
     // 处理交易类型
     const typeMap = {
-      1: { name: '充值', icon: '💰', color: '#4CAF50' },
-      2: { name: '消费', icon: '💳', color: '#F44336' },
-      4: { name: '冻结', icon: '🔒', color: '#FF9800' },
-      5: { name: '解冻', icon: '🔓', color: '#2196F3' },
-      6: { name: '推荐奖励', icon: '🎁', color: '#9C27B0' },
-      7: { name: '提现', icon: '💸', color: '#F44336' }
+      1: { name: '充值', icon: '/assets/tabbar/充值--.png', iconType: 'image', color: '#4CAF50' },
+      2: { name: '消费', icon: '/assets/tabbar/高消费.png', iconType: 'image', color: '#F44336' },
+      4: { name: '冻结', icon: '/assets/tabbar/锁定.png', iconType: 'image', color: '#FF9800' },
+      5: { name: '解冻', icon: '/assets/tabbar/解冻.png', iconType: 'image', color: '#2196F3' },
+      6: { name: '推荐奖励', icon: '/assets/tabbar/奖励.png', iconType: 'image', color: '#9C27B0' },
+      7: { name: '提现', icon: '/assets/tabbar/提现-+.png', iconType: 'image', color: '#F44336' }
     }
-    const typeInfo = typeMap[tx.transactionType] || { name: '未知', icon: '❓', color: '#757575' }
+    let typeInfo = typeMap[tx.transactionType] || { name: '未知', icon: '❓', iconType: 'emoji', color: '#757575' }
+    
+    // 对于提现类型（类型7），根据金额和描述判断是提现还是提现退款
+    if (tx.transactionType === 7) {
+      const description = tx.description || ''
+      const amt = amount.parseBigDecimalLike(tx.amount, 0)
+      // 如果金额为正数（退款）或描述包含"退款"，显示为"提现退款"
+      if (amt > 0 || description.includes('退款')) {
+        typeInfo = { name: '提现退款', icon: '/assets/tabbar/充值--.png', iconType: 'image', color: '#4CAF50' }
+      }
+    }
     
     // 处理交易金额
     const amt = amount.parseBigDecimalLike(tx.amount, 0)
@@ -150,13 +160,15 @@ Page({
     if (tx.createdAt) {
       try {
         const date = new Date(tx.createdAt)
+        const year = date.getFullYear()
         const month = (date.getMonth() + 1).toString().padStart(2, '0')
         const day = date.getDate().toString().padStart(2, '0')
         const hours = date.getHours().toString().padStart(2, '0')
         const minutes = date.getMinutes().toString().padStart(2, '0')
-        timeStr = `${month}-${day} ${hours}:${minutes}`
+        timeStr = `${year}-${month}-${day} ${hours}:${minutes}`
       } catch (e) {
-        timeStr = tx.createdAt.substring(0, 16) // 截取前16个字符
+        // 如果解析失败，尝试直接使用原始字符串
+        timeStr = tx.createdAt.substring(0, 16) || tx.createdAt
       }
     }
     
@@ -164,6 +176,7 @@ Page({
       ...tx,
       typeName: typeInfo.name,
       typeIcon: typeInfo.icon,
+      typeIconType: typeInfo.iconType,
       typeColor: typeInfo.color,
       amount: amt,
       amountStr: amountStr,

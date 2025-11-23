@@ -1,5 +1,5 @@
 <view class="page">
-  <view class="form">
+  <view class="form-card">
     <view class="form-item">
       <text class="label">您的称呼</text>
       <input class="input" placeholder="请输入您的称呼" value="{{name}}" bindinput="onNameInput" />
@@ -10,17 +10,18 @@
       <input class="input" placeholder="请输入手机号" value="{{phone}}" bindinput="onPhoneInput" type="number" maxlength="11" />
     </view>
 
-    <view class="form-item">
+    <view class="form-item textarea-item">
       <text class="label">您的反馈内容</text>
-      <textarea class="textarea" placeholder="请输入您的反馈内容" value="{{content}}" bindinput="onContentInput" maxlength="500" />
-      <view class="char-count">{{content.length}}/500</view>
+      <view class="textarea-wrapper">
+        <textarea class="textarea" placeholder="请输入您的反馈内容" value="{{content}}" bindinput="onContentInput" maxlength="500" />
+        <view class="char-count">{{content.length}}/500</view>
+      </view>
     </view>
   </view>
 
   <view class="bottom-bar">
     <button class="submit-btn" bindtap="submitFeedback" disabled="{{submitting}}">
-      <text class="btn-text">{{submitting ? '提交中...' : '提交反馈'}}</text>
+      <text class="btn-text">{{submitting ? '提交中...' : '提交'}}</text>
     </button>
   </view>
 </view>
-

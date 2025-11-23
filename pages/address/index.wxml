@@ -28,7 +28,6 @@
     </block>
     
     <view class="empty-state" wx:else>
-      <text class="empty-icon">📍</text>
       <text class="empty-text">暂无地址</text>
       <text class="empty-desc">点击下方按钮添加地址</text>
     </view>

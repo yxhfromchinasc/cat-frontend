@@ -1,6 +1,15 @@
 .page {
-  min-height: 100vh;
+  height: 100vh;
   background: #f7f8fa;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 32rpx;
 }
 
@@ -18,4 +27,3 @@
   white-space: pre-wrap;
   word-wrap: break-word;
 }
-

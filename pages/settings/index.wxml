@@ -1,42 +1,33 @@
 <view class="page">
-  <!-- 关于 -->
-  <view class="section">
-    <view class="section-title">关于</view>
-    <view class="setting-item" bindtap="goAbout">
-      <view class="setting-left">
-        <text class="setting-icon">ℹ️</text>
-        <text class="setting-label">关于我们</text>
-      </view>
-      <view class="setting-right">
-        <text class="setting-value">v{{appVersion}}</text>
-        <text class="arrow">›</text>
-      </view>
+  <!-- 功能列表 -->
+  <view class="menu-list">
+    <!-- 关于我们 -->
+    <view class="menu-item" bindtap="goAbout">
+      <image class="menu-icon" src="/assets/tabbar/关于我们.png" mode="aspectFit"></image>
+      <text class="menu-label">关于我们</text>
+      <text class="menu-value">v{{appVersion}}</text>
+      <text class="menu-arrow">›</text>
     </view>
-    <view class="setting-item" bindtap="goUserAgreement">
-      <view class="setting-left">
-        <text class="setting-icon">📄</text>
-        <text class="setting-label">用户协议</text>
-      </view>
-      <view class="setting-right">
-        <text class="arrow">›</text>
-      </view>
+
+    <!-- 用户协议 -->
+    <view class="menu-item" bindtap="goUserAgreement">
+      <image class="menu-icon" src="/assets/tabbar/用户协议.png" mode="aspectFit"></image>
+      <text class="menu-label">用户协议</text>
+      <text class="menu-arrow">›</text>
     </view>
-    <view class="setting-item" bindtap="goPrivacyPolicy">
-      <view class="setting-left">
-        <text class="setting-icon">📋</text>
-        <text class="setting-label">隐私政策</text>
-      </view>
-      <view class="setting-right">
-        <text class="arrow">›</text>
-      </view>
+
+    <!-- 隐私政策 -->
+    <view class="menu-item" bindtap="goPrivacyPolicy">
+      <image class="menu-icon" src="/assets/tabbar/隐私协议.png" mode="aspectFit"></image>
+      <text class="menu-label">隐私政策</text>
+      <text class="menu-arrow">›</text>
     </view>
   </view>
 
   <!-- 退出登录 -->
-  <view class="section" wx:if="{{isLogin}}">
-    <view class="logout-section">
-      <button class="logout-btn" bindtap="logout">退出登录</button>
-    </view>
+  <view class="logout-section" wx:if="{{isLogin}}">
+    <button class="logout-btn" bindtap="logout">
+      <text class="btn-text">退出登录</text>
+    </button>
   </view>
 </view>
-

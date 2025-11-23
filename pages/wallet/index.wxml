@@ -37,8 +37,9 @@
         wx:key="id"
       >
         <view class="transaction-left">
-          <view class="transaction-icon" style="background: {{item.typeColor}}22; color: {{item.typeColor}}">
-            <text>{{item.typeIcon}}</text>
+          <view class="transaction-icon">
+            <image wx:if="{{item.typeIconType === 'image'}}" class="transaction-icon-img" src="{{item.typeIcon}}" mode="aspectFit"></image>
+            <text wx:else style="color: {{item.typeColor}}">{{item.typeIcon}}</text>
           </view>
           <view class="transaction-info">
             <view class="transaction-type">{{item.typeName}}</view>

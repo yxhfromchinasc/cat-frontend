@@ -92,6 +92,7 @@
 
 .transaction-left{display:flex;align-items:center;flex:1;gap:20rpx}
 .transaction-icon{width:80rpx;height:80rpx;border-radius:12rpx;display:flex;align-items:center;justify-content:center;font-size:36rpx}
+.transaction-icon-img{width:48rpx;height:48rpx}
 .transaction-info{flex:1}
 .transaction-type{font-size:28rpx;color:#111;font-weight:500;margin-bottom:8rpx}
 .transaction-desc{font-size:24rpx;color:#8a8a8e;margin-bottom:4rpx}

@@ -1,6 +1,7 @@
 <view class="page">
-  <view class="content">
-    <text class="text">{{content}}</text>
-  </view>
+  <scroll-view class="scroll-container" scroll-y="{{true}}">
+    <view class="content">
+      <text class="text">{{content}}</text>
+    </view>
+  </scroll-view>
 </view>
-
