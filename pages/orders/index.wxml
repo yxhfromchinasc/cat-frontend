@@ -25,10 +25,10 @@
     <view class="order-item" wx:for="{{orderList}}" wx:key="orderNo" bindtap="onOrderTap" data-orderno="{{item.orderNo}}" data-servicetype="{{item.serviceType}}">
       <!-- 订单头部 -->
       <view class="order-header">
-        <text class="order-no">订单号：{{item.orderNo}}</text>
-        <text class="order-status {{item.orderStatus === 1 ? 'status-progress' : item.orderStatus === 2 ? 'status-completed' : 'status-canceled'}}">
+        <view class="order-no">订单号：{{item.orderNo}}</view>
+        <view class="order-status {{item.orderStatus === 1 ? 'status-progress' : item.orderStatus === 2 ? 'status-completed' : 'status-canceled'}}">
           {{item.orderStatusDesc}}
-        </text>
+        </view>
       </view>
 
       <!-- 订单内容 - 根据订单类型显示不同内容 -->
@@ -69,7 +69,7 @@
               <text class="value">{{item.startTimeStr}}</text>
             </view>
             <!-- 已取件后显示取件信息 -->
-            <view class="order-info-item" wx:if="{{item.expressStatus >= 3 && item.expressCount}}">
+            <view class="order-info-item" wx:if="{{item.expressStatus >= 2 && item.expressCount}}">
               <text class="label">取件数量：</text>
               <text class="value">{{item.expressCount}}件</text>
             </view>
@@ -106,16 +106,34 @@
               <text class="label">预约时间：</text>
               <text class="value">{{item.recyclingTimeStr}}</text>
             </view>
-            <!-- 待上门/已完成状态：显示实际重量 -->
-            <view class="order-info-item" wx:if="{{item.recyclingStatus >= 2 && item.weight}}">
+            <!-- 待上门状态：显示实际重量（如果有）和预约时间 -->
+            <view class="order-info-item" wx:if="{{item.recyclingStatus === 2 && item.weight}}">
               <text class="label">实际重量：</text>
               <text class="value">{{item.weight}}kg</text>
             </view>
-            <!-- 打款中或已完成状态：显示回收价格 -->
-            <view class="order-info-item" wx:if="(item.recyclingStatus === 5 || item.recyclingStatus === 3) && item.price">
+            <view class="order-info-item" wx:if="{{item.recyclingStatus === 2 && item.recyclingTimeStr}}">
+              <text class="label">预约时间：</text>
+              <text class="value">{{item.recyclingTimeStr}}</text>
+            </view>
+            <!-- 打款中状态：显示实际重量和回收价格 -->
+            <view class="order-info-item" wx:if="{{item.recyclingStatus === 5 && item.weight}}">
+              <text class="label">实际重量：</text>
+              <text class="value">{{item.weight}}kg</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.recyclingStatus === 5 && item.price && item.price > 0}}">
               <text class="label">回收价格：</text>
               <text class="value price">￥{{item.price}}</text>
             </view>
+            <!-- 已完成状态：显示实际重量和回收价格 -->
+            <view class="order-info-item" wx:if="{{item.recyclingStatus === 3 && item.weight}}">
+              <text class="label">实际重量：</text>
+              <text class="value">{{item.weight}}kg</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.recyclingStatus === 3 && item.price && item.price > 0}}">
+              <text class="label">回收价格：</text>
+              <text class="value price">￥{{item.price}}</text>
+            </view>
+            <!-- 回收状态描述 -->
             <view class="order-info-item" wx:if="{{item.recyclingStatusDesc}}">
               <text class="label">回收状态：</text>
               <text class="value">{{item.recyclingStatusDesc}}</text>
@@ -142,7 +160,8 @@
       <!-- 订单底部 -->
       <view class="order-footer">
         <text class="order-time">{{item.createdAtStr}}</text>
-        <text class="order-amount-total" wx:if="{{item.totalAmount}}">￥{{item.totalAmount}}</text>
+        <!-- 对于回收订单，只在打款中或已完成状态显示总金额 -->
+        <text class="order-amount-total" wx:if="{{item.totalAmount && (item.serviceType !== 3 || (item.recyclingStatus === 5 || item.recyclingStatus === 3))}}">￥{{item.totalAmount}}</text>
       </view>
     </view>
 
