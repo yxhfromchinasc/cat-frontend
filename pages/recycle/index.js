@@ -68,8 +68,12 @@ Page({
       return
     }
     
-    // 从地址编辑页返回后，刷新默认地址
-    this.loadDefaultAddress()
+    // 如果已经有选中的地址，说明用户已经选择了地址，不要重置为默认地址
+    // 只有在没有选中地址的情况下，才加载默认地址（比如首次进入页面或地址被删除的情况）
+    if (!this.data.selectedAddressId) {
+      // 从地址编辑页返回后，刷新默认地址
+      this.loadDefaultAddress()
+    }
   },
 
   // 加载备注快捷选项
