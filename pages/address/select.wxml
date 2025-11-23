@@ -1,24 +1,28 @@
 <!-- pages/address/select.wxml -->
 <view class="page">
   <!-- 地址列表 -->
-  <view class="address-list">
+  <scroll-view class="address-list" scroll-y="{{true}}">
     <block wx:if="{{addressList.length > 0}}">
       <view class="address-item" wx:for="{{addressList}}" wx:key="id" bindtap="selectAddress" data-id="{{item.id}}">
         <view class="address-content">
-          <!-- 省市区街道 -->
-          <view class="address-region">
-            {{item.province}} {{item.city}} {{item.district}} {{item.street}}
-          </view>
-          <!-- 详细地址 -->
-          <view class="address-detail">{{item.detailAddress}}</view>
-          <!-- 联系人信息 -->
+          <!-- 联系人信息（第一行） -->
           <view class="contact-info">
             <text class="contact-name">{{item.contactName}}</text>
             <text class="contact-phone">{{item.contactPhone}}</text>
             <text class="address-tag default" wx:if="{{item.isDefault}}">默认</text>
           </view>
+          <!-- 地址信息（第二行） -->
+          <view class="address-text">
+            {{item.province}} {{item.city}} {{item.district}} {{item.street}} {{item.detailAddress}}
+          </view>
         </view>
+        <!-- 选中图标 -->
         <view class="select-icon" wx:if="{{selectedId === item.id}}">✓</view>
+      </view>
+      
+      <!-- 没有更多数据了 -->
+      <view class="no-more">
+        <text class="no-more-text">没有更多数据了</text>
       </view>
     </block>
     
@@ -27,7 +31,7 @@
       <text class="empty-text">暂无地址</text>
       <text class="empty-desc">请先添加地址</text>
     </view>
-  </view>
+  </scroll-view>
 
   <!-- 底部按钮 -->
   <view class="bottom-actions">

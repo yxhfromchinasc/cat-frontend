@@ -1,6 +1,6 @@
 <view class="page">
   <!-- 顶部用户卡片 -->
-  <view class="card header-card shadow" bindtap="{{isLogin ? '' : 'goLogin'}}">
+  <view class="card header-card" bindtap="{{isLogin ? '' : 'goLogin'}}">
     <image class="avatar" src="{{avatarSrc}}" mode="aspectFill" bindtap="{{isLogin ? 'uploadAvatar' : ''}}" catchtap="{{isLogin ? 'uploadAvatar' : ''}}"></image>
     <view class="header-meta">
       <text class="phone">{{ isLogin ? (userInfo.phone || '') : '未登录' }}</text>
