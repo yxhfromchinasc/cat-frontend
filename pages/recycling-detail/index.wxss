@@ -310,6 +310,16 @@
   flex-wrap: nowrap;
 }
 
+.urgent-tag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  background: #fff3cd;
+  color: #856404;
+  border-radius: 4rpx;
+  font-size: 22rpx;
+  margin-top: 8rpx;
+}
+
 .timeline-title {
   font-size: 28rpx;
   font-weight: 500;

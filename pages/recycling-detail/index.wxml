@@ -56,6 +56,10 @@
           <text class="timeline-title {{event.status === 'cancelled' ? 'cancelled' : ''}}">{{event.title}}</text>
           <text class="timeline-time" wx:if="{{event.timeFormatted}}">{{event.timeFormatted}}</text>
         </view>
+        <!-- 加急标签（仅CREATED事件显示） -->
+        <view class="urgent-tag" wx:if="{{event.type === 'CREATED' && event.data.isUrgent}}">
+          <text>加急</text>
+        </view>
         <view class="timeline-info">
           <!-- CREATED事件的数据 -->
           <view class="info-item" wx:if="{{event.type === 'CREATED' && orderDetail.orderNo}}">
