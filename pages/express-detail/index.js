@@ -114,6 +114,12 @@ Page({
             if (event.data.pickPics && !Array.isArray(event.data.pickPics)) {
               event.data.pickPics = []
             }
+            // 格式化预约时间段（CREATED事件）
+            if (event.type === 'CREATED' && event.data.startTime && event.data.endTime) {
+              // 格式化开始时间和结束时间，只显示日期和时间部分（去掉秒）
+              event.data.startTimeFormatted = this.formatTimeSlot(event.data.startTime)
+              event.data.endTimeFormatted = this.formatTimeSlot(event.data.endTime)
+            }
           })
         } else {
           detail.timeline = []
@@ -280,6 +286,24 @@ Page({
   },
 
   // 格式化时间
+  // 格式化时间段（显示日期和时间，格式：MM-dd HH:mm）
+  formatTimeSlot(timeStr) {
+    if (!timeStr) return ''
+    try {
+      // 处理 "yyyy-MM-dd HH:mm:ss" 或 "yyyy-MM-ddTHH:mm:ss" 格式
+      const normalized = timeStr.replace('T', ' ')
+      // 提取 MM-dd HH:mm 部分
+      const match = normalized.match(/^\d{4}-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/)
+      if (match) {
+        return `${match[1]}-${match[2]} ${match[3]}:${match[4]}`
+      }
+      // 如果格式不匹配，尝试直接截取
+      return normalized.substring(5, 16) // 截取 MM-dd HH:mm 部分
+    } catch (e) {
+      return timeStr
+    }
+  },
+
   formatTime(timeStr) {
     console.log('formatTime 被调用，输入:', timeStr, '类型:', typeof timeStr)
     if (!timeStr) {

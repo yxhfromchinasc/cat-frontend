@@ -63,6 +63,12 @@ Page({
             if (event.time) {
               event.timeFormatted = this.formatTime(event.time)
             }
+            // 格式化预约时间段（CREATED事件）
+            if (event.type === 'CREATED' && event.data.startTime && event.data.endTime) {
+              // 格式化开始时间和结束时间
+              const formatted = this.formatTimeRange(event.data.startTime, event.data.endTime)
+              event.data.timeRangeFormatted = formatted
+            }
           })
         } else {
           detail.timeline = []
@@ -225,6 +231,44 @@ Page({
     }
     // 如果都解析失败，返回原字符串的一部分
     return timeStr.length > 16 ? timeStr.substring(5, 16) : timeStr
+  },
+
+  // 格式化时间段（格式：年-月-日 时：分 到 时：分）
+  formatTimeRange(startTimeStr, endTimeStr) {
+    if (!startTimeStr || !endTimeStr) {
+      return ''
+    }
+    try {
+      // 处理 "yyyy-MM-dd HH:mm:ss" 或 "yyyy-MM-ddTHH:mm:ss" 格式
+      const normalize = (str) => str.replace('T', ' ').substring(0, 16) // 取 yyyy-MM-dd HH:mm
+      
+      const startNormalized = normalize(startTimeStr)
+      const endNormalized = normalize(endTimeStr)
+      
+      // 提取开始时间的日期和时间部分
+      const startMatch = startNormalized.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})/)
+      const endMatch = endNormalized.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})/)
+      
+      if (startMatch && endMatch) {
+        const startDate = startMatch[1]
+        const startTime = startMatch[2]
+        const endDate = endMatch[1]
+        const endTime = endMatch[2]
+        
+        // 如果开始和结束时间在同一天，只显示一次日期
+        if (startDate === endDate) {
+          return `${startDate} ${startTime} 到 ${endTime}`
+        } else {
+          // 如果不在同一天，显示完整日期和时间
+          return `${startDate} ${startTime} 到 ${endDate} ${endTime}`
+        }
+      }
+      
+      // 如果解析失败，返回原始格式
+      return `${startNormalized} - ${endNormalized}`
+    } catch (e) {
+      return `${startTimeStr} - ${endTimeStr}`
+    }
   },
 
   // 预览图片

@@ -48,7 +48,7 @@
     <!-- 使用后端返回的时间线数据动态渲染 -->
     <view class="timeline-item" wx:for="{{orderDetail.timeline}}" wx:key="type" wx:for-index="idx" wx:for-item="event">
       <view class="timeline-node">
-        <view class="timeline-dot {{event.status === 'completed' ? 'completed' : event.status === 'waiting' ? 'waiting' : event.status === 'cancelled' ? 'cancelled' : 'disabled'}}"></view>
+        <view class="timeline-dot {{event.status === 'completed' ? 'completed' : (event.status === 'waiting' && event.type === 'START_PAY') ? 'completed' : event.status === 'waiting' ? 'waiting' : event.status === 'cancelled' ? 'cancelled' : 'disabled'}}"></view>
         <view class="timeline-line" wx:if="{{idx < orderDetail.timeline.length - 1}}"></view>
       </view>
       <view class="timeline-content">
@@ -73,6 +73,10 @@
           <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.phoneTail}}">
             <text class="info-label">取件尾号：</text>
             <text class="info-value">{{event.data.phoneTail}}</text>
+          </view>
+          <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.startTime && event.data.endTime}}">
+            <text class="info-label">预约时间：</text>
+            <text class="info-value">{{event.data.startTimeFormatted || event.data.startTime}} - {{event.data.endTimeFormatted || event.data.endTime}}</text>
           </view>
           <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.pickCodes}}">
             <text class="info-label">取件码：</text>
