@@ -1,7 +1,7 @@
 {
   "navigationBarTitleText": "登录",
   "navigationStyle": "custom",
-  "backgroundColor": "#07c160",
+  "backgroundColor": "#09ccb5",
   "disableScroll": true,
   "usingComponents": {}
 }

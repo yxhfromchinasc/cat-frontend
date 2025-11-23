@@ -95,7 +95,7 @@
           <view class="label">是否加急</view>
           <view class="urgent-desc">选择后优先安排取件与送达</view>
         </view>
-        <switch checked="{{form.isUrgent}}" bindchange="onUrgentSwitchChange" color="#07c160" />
+        <switch checked="{{form.isUrgent}}" bindchange="onUrgentSwitchChange" color="#09ccb5" />
       </view>
       
       <!-- 加急订单：显示"20分钟内送达" -->

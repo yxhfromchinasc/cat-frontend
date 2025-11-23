@@ -25,7 +25,7 @@ page {
 .biz-card {
   flex: 1;
   aspect-ratio: 1;
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  background: linear-gradient(135deg, #09ccb5 0%, #08b8a0 100%);
   border-radius: 24rpx;
   display: flex;
   flex-direction: column;
@@ -38,7 +38,7 @@ page {
 }
 
 .biz-card:first-child {
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  background: linear-gradient(135deg, #09ccb5 0%, #08b8a0 100%);
 }
 
 .biz-card:last-child {
@@ -288,7 +288,7 @@ page {
 }
 
 .wechat-login-btn {
-  background: #07c160;
+  background: #09ccb5;
   color: #ffffff;
 }
 

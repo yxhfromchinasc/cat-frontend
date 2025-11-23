@@ -1,14 +1,33 @@
 // pages/profile/index.js
 const { api } = require('../../utils/util.js')
+const amount = require('../../utils/amount.js')
 
 Page({
   data: {
     userInfo: null,
     isLogin: false,
     balance: 0, // 钱包余额
+    balanceStr: '0.00', // 钱包余额格式化字符串
     couponCount: 0, // 卡券数量
     addressCount: 0, // 地址数量
-    avatarSrc: '/assets/tabbar/profile.png' // 头像地址
+    avatarSrc: '/assets/tabbar/profile.png', // 头像地址
+    addressIcon: '' // 地址图标 SVG data URI
+  },
+
+  onLoad() {
+    // 将地址 SVG 转换为 data URI
+    const addressSvg = encodeURIComponent(`
+      <svg t="1763878411962" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+        <path d="M700.8 944C571.2 944 464 836.8 464 707.2c0-129.6 107.2-236.8 236.8-236.8 129.6 0 236.8 107.2 236.8 236.8C939.2 836.8 832 944 700.8 944z" fill="#00ccb5"></path>
+        <path d="M732.8 825.6H224c-68.8 0-123.2-40-123.2-89.6v-4.8l16-75.2c3.2-11.2 16-19.2 27.2-16 12.8 3.2 19.2 14.4 17.6 27.2l-16 72c1.6 20.8 33.6 43.2 76.8 43.2h510.4c44.8 0 75.2-22.4 76.8-43.2l-16-76.8c-3.2-12.8 4.8-24 17.6-25.6 12.8-1.6 24 4.8 25.6 17.6l16 80v4.8c3.2 46.4-51.2 86.4-120 86.4z" fill="#2c2c2c"></path>
+        <path d="M472 814.4c-6.4 0-11.2-1.6-16-6.4-11.2-11.2-254.4-259.2-254.4-408 0-33.6 6.4-67.2 17.6-99.2 4.8-11.2 17.6-17.6 28.8-12.8 11.2 4.8 17.6 17.6 12.8 28.8-9.6 27.2-14.4 54.4-14.4 83.2 0 100.8 150.4 281.6 225.6 360 80-78.4 241.6-259.2 241.6-360 0-129.6-104-233.6-233.6-233.6-30.4 0-60.8 6.4-89.6 17.6-4.8 1.6-11.2 4.8-16 6.4-11.2 6.4-24 1.6-30.4-9.6-4.8-11.2-1.6-24 9.6-30.4 6.4-3.2 12.8-6.4 19.2-8 33.6-14.4 68.8-20.8 107.2-20.8 153.6 0 278.4 124.8 278.4 278.4 0 148.8-259.2 398.4-270.4 408-6.4 4.8-11.2 6.4-16 6.4z" fill="#2c2c2c"></path>
+        <path d="M264 283.2c-4.8 0-8-1.6-12.8-3.2-9.6-6.4-12.8-20.8-6.4-30.4 11.2-17.6 25.6-33.6 41.6-49.6 9.6-8 22.4-8 32 0 8 9.6 8 22.4 0 32-12.8 12.8-24 25.6-33.6 41.6-4.8 4.8-12.8 9.6-20.8 9.6zM480 494.4c-60.8 0-110.4-49.6-110.4-110.4s49.6-110.4 110.4-110.4 110.4 49.6 110.4 110.4-49.6 110.4-110.4 110.4z m0-176c-36.8 0-65.6 28.8-65.6 65.6s28.8 65.6 65.6 65.6 65.6-28.8 65.6-65.6-30.4-65.6-65.6-65.6zM824 164.8H768c-9.6 0-16-6.4-16-16s6.4-16 16-16h56c9.6 0 16 6.4 16 16s-6.4 16-16 16z" fill="#2c2c2c"></path>
+        <path d="M796.8 192c-9.6 0-16-6.4-16-16V120c0-9.6 6.4-16 16-16s16 6.4 16 16V176c0 9.6-8 16-16 16z" fill="#103E26"></path>
+      </svg>
+    `)
+    this.setData({ 
+      addressIcon: `data:image/svg+xml;charset=UTF-8,${addressSvg}` 
+    })
   },
 
   onShow(){
@@ -101,15 +120,12 @@ Page({
       const res = await api.getWalletBalance()
       if (res && res.success && res.data != null) {
         // 处理后端返回的 BigDecimal
-        let balance = 0
-        if (typeof res.data === 'number') {
-          balance = res.data
-        } else if (typeof res.data === 'string') {
-          balance = parseFloat(res.data)
-        } else if (res.data.value != null) {
-          balance = parseFloat(res.data.value || res.data)
-        }
-        this.setData({ balance })
+        const balance = amount.parseBigDecimalLike(res.data, 0)
+        const balanceStr = amount.formatAmount(balance)
+        this.setData({ 
+          balance,
+          balanceStr
+        })
       }
     } catch (e) {
       console.error('加载余额失败:', e)
@@ -218,8 +234,14 @@ Page({
   },
   goInvite(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
   goSettings(){ wx.navigateTo({ url: '/pages/settings/index' }) },
+  goEditProfile(){ 
+    if (!this.data.isLogin) {
+      return
+    }
+    wx.navigateTo({ url: '/pages/profile/edit' }) 
+  },
 
-  // 上传头像
+  // 上传头像（已移至编辑页面，保留此方法以防其他地方调用）
   async uploadAvatar() {
     if (!this.data.isLogin) {
       return

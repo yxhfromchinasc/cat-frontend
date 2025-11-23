@@ -57,7 +57,7 @@
 }
 
 .phone-input:focus {
-  border-color: #07c160;
+  border-color: #09ccb5;
   background: #ffffff;
 }
 
@@ -109,14 +109,14 @@
 }
 
 .code-input:focus {
-  border-color: #07c160;
+  border-color: #09ccb5;
   background: #ffffff;
 }
 
 .send-code-btn {
   height: 88rpx;
   padding: 0 24rpx;
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  background: linear-gradient(135deg, #09ccb5 0%, #08b8a0 100%);
   color: #ffffff;
   border-radius: 12rpx;
   font-size: 26rpx;
@@ -138,7 +138,7 @@
 .bind-btn {
   width: 100%;
   height: 88rpx;
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  background: linear-gradient(135deg, #09ccb5 0%, #08b8a0 100%);
   color: #ffffff;
   border-radius: 12rpx;
   font-size: 32rpx;

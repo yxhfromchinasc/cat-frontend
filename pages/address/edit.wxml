@@ -25,7 +25,7 @@
 
     <view class="form-item checkbox-item">
       <text class="label">设为默认</text>
-      <switch checked="{{isDefault}}" bindchange="onDefaultChange" color="#07c160" />
+      <switch checked="{{isDefault}}" bindchange="onDefaultChange" color="#09ccb5" />
     </view>
   </view>
 

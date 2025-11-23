@@ -30,7 +30,7 @@
 }
 
 .selected-amount {
-  border: 2rpx solid #07c160;
+  border: 2rpx solid #09ccb5;
   border-radius: 12rpx;
   padding: 20rpx;
   background-color: #f0f9f4;
@@ -41,7 +41,7 @@
 
 .selected-amount-text {
   font-size: 32rpx;
-  color: #07c160;
+  color: #09ccb5;
   font-weight: 500;
 }
 
@@ -62,7 +62,7 @@
 
 .pay-btn {
   margin-top: 48rpx;
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  background: linear-gradient(135deg, #09ccb5 0%, #08b8a0 100%);
   color: #fff;
   border: none;
 }
@@ -88,8 +88,8 @@
 }
 
 .amount-btn.active {
-  border-color: #07c160;
-  background-color: #07c160;
+  border-color: #09ccb5;
+  background-color: #09ccb5;
   color: #fff;
   font-weight: 500;
 }
@@ -129,7 +129,7 @@
   width: 60rpx;
   height: 60rpx;
   border: 6rpx solid #f3f3f3;
-  border-top: 6rpx solid #07c160;
+  border-top: 6rpx solid #09ccb5;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

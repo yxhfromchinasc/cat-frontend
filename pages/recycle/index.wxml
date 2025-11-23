@@ -61,7 +61,7 @@
       <!-- 是否加急开关 -->
       <view class="form-item checkbox-item">
         <view class="label">立即上门</view>
-        <switch checked="{{timeType === 'immediate'}}" bindchange="onImmediateSwitchChange" color="#07c160" />
+        <switch checked="{{timeType === 'immediate'}}" bindchange="onImmediateSwitchChange" color="#09ccb5" />
       </view>
       
       <!-- 立即上门：显示时间范围 -->

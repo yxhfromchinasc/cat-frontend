@@ -62,13 +62,13 @@
   font-size: 22rpx;
   padding: 4rpx 12rpx;
   border-radius: 4rpx;
-  border: 1rpx solid #07c160;
+  border: 1rpx solid #09ccb5;
   line-height: 1.2;
   flex-shrink: 0;
 }
 
 .address-tag.default{
-  color: #07c160;
+  color: #09ccb5;
   background: transparent;
 }
 
@@ -85,7 +85,7 @@
   width: 48rpx;
   height: 48rpx;
   border-radius: 24rpx;
-  background: #07c160;
+  background: #09ccb5;
   color: #fff;
   display: flex;
   align-items: center;
@@ -151,7 +151,7 @@
 }
 
 .action-btn.primary{
-  background: #07c160;
+  background: #09ccb5;
   color: #fff;
 }
 

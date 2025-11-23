@@ -29,7 +29,7 @@
 }
 
 .tab-item.active {
-  color: #07c160;
+  color: #09ccb5;
   font-weight: 600;
 }
 
@@ -41,7 +41,7 @@
   transform: translateX(-50%);
   width: 60rpx;
   height: 4rpx;
-  background: #07c160;
+  background: #09ccb5;
   border-radius: 2rpx;
 }
 
@@ -76,7 +76,7 @@
 }
 
 .filter-item.active {
-  background: #07c160;
+  background: #09ccb5;
   color: #fff;
 }
 
@@ -143,7 +143,7 @@
 .coupon-type-tag {
   display: inline-block;
   padding: 4rpx 12rpx;
-  background: #07c160;
+  background: #09ccb5;
   color: #fff;
   font-size: 20rpx;
   border-radius: 6rpx;
@@ -156,7 +156,7 @@
 }
 
 .coupon-card.type-discount .coupon-type-tag {
-  background: #07c160;
+  background: #09ccb5;
 }
 
 .coupon-card.type-fullreduce .coupon-type-tag {
@@ -235,7 +235,7 @@
 
 .coupon-card.type-discount .value-symbol,
 .coupon-card.type-discount .value-amount {
-  color: #07c160;
+  color: #09ccb5;
 }
 
 .coupon-card.type-fullreduce .value-symbol,
@@ -295,7 +295,7 @@
 }
 
 .extra-text {
-  color: #07c160;
+  color: #09ccb5;
   font-weight: 500;
 }
 
@@ -318,7 +318,7 @@
 }
 
 .receive-btn {
-  background: #07c160;
+  background: #09ccb5;
   color: #fff;
   border: none;
   border-radius: 12rpx;

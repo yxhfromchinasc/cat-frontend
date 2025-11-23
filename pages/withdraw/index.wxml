@@ -1,7 +1,7 @@
 <view class="withdraw-page" wx:if="{{!loading}}">
   <view class="header">
     <text class="title">余额提现</text>
-    <text class="subtitle">仅微信零钱</text>
+    <text class="subtitle">仅支持提现到微信零钱</text>
   </view>
 
   <view class="form">

@@ -84,7 +84,7 @@
 <!-- 自定义倒计时加载（覆盖层） -->
 <view wx:if="{{showWithdrawLoading}}" style="position: fixed; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 9999; display: flex; align-items: center; justify-content: center;">
   <view style="background: #ffffff; padding: 32rpx 40rpx; border-radius: 16rpx; min-width: 480rpx; display: flex; flex-direction: column; align-items: center;">
-    <view style="width: 72rpx; height: 72rpx; border: 6rpx solid #eaeaea; border-top-color: #07c160; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20rpx;"></view>
+    <view style="width: 72rpx; height: 72rpx; border: 6rpx solid #eaeaea; border-top-color: #09ccb5; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20rpx;"></view>
     <text style="font-size: 28rpx; color: #333;">确认提现结果中…</text>
     <text style="font-size: 24rpx; color: #999; margin-top: 8rpx;">约{{withdrawLoadingCountdown}}秒</text>
   </view>

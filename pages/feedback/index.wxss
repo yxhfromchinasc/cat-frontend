@@ -68,7 +68,7 @@
 }
 
 .gender-item.active {
-  border-color: #07c160;
+  border-color: #09ccb5;
   background: #f0f9f4;
 }
 
@@ -78,7 +78,7 @@
 }
 
 .gender-item.active .gender-text {
-  color: #07c160;
+  color: #09ccb5;
   font-weight: 600;
 }
 
@@ -95,7 +95,7 @@
 .submit-btn {
   width: 100%;
   height: 88rpx;
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  background: linear-gradient(135deg, #09ccb5 0%, #08b8a0 100%);
   color: #fff;
   border-radius: 12rpx;
   display: flex;

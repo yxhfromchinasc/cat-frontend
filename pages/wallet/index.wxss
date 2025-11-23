@@ -4,18 +4,60 @@
   height: 100vh;
   overflow: hidden;
   background: #f7f8fa;
-  padding: 24rpx;
+  padding: 0;
 }
 
 .page-header {
   flex-shrink: 0;
+  padding: 0;
+}
+
+/* 余额显示区域 */
+.balance-section{
+  background: #09ccb5;
+  border-radius: 16rpx;
+  padding: 60rpx 32rpx;
+  margin: 24rpx;
+  margin-bottom: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.06);
+}
+
+.balance-item{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.balance-label{
+  font-size: 28rpx;
+  color: #fff;
+  opacity: 0.9;
+  margin-bottom: 16rpx;
+}
+
+.balance-amount{
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #fff;
+}
+
+.balance-divider{
+  width: 1rpx;
+  height: 80rpx;
+  background: rgba(255, 255, 255, 0.3);
+  margin: 0 32rpx;
 }
 
 .card{
   background:#fff;
   border-radius:16rpx;
   padding:32rpx;
-  margin-bottom:16rpx;
+  margin:24rpx;
+  margin-top: 0;
   box-shadow:0 8rpx 24rpx rgba(0,0,0,0.06)
 }
 
@@ -27,18 +69,12 @@
   margin-bottom: 0;
 }
 
-.balance-section{text-align:center}
-.label{color:#8a8a8e;font-size:26rpx}
-.amount{margin-top:12rpx;font-size:52rpx;font-weight:700;color:#111}
-.balance-desc{margin-top:8rpx;font-size:24rpx;color:#8a8a8e}
-
 .section-title{font-size:28rpx;color:#111;font-weight:600;margin-bottom:20rpx}
 
 .actions{display:flex;gap:24rpx}
-.btn{flex:1;height:88rpx;border-radius:12rpx;background:#fff;border:1px solid #eaeaea;color:#111;font-size:28rpx;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4rpx}
-.btn.primary{background:#07c160;color:#fff;border-color:#07c160}
-.btn-icon{font-size:32rpx}
-.btn-text{font-size:26rpx}
+.btn{flex:1;height:88rpx;border-radius:12rpx;background:#fff;border:1px solid #eaeaea;color:#111;font-size:28rpx;display:flex;align-items:center;justify-content:center}
+.btn.primary{background:#09ccb5;color:#fff;border-color:#09ccb5}
+.btn-text{font-size:28rpx}
 
 .empty-state{text-align:center;padding:40rpx 0}
 .empty-icon{font-size:64rpx;display:block;margin-bottom:12rpx}
@@ -68,6 +104,6 @@
 
 /* 加载更多 */
 .load-more{text-align:center;padding:30rpx 0}
-.load-more-btn{color:#07c160;font-size:26rpx;padding:10rpx 0}
+.load-more-btn{color:#09ccb5;font-size:26rpx;padding:10rpx 0}
 .load-more-text{color:#b0b0b0;font-size:24rpx}
 .load-more-loading{color:#8a8a8e;font-size:24rpx}

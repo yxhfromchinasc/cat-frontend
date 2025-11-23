@@ -6,6 +6,8 @@ Page({
   data:{
     balance: 0,
     balanceStr: '0.00',
+    pendingAmount: 0,
+    pendingAmountStr: '0.00',
     transactions: [], // 交易记录列表
     loading: false,
     pageNum: 1, // 当前页码（从1开始）
@@ -14,6 +16,7 @@ Page({
   },
   onShow(){
     this.loadBalance()
+    this.loadPendingAmount()
     this.loadTransactions(true) // 刷新交易记录
   },
   async loadBalance(){
@@ -29,6 +32,24 @@ Page({
     }catch(e){
       console.error('加载余额失败:', e)
       this.setData({ balance: 0, balanceStr: '0.00' })
+    }
+  },
+  async loadPendingAmount(){
+    try{
+      // 调用后端待入账金额接口
+      const res = await api.getPendingAmount()
+      if (res && res.success && res.data != null) {
+        const pending = amount.parseBigDecimalLike(res.data, 0)
+        this.setData({ 
+          pendingAmount: pending, 
+          pendingAmountStr: amount.formatAmount(pending) 
+        })
+      } else {
+        this.setData({ pendingAmount: 0, pendingAmountStr: '0.00' })
+      }
+    }catch(e){
+      console.error('加载待入账金额失败:', e)
+      this.setData({ pendingAmount: 0, pendingAmountStr: '0.00' })
     }
   },
   goRecharge(){

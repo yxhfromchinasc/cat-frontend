@@ -44,13 +44,13 @@
 }
 
 .progress-item.completed .progress-dot {
-  background: #07c160;
-  border-color: #07c160;
+  background: #09ccb5;
+  border-color: #09ccb5;
 }
 
 .progress-item.waiting .progress-dot {
   background: #fff;
-  border-color: #07c160;
+  border-color: #09ccb5;
   box-shadow: 0 0 0 4rpx rgba(102, 126, 234, 0.1);
 }
 
@@ -71,7 +71,7 @@
 }
 
 .progress-line.completed {
-  background: #07c160;
+  background: #09ccb5;
 }
 
 .progress-line.disabled {
@@ -92,12 +92,12 @@
 }
 
 .progress-label.completed {
-  color: #07c160;
+  color: #09ccb5;
   font-weight: 600;
 }
 
 .progress-label.waiting {
-  color: #07c160;
+  color: #09ccb5;
 }
 
 /* 业务员信息 */
@@ -228,13 +228,13 @@
 }
 
 .timeline-dot.completed {
-  background: #07c160;
-  border-color: #07c160;
+  background: #09ccb5;
+  border-color: #09ccb5;
 }
 
 .timeline-dot.waiting {
   background: #fff;
-  border-color: #07c160;
+  border-color: #09ccb5;
   box-shadow: 0 0 0 4rpx rgba(7, 193, 96, 0.1);
 }
 
@@ -350,7 +350,7 @@
 }
 
 .breakdown-value.negative {
-  color: #07c160;
+  color: #09ccb5;
 }
 
 .breakdown-value.reason {
@@ -410,7 +410,7 @@
 }
 
 .pay-btn {
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  background: linear-gradient(135deg, #09ccb5 0%, #08b8a0 100%);
   color: #fff;
 }
 

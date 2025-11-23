@@ -99,7 +99,9 @@ Page({
           })
           return
         }
-        wx.showToast({ title: res?.message || '创建订单失败', icon: 'none' })
+        // 优先显示后端返回的错误信息（message 或 error）
+        const errorMsg = res?.message || res?.error || '创建订单失败'
+        wx.showToast({ title: errorMsg, icon: 'none' })
         return
       }
       if (!res.data || !res.data.orderNo) {
@@ -129,7 +131,9 @@ Page({
         })
         return
       }
-      wx.showToast({ title: '创建订单失败，请重试', icon: 'none' })
+      // 优先显示后端返回的错误信息（message 或 error）
+      const errorMsg = error?.message || error?.error || '创建订单失败，请重试'
+      wx.showToast({ title: errorMsg, icon: 'none' })
     } finally {
       this.setData({ submitting: false })
     }

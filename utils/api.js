@@ -810,6 +810,13 @@ function getWalletBalance() {
 }
 
 /**
+ * 获取待入账金额（打款中的回收订单金额总和）
+ */
+function getPendingAmount() {
+  return get('/wallet/pending-amount', {}, { showSuccess: false })
+}
+
+/**
  * 获取钱包交易记录
  * @param {Object} params 分页参数 { pageNum: 1, pageSize: 10, transactionType: null, startTime: null, endTime: null }
  */
@@ -1093,6 +1100,14 @@ function updateAvatar(avatarUrl) {
   return post('/user/profile/avatar', { avatarUrl }, { showSuccess: false })
 }
 
+/**
+ * 更新个人资料（昵称）
+ * @param {string} nickname 昵称
+ */
+function updateProfile(nickname) {
+  return post('/user/profile/update', { nickname }, { showSuccess: false })
+}
+
 function getCouponDetail(id) {
   return get('/coupon/detail', { id }, { showSuccess: false })
 }
@@ -1123,6 +1138,7 @@ module.exports = {
   setToken,
   clearToken,
   updateAvatar,
+  updateProfile,
 
   // 地图相关
   reverseGeocode,
@@ -1178,6 +1194,7 @@ module.exports = {
   
   // 钱包相关
   getWalletBalance,
+  getPendingAmount,
   getWalletTransactions,
   
   // 提现相关

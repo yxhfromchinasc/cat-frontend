@@ -22,7 +22,7 @@
 }
 
 .filter-item.active {
-  color: #07c160;
+  color: #09ccb5;
   font-weight: 600;
 }
 
@@ -34,7 +34,7 @@
   transform: translateX(-50%);
   width: 60rpx;
   height: 4rpx;
-  background: #07c160;
+  background: #09ccb5;
   border-radius: 2rpx;
 }
 
@@ -85,11 +85,11 @@
 }
 
 .order-status.status-progress {
-  color: #07c160;
+  color: #09ccb5;
 }
 
 .order-status.status-completed {
-  color: #07c160;
+  color: #09ccb5;
 }
 
 .order-status.status-canceled {

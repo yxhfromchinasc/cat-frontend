@@ -1,68 +1,63 @@
 <view class="page">
-  <!-- 顶部用户卡片 -->
-  <view class="card header-card" bindtap="{{isLogin ? '' : 'goLogin'}}">
-    <image class="avatar" src="{{avatarSrc}}" mode="aspectFill" bindtap="{{isLogin ? 'uploadAvatar' : ''}}" catchtap="{{isLogin ? 'uploadAvatar' : ''}}"></image>
-    <view class="header-meta">
-      <text class="phone">{{ isLogin ? (userInfo.phone || '') : '未登录' }}</text>
-      <text class="hint muted" wx:if="{{!isLogin}}">点击登录以享受完整服务</text>
-    </view>
-    <view class="login-hint" wx:if="{{!isLogin}}">
-      <text class="login-text">登录</text>
+  <!-- 顶部青色背景区域 -->
+  <view class="header-section" bindtap="{{isLogin ? 'goEditProfile' : 'goLogin'}}">
+    <image class="avatar" src="{{avatarSrc}}" mode="aspectFill"></image>
+    <view class="user-info">
+      <text class="nickname">{{ isLogin ? (userInfo.nickname || '未设置昵称') : '未登录' }}</text>
+      <text class="phone" wx:if="{{isLogin && userInfo.phone}}">{{userInfo.phone}}</text>
     </view>
   </view>
 
-  <!-- 快捷统计栅格 -->
-  <view class="card quick-grid">
-    <view class="qcell" bindtap="goWallet">
-      <text class="qnum">{{isLogin ? balance : 0}}</text>
-      <text class="qlabel">余额</text>
+  <!-- 功能列表 -->
+  <view class="menu-list">
+    <!-- 我的钱包 -->
+    <view class="menu-item" bindtap="goWallet">
+      <image class="menu-icon" src="/assets/tabbar/钱包.png" mode="aspectFit"></image>
+      <text class="menu-label">我的钱包</text>
+      <text class="menu-value" wx:if="{{isLogin}}">{{balanceStr}}</text>
+      <text class="menu-arrow">›</text>
     </view>
-    <view class="qcell" bindtap="goMyCoupons">
-      <text class="qnum">{{isLogin ? couponCount : 0}}</text>
-      <text class="qlabel">卡券</text>
-    </view>
-    <view class="qcell" bindtap="goAddress">
-      <text class="qnum">{{isLogin ? addressCount : 0}}</text>
-      <text class="qlabel">地址</text>
-    </view>
-  </view>
 
-  <!-- 推荐工具 -->
-  <view class="card tools-card">
-    <view class="section-title">推荐工具</view>
-    <view class="tool-grid">
-      <view class="tool" bindtap="goAddress">
-        <view class="icon">📍</view>
-        <text class="tlabel">地址管理</text>
-      </view>
-      <view class="tool" bindtap="goCouponCenter">
-        <view class="icon">🎟️</view>
-        <text class="tlabel">领券中心</text>
-      </view>
-      <view class="tool" bindtap="goMyCoupons">
-        <view class="icon">🎫</view>
-        <text class="tlabel">我的卡券</text>
-      </view>
-      <view class="tool" bindtap="goFeedback">
-        <view class="icon">✏️</view>
-        <text class="tlabel">意见反馈</text>
-      </view>
-      <view class="tool" bindtap="goService">
-        <view class="icon">☎️</view>
-        <text class="tlabel">联系客服</text>
-      </view>
-      <view class="tool" bindtap="goInvite">
-        <view class="icon">👥</view>
-        <text class="tlabel">邀请好友</text>
-      </view>
-      <view class="tool" bindtap="goOrders">
-        <view class="icon">🗂️</view>
-        <text class="tlabel">我的订单</text>
-      </view>
-      <view class="tool" bindtap="goSettings">
-        <view class="icon">⚙️</view>
-        <text class="tlabel">系统设置</text>
-      </view>
+    <!-- 卡券中心 -->
+    <view class="menu-item" bindtap="goCouponCenter">
+      <image class="menu-icon" src="/assets/tabbar/优惠券.png" mode="aspectFit"></image>
+      <text class="menu-label">卡券中心</text>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <!-- 地址 -->
+    <view class="menu-item" bindtap="goAddress">
+      <image class="menu-icon" src="{{addressIcon}}" mode="aspectFit"></image>
+      <text class="menu-label">我的地址</text>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <!-- 意见反馈 -->
+    <view class="menu-item" bindtap="goFeedback">
+      <image class="menu-icon" src="/assets/tabbar/意见反馈.png" mode="aspectFit"></image>
+      <text class="menu-label">意见反馈</text>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <!-- 联系客服 -->
+    <view class="menu-item" bindtap="goService">
+      <image class="menu-icon" src="/assets/tabbar/客服.png" mode="aspectFit"></image>
+      <text class="menu-label">联系客服</text>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <!-- 邀请好友 -->
+    <view class="menu-item" bindtap="goInvite">
+      <image class="menu-icon" src="/assets/tabbar/邀请好友.png" mode="aspectFit"></image>
+      <text class="menu-label">邀请好友</text>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <!-- 系统设置 -->
+    <view class="menu-item" bindtap="goSettings">
+      <image class="menu-icon" src="/assets/tabbar/系统设置.png" mode="aspectFit"></image>
+      <text class="menu-label">系统设置</text>
+      <text class="menu-arrow">›</text>
     </view>
   </view>
 </view>

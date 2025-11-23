@@ -105,7 +105,7 @@
 .submit-btn{
   flex: 1;
   height: 88rpx;
-  background: #07c160;
+  background: #09ccb5;
   color: #fff;
   border-radius: 12rpx;
   display: flex;

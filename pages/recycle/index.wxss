@@ -43,7 +43,7 @@
 }
 
 .address-item.selected {
-  border-color: #07c160;
+  border-color: #09ccb5;
   background: #f0f4ff;
 }
 
@@ -87,7 +87,7 @@
 }
 
 .tag.default {
-  background: #07c160;
+  background: #09ccb5;
   color: #fff;
 }
 
@@ -98,7 +98,7 @@
   align-items: center;
   justify-content: center;
   font-size: 32rpx;
-  color: #07c160;
+  color: #09ccb5;
   font-weight: bold;
 }
 
@@ -146,12 +146,12 @@
 
 .address-empty:active {
   background: #f0f4ff;
-  border-color: #07c160;
+  border-color: #09ccb5;
 }
 
 .empty-text {
   font-size: 28rpx;
-  color: #07c160;
+  color: #09ccb5;
 }
 
 /* 回收点提示 */
@@ -168,7 +168,7 @@
 }
 
 .tip-text.success {
-  color: #07c160;
+  color: #09ccb5;
 }
 
 .tip-text.error {
@@ -282,7 +282,7 @@
 
 .upload-btn:active {
   background: #f0f0f0;
-  border-color: #07c160;
+  border-color: #09ccb5;
 }
 
 .upload-icon {
@@ -353,7 +353,7 @@
 
 .selected-time-text {
   font-size: 26rpx;
-  color: #07c160;
+  color: #09ccb5;
   font-weight: 500;
 }
 
@@ -372,7 +372,7 @@
 .submit-btn {
   width: 100%;
   height: 88rpx;
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  background: linear-gradient(135deg, #09ccb5 0%, #08b8a0 100%);
   color: #fff;
   font-size: 32rpx;
   font-weight: 500;

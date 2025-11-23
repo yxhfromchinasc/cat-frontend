@@ -9,7 +9,7 @@ Page({
       <svg width="240" height="160" viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#07c160"/>
+            <stop offset="0%" stop-color="#09ccb5"/>
             <stop offset="100%" stop-color="#8ea6ff"/>
           </linearGradient>
         </defs>

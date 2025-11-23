@@ -7,6 +7,7 @@
     "pages/express-detail/index",
     "pages/recycling-detail/index",
     "pages/profile/index",
+    "pages/profile/edit",
     "pages/wallet/index",
     "pages/address/index",
     "pages/address/edit",
@@ -35,7 +36,7 @@
   },
   "tabBar": {
     "color": "#8A8A8E",
-    "selectedColor": "#07c160",
+    "selectedColor": "#09ccb5",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [

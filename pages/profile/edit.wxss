@@ -1,0 +1,85 @@
+.page{
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 0;
+}
+
+.form-card{
+  background: #fff;
+  border-radius: 0;
+  overflow: hidden;
+  margin: 0;
+}
+
+.form-item{
+  display: flex;
+  align-items: center;
+  padding: 32rpx 24rpx;
+  min-height: 48rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.form-item:first-child{
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.form-item:last-child{
+  border-bottom: none;
+}
+
+.label{
+  font-size: 28rpx;
+  color: #111;
+  font-weight: 400;
+  flex-shrink: 0;
+  margin-right: 32rpx;
+  width: 160rpx;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.input{
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  border: none;
+  outline: none;
+  text-align: right;
+  min-width: 0;
+  line-height: 1.5;
+  padding: 0;
+  margin-right: 16rpx;
+}
+
+.avatar-wrapper{
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 16rpx;
+}
+
+.avatar{
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  background: #eee;
+  flex-shrink: 0;
+}
+
+.phone-text{
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  text-align: right;
+  line-height: 1.5;
+  margin-right: 16rpx;
+}
+
+.menu-arrow{
+  font-size: 32rpx;
+  color: #999;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
