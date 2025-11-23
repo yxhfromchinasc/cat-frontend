@@ -37,7 +37,8 @@ Page({
     tomorrowTimeSlots: [], // 明天的时间段列表
     selectedDateIndex: -1, // 选中的日期索引
     selectedTimeSlotIndex: -1, // 选中的时间段索引
-    checkingAvailability: false // 是否正在检查可用性
+    checkingAvailability: false, // 是否正在检查可用性
+    showTimePickerModal: false // 是否显示时间选择器弹窗
   },
 
   async onLoad(options) {
@@ -621,6 +622,85 @@ Page({
       'form.startTime': startTime,
       'form.endTime': endTime,
       'form.startTimeStr': displayText
+    })
+    
+    // 更新提交状态
+    this.updateCanSubmit()
+  },
+
+  // 显示时间选择器弹窗
+  showTimePicker() {
+    this.setData({ showTimePickerModal: true })
+  },
+
+  // 隐藏时间选择器弹窗
+  hideTimePicker() {
+    this.setData({ showTimePickerModal: false })
+  },
+
+  // 阻止事件冒泡
+  stopPropagation() {
+    // 空函数，用于阻止事件冒泡
+  },
+
+  // 选择日期（弹窗中）
+  selectDate(e) {
+    const index = parseInt(e.currentTarget.dataset.index)
+    const isToday = index === 0
+    
+    // 根据选择的日期更新时间段选项
+    const timeSlotOptions = isToday ? this.data.todayTimeSlots : this.data.tomorrowTimeSlots
+    
+    // 重置时间段选择
+    this.setData({
+      selectedDateIndex: index,
+      timeSlotOptions,
+      selectedTimeSlotIndex: -1
+    })
+  },
+
+  // 选择时间段（弹窗中）
+  selectTimeSlot(e) {
+    const index = parseInt(e.currentTarget.dataset.index)
+    const timeSlot = this.data.timeSlotOptions[index]
+    if (!timeSlot) return
+    
+    // 检查是否已约满
+    if (timeSlot.disabled || !timeSlot.available) {
+      wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
+      return
+    }
+    
+    this.setData({
+      selectedTimeSlotIndex: index
+    })
+  },
+
+  // 确认时间选择
+  confirmTimeSelection() {
+    if (this.data.selectedDateIndex < 0 || this.data.selectedTimeSlotIndex < 0) {
+      wx.showToast({ title: '请选择日期和时间段', icon: 'none' })
+      return
+    }
+    
+    const timeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
+    if (!timeSlot || timeSlot.disabled || !timeSlot.available) {
+      wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
+      return
+    }
+    
+    // 计算开始和结束时间
+    const isToday = this.data.selectedDateIndex === 0
+    const startTime = this.formatDateTime(timeSlot.startTime, !isToday)
+    const endTime = this.formatDateTime(timeSlot.endTime, !isToday)
+    const dateLabel = isToday ? '今天' : '明天'
+    const startTimeStr = `${dateLabel} ${timeSlot.label}`
+    
+    this.setData({
+      'form.startTime': startTime,
+      'form.endTime': endTime,
+      'form.startTimeStr': startTimeStr,
+      showTimePickerModal: false
     })
     
     // 更新提交状态
