@@ -17,6 +17,24 @@
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
+/* 用于合并卡片组的样式 */
+.card-group-top {
+  background: #fff;
+  margin: 24rpx 24rpx 0 24rpx; /* 底部无间距 */
+  border-radius: 16rpx 16rpx 0 0; /* 底部无圆角 */
+  padding: 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.card-group-bottom {
+  background: #fff;
+  margin: 0 24rpx 24rpx 24rpx; /* 顶部无间距 */
+  border-radius: 0 0 16rpx 16rpx; /* 顶部无圆角 */
+  padding: 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-top: 1rpx solid #f0f0f0; /* 添加顶部边框作为分隔线 */
+}
+
 .card-title {
   font-size: 32rpx;
   font-weight: 700;
@@ -236,6 +254,18 @@
 
 .checkbox-item .label {
   margin-bottom: 0;
+}
+
+.urgent-label {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.urgent-tip-icon {
+  width: 32rpx;
+  height: 32rpx;
+  flex-shrink: 0;
 }
 
 .label {

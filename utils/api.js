@@ -1235,7 +1235,7 @@ module.exports = {
   // 配置
   API_CONFIG,
   
-  // 时间段可用性检查
+  // 时间段可用性检查（单个时间段）
   checkTimeSlotAvailability(serviceType, startTime, endTime, stationId, recyclingPointId) {
     const params = {
       serviceType,
@@ -1249,6 +1249,21 @@ module.exports = {
       params.recyclingPointId = recyclingPointId
     }
     return get('/schedule/check-availability', params, { showLoading: false, showError: false })
+  },
+
+  // 批量获取时间段列表（包含可用性信息）
+  getTimeSlotList(serviceType, date, stationId, recyclingPointId) {
+    const params = {
+      serviceType,
+      date // 格式：yyyy-MM-dd
+    }
+    if (stationId) {
+      params.stationId = stationId
+    }
+    if (recyclingPointId) {
+      params.recyclingPointId = recyclingPointId
+    }
+    return get('/schedule/time-slots', params, { showLoading: false, showError: false })
   },
 
   // 获取快递代取可预约时间范围

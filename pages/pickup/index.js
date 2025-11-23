@@ -24,8 +24,7 @@ Page({
     form: {
       phoneTail: '', // 取件手机尾号
       pickPics: [], // 取件照片列表
-      pickCodes: [], // 取件码列表
-      pickCodesStr: '', // 取件码输入字符串
+      pickCodes: '', // 取件码（多个用顿号分隔）
       itemDescription: '', // 物品备注
       startTime: null, // 开始时间（LocalDateTime格式）
       endTime: null, // 结束时间（LocalDateTime格式）
@@ -44,7 +43,9 @@ Page({
     tomorrowTimeSlots: [], // 明天的时间段列表
     selectedDateIndex: -1, // 选中的日期索引
     selectedTimeSlotIndex: -1, // 选中的时间段索引
-    checkingAvailability: false // 是否正在检查可用性
+    checkingAvailability: false, // 是否正在检查可用性
+    showTimePickerModal: false, // 是否显示时间选择器弹窗
+    urgentTipText: '' // 立即上门提示文案
   },
 
   async onLoad(options) {
@@ -56,6 +57,9 @@ Page({
     
     // 加载备注快捷选项
     await this.loadRemarkOptions()
+    
+    // 加载立即上门提示文案
+    await this.loadUrgentTip()
     
     // 优先从URL参数获取预选地址ID
     let addressId = options.addressId ? parseInt(options.addressId) : null
@@ -378,7 +382,7 @@ Page({
     }
   },
 
-  // 检查所有时间段的可用性（优化：分批检查，避免一次性请求太多）
+  // 检查所有时间段的可用性（使用后端批量接口）
   async checkAllTimeSlotsAvailability() {
     if (this.data.checkingAvailability) return
     // 如果没有选择驿站，不检查可用性
@@ -389,81 +393,51 @@ Page({
     this.setData({ checkingAvailability: true })
     
     try {
-      // 分批检查，每批10个时间段
-      const batchSize = 10
+      const today = new Date()
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
       
-      // 检查今天的时间段
-      const todaySlots = [...this.data.todayTimeSlots]
-      for (let i = 0; i < todaySlots.length; i += batchSize) {
-        const batch = todaySlots.slice(i, i + batchSize)
-        const promises = batch.map(async (slot) => {
-          const startTime = this.formatDateTime(slot.startTime, false)
-          const endTime = this.formatDateTime(slot.endTime, false)
-          try {
-            // 2=快递代取，需要传递stationId
-            const res = await api.checkTimeSlotAvailability(2, startTime, endTime, this.data.selectedStationId, null)
-            return {
-              slot,
-              available: res.success && res.data && res.data.available
-            }
-          } catch (e) {
-            console.error('检查时间段可用性失败:', e)
-            return { slot, available: true } // 检查失败时默认可用
-          }
-        })
-        const results = await Promise.all(promises)
-        
-        // 更新当前批次的时间段
-        const updatedSlots = this.data.todayTimeSlots.map(slot => {
-          const result = results.find(r => r.slot.startTime === slot.startTime && r.slot.endTime === slot.endTime)
-          if (result) {
-            return {
-              ...slot,
-              available: result.available,
-              disabled: !result.available,
-              label: !result.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : slot.label
-            }
-          }
-          return slot
-        })
-        this.setData({ todayTimeSlots: updatedSlots })
+      // 格式化日期为 yyyy-MM-dd
+      const formatDate = (date) => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
       }
       
-      // 检查明天的时间段
-      const tomorrowSlots = [...this.data.tomorrowTimeSlots]
-      for (let i = 0; i < tomorrowSlots.length; i += batchSize) {
-        const batch = tomorrowSlots.slice(i, i + batchSize)
-        const promises = batch.map(async (slot) => {
-          const startTime = this.formatDateTime(slot.startTime, true)
-          const endTime = this.formatDateTime(slot.endTime, true)
-          try {
-            // 2=快递代取，需要传递stationId
-            const res = await api.checkTimeSlotAvailability(2, startTime, endTime, this.data.selectedStationId, null)
-            return {
-              slot,
-              available: res.success && res.data && res.data.available
-            }
-          } catch (e) {
-            console.error('检查时间段可用性失败:', e)
-            return { slot, available: true } // 检查失败时默认可用
-          }
-        })
-        const results = await Promise.all(promises)
-        
-        // 更新当前批次的时间段
-        const updatedSlots = this.data.tomorrowTimeSlots.map(slot => {
-          const result = results.find(r => r.slot.startTime === slot.startTime && r.slot.endTime === slot.endTime)
-          if (result) {
-            return {
-              ...slot,
-              available: result.available,
-              disabled: !result.available,
-              label: !result.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : slot.label
-            }
-          }
-          return slot
-        })
-        this.setData({ tomorrowTimeSlots: updatedSlots })
+      const todayStr = formatDate(today)
+      const tomorrowStr = formatDate(tomorrow)
+      
+      // 并行获取今天和明天的时间段列表
+      const [todayRes, tomorrowRes] = await Promise.all([
+        api.getTimeSlotList(2, todayStr, this.data.selectedStationId, null),
+        api.getTimeSlotList(2, tomorrowStr, this.data.selectedStationId, null)
+      ])
+      
+      // 更新今天的时间段
+      if (todayRes.success && todayRes.data && todayRes.data.timeSlots) {
+        const updatedTodaySlots = todayRes.data.timeSlots.map(slot => ({
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          isToday: true,
+          available: slot.available,
+          disabled: !slot.available,
+          label: !slot.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : `${slot.startTime} - ${slot.endTime}`
+        }))
+        this.setData({ todayTimeSlots: updatedTodaySlots })
+      }
+      
+      // 更新明天的时间段
+      if (tomorrowRes.success && tomorrowRes.data && tomorrowRes.data.timeSlots) {
+        const updatedTomorrowSlots = tomorrowRes.data.timeSlots.map(slot => ({
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          isToday: false,
+          available: slot.available,
+          disabled: !slot.available,
+          label: !slot.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : `${slot.startTime} - ${slot.endTime}`
+        }))
+        this.setData({ tomorrowTimeSlots: updatedTomorrowSlots })
       }
       
       // 更新当前显示的时间段选项
@@ -471,7 +445,7 @@ Page({
       const currentTimeSlotOptions = currentDateIndex === 0 ? this.data.todayTimeSlots : this.data.tomorrowTimeSlots
       this.setData({ timeSlotOptions: currentTimeSlotOptions })
     } catch (e) {
-      console.error('批量检查时间段可用性失败:', e)
+      console.error('获取时间段列表失败:', e)
     } finally {
       this.setData({ checkingAvailability: false })
     }
@@ -593,8 +567,7 @@ Page({
   onInputPickCodes(e) {
     const value = e.detail.value
     this.setData({
-      'form.pickCodesStr': value,
-      'form.pickCodes': value.split(',').map(code => code.trim()).filter(code => code)
+      'form.pickCodes': value.replace(/,/g, '、').trim() // 将逗号替换为顿号
     })
   },
 
@@ -633,10 +606,28 @@ Page({
     })
   },
 
-  // 加急服务开关
-  onUrgentSwitchChange(e) {
-    this.setData({
-      'form.isUrgent': e.detail.value
+  // 加载立即上门提示文案
+  async loadUrgentTip() {
+    try {
+      const res = await api.getPublicConfigs()
+      if (res && res.success && res.data) {
+        // 从系统设置中获取快递代取立即上门提示文案
+        const tipText = res.data.urgent_tip_express || res.data.urgent_tip || ''
+        this.setData({ urgentTipText: tipText })
+      }
+    } catch (e) {
+      console.error('加载立即上门提示文案失败:', e)
+    }
+  },
+
+  // 显示立即上门提示
+  showUrgentTip() {
+    const tipText = this.data.urgentTipText || '立即上门服务说明'
+    wx.showModal({
+      title: '提示',
+      content: tipText,
+      showCancel: false,
+      confirmText: '知道了'
     })
   },
 
@@ -804,14 +795,36 @@ Page({
   // 加急开关变化处理
   onUrgentSwitchChange(e) {
     const isUrgent = e.detail.value
-    this.setData({
-      'form.isUrgent': isUrgent
-    })
     
+    // 如果用户要开启立即上门，显示二次确认
     if (isUrgent) {
-      // 加急订单：自动设置当前时间到20分钟后
-      this.setUrgentTime()
+      const tipText = this.data.urgentTipText || '立即上门服务说明'
+      wx.showModal({
+        title: '提示',
+        content: tipText,
+        confirmText: '确认',
+        cancelText: '取消',
+        success: (modalRes) => {
+          if (modalRes.confirm) {
+            // 用户确认，开启加急
+            this.setData({
+              'form.isUrgent': true
+            })
+            // 加急订单：自动设置当前时间到20分钟后
+            this.setUrgentTime()
+          } else {
+            // 用户取消，保持关闭状态
+            this.setData({
+              'form.isUrgent': false
+            })
+          }
+        }
+      })
     } else {
+      // 关闭加急，直接更新
+      this.setData({
+        'form.isUrgent': false
+      })
       // 非加急订单：恢复时间选择器
       // 如果之前没有选择时间，初始化时间选择器
       if (this.data.selectedDateIndex === -1 || this.data.selectedTimeSlotIndex === -1) {
@@ -842,7 +855,7 @@ Page({
     this.setData({
       'form.startTime': startTime,
       'form.endTime': endTimeStr,
-      'form.startTimeStr': '20分钟内送达'
+      'form.startTimeStr': '请选择预约时间'
     })
   },
 
@@ -958,7 +971,7 @@ Page({
         addressId: this.data.selectedAddressId,
         phoneTail: this.data.form.phoneTail,
         pickPics: this.data.form.pickPics.length > 0 ? this.data.form.pickPics : null, // 如果为空传null
-        pickCodes: this.data.form.pickCodes.length > 0 ? this.data.form.pickCodes : null, // 如果为空传null
+        pickCodes: this.data.form.pickCodes && this.data.form.pickCodes.trim() ? this.data.form.pickCodes.trim() : null, // 如果为空传null
         itemDescription: this.data.form.itemDescription,
         // 加急订单不传时间，后端自动计算
         startTime: this.data.form.isUrgent ? null : this.data.form.startTime,
@@ -1013,6 +1026,123 @@ Page({
       console.log('提交流程结束，隐藏loading')
       wx.hideLoading()
     }
+  },
+
+  // 显示时间选择器弹窗
+  showTimePicker() {
+    this.setData({ showTimePickerModal: true })
+  },
+
+  // 隐藏时间选择器弹窗
+  hideTimePicker() {
+    this.setData({ showTimePickerModal: false })
+  },
+
+  // 阻止事件冒泡
+  stopPropagation() {
+    // 空函数，用于阻止事件冒泡
+  },
+
+  // 选择日期（弹窗中）
+  selectDate(e) {
+    const index = parseInt(e.currentTarget.dataset.index)
+    const dateOption = this.data.dateOptions[index]
+    
+    if (dateOption) {
+      // 根据选择的日期更新时间段选项
+      const timeSlotOptions = dateOption.isToday 
+        ? this.data.todayTimeSlots 
+        : this.data.tomorrowTimeSlots
+      
+      // 自动选择第一个可用时间段
+      const firstAvailableSlot = timeSlotOptions.find(slot => slot.available && !slot.disabled)
+      let selectedIndex = -1
+      let startTime = null
+      let endTime = null
+      let startTimeStr = ''
+      
+      if (firstAvailableSlot) {
+        selectedIndex = timeSlotOptions.indexOf(firstAvailableSlot)
+        const isToday = dateOption.isToday
+        startTime = this.formatDateTime(firstAvailableSlot.startTime, !isToday)
+        endTime = this.formatDateTime(firstAvailableSlot.endTime, !isToday)
+        startTimeStr = `${dateOption.label} ${firstAvailableSlot.label}`
+      }
+      
+      this.setData({
+        selectedDateIndex: index,
+        timeSlotOptions: timeSlotOptions,
+        selectedTimeSlotIndex: selectedIndex,
+        'form.startTime': startTime,
+        'form.endTime': endTime,
+        'form.startTimeStr': startTimeStr
+      })
+    }
+  },
+
+  // 选择时间段（弹窗中）
+  selectTimeSlot(e) {
+    const index = parseInt(e.currentTarget.dataset.index)
+    const timeSlot = this.data.timeSlotOptions[index]
+    
+    if (!timeSlot) return
+    
+    // 检查是否已约满
+    if (timeSlot.disabled || !timeSlot.available) {
+      wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
+      return
+    }
+    
+    // 必须先选择日期
+    if (this.data.selectedDateIndex === -1) {
+      wx.showToast({ title: '请先选择日期', icon: 'none' })
+      return
+    }
+    
+    const dateOption = this.data.dateOptions[this.data.selectedDateIndex]
+    const isToday = dateOption.isToday
+    
+    // 计算开始时间和结束时间
+    const startTime = this.formatDateTime(timeSlot.startTime, !isToday)
+    const endTime = this.formatDateTime(timeSlot.endTime, !isToday)
+    
+    // 显示文本：今天 14:30 - 15:00
+    const displayText = `${dateOption.label} ${timeSlot.label}`
+    
+    this.setData({
+      selectedTimeSlotIndex: index,
+      'form.startTime': startTime,
+      'form.endTime': endTime,
+      'form.startTimeStr': displayText
+    })
+  },
+
+  // 确认时间选择
+  confirmTimeSelection() {
+    if (this.data.selectedDateIndex === -1 || this.data.selectedTimeSlotIndex === -1) {
+      wx.showToast({ title: '请选择完整的时间', icon: 'none' })
+      return
+    }
+    
+    const timeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
+    if (timeSlot && (timeSlot.disabled || !timeSlot.available)) {
+      wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
+      return
+    }
+    
+    this.setData({ showTimePickerModal: false })
+  },
+
+  // 预览图片
+  previewImage(e) {
+    const url = e.currentTarget.dataset.url
+    const index = e.currentTarget.dataset.index
+    const urls = this.data.form.pickPics
+    
+    wx.previewImage({
+      current: url,
+      urls: urls
+    })
   },
 
   // 分享给好友

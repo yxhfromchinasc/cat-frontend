@@ -63,9 +63,7 @@ Page({
         if (detail.pickPics && !Array.isArray(detail.pickPics)) {
           detail.pickPics = []
         }
-        if (detail.pickCodes && !Array.isArray(detail.pickCodes)) {
-          detail.pickCodes = []
-        }
+        // pickCodes 现在是字符串格式，不需要数组检查
         if (detail.expressPics && !Array.isArray(detail.expressPics)) {
           detail.expressPics = []
         }
@@ -92,10 +90,29 @@ Page({
         
         // 处理时间线事件记录（后端返回）
         if (detail.timeline && Array.isArray(detail.timeline)) {
-          // 为每个时间线事件格式化时间
+          // 为每个时间线事件格式化时间，并确保数据格式正确
           detail.timeline.forEach(event => {
             if (event.time) {
               event.timeFormatted = this.formatTime(event.time)
+            }
+            // 确保 event.data 存在
+            if (!event.data) {
+              event.data = {}
+            }
+            // pickCodes 现在是字符串格式，确保是字符串
+            if (event.data.pickCodes !== undefined && event.data.pickCodes !== null) {
+              if (typeof event.data.pickCodes !== 'string') {
+                // 如果不是字符串，转换为字符串
+                if (Array.isArray(event.data.pickCodes)) {
+                  event.data.pickCodes = event.data.pickCodes.filter(code => code && String(code).trim()).join('、')
+                } else {
+                  event.data.pickCodes = String(event.data.pickCodes)
+                }
+              }
+            }
+            // 确保 pickPics 是数组格式
+            if (event.data.pickPics && !Array.isArray(event.data.pickPics)) {
+              event.data.pickPics = []
             }
           })
         } else {
@@ -104,6 +121,9 @@ Page({
 
         // 计算进度节点（保留用于进度条显示）
         detail.progressSteps = this.calculateProgressSteps(detail)
+        
+        // 计算进度百分比（用于进度条填充）
+        const progressPercent = this.calculateProgressPercent(detail.progressSteps)
 
         // 基于订单详情接口直接渲染金额与优惠信息（后端已返回 actualAmount/couponId/couponName/discountAmount）
         const origSrc = detail.totalAmount != null ? detail.totalAmount : (detail.expressPrice != null ? detail.expressPrice : 0)
@@ -121,6 +141,7 @@ Page({
           discountAmountStr: amount.formatAmount(disc),
           hasDiscount: orig > act,
           couponName: detail.couponName || '',
+          progressPercent: progressPercent,
           loading: false,
           isFirstLoad: false
         })
@@ -216,6 +237,46 @@ Page({
     }
     
     return steps
+  },
+
+  // 计算进度百分比
+  calculateProgressPercent(steps) {
+    if (!steps || steps.length === 0) return 0
+    
+    // 找到当前进行中的节点索引
+    let activeIndex = -1
+    for (let i = 0; i < steps.length; i++) {
+      if (steps[i].status === 'waiting') {
+        activeIndex = i
+        break
+      }
+    }
+    
+    // 如果找到进行中的节点，计算到该节点的进度
+    if (activeIndex >= 0) {
+      // 进度到当前节点，但不包括该节点（因为是进行中）
+      return (activeIndex / (steps.length - 1)) * 100
+    }
+    
+    // 如果没有进行中的节点，检查是否有已完成的
+    let lastCompletedIndex = -1
+    for (let i = steps.length - 1; i >= 0; i--) {
+      if (steps[i].status === 'completed') {
+        lastCompletedIndex = i
+        break
+      }
+    }
+    
+    if (lastCompletedIndex >= 0) {
+      // 如果最后一个已完成，进度100%
+      if (lastCompletedIndex === steps.length - 1) {
+        return 100
+      }
+      // 否则进度到最后一个已完成节点
+      return ((lastCompletedIndex + 1) / (steps.length - 1)) * 100
+    }
+    
+    return 0
   },
 
   // 格式化时间

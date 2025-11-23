@@ -71,9 +71,13 @@ Page({
         // 计算进度节点（保留用于进度条显示）
         detail.progressSteps = this.calculateProgressSteps(detail)
         
+        // 计算进度百分比（用于进度条填充）
+        const progressPercent = this.calculateProgressPercent(detail.progressSteps)
+        
         this.setData({
           orderDetail: detail,
           amountStr: amountStr,
+          progressPercent: progressPercent,
           loading: false
         })
       } else {
@@ -150,6 +154,46 @@ Page({
     }
     
     return steps
+  },
+
+  // 计算进度百分比
+  calculateProgressPercent(steps) {
+    if (!steps || steps.length === 0) return 0
+    
+    // 找到当前进行中的节点索引
+    let activeIndex = -1
+    for (let i = 0; i < steps.length; i++) {
+      if (steps[i].status === 'waiting') {
+        activeIndex = i
+        break
+      }
+    }
+    
+    // 如果找到进行中的节点，计算到该节点的进度
+    if (activeIndex >= 0) {
+      // 进度到当前节点，但不包括该节点（因为是进行中）
+      return (activeIndex / (steps.length - 1)) * 100
+    }
+    
+    // 如果没有进行中的节点，检查是否有已完成的
+    let lastCompletedIndex = -1
+    for (let i = steps.length - 1; i >= 0; i--) {
+      if (steps[i].status === 'completed') {
+        lastCompletedIndex = i
+        break
+      }
+    }
+    
+    if (lastCompletedIndex >= 0) {
+      // 如果最后一个已完成，进度100%
+      if (lastCompletedIndex === steps.length - 1) {
+        return 100
+      }
+      // 否则进度到最后一个已完成节点
+      return ((lastCompletedIndex + 1) / (steps.length - 1)) * 100
+    }
+    
+    return 0
   },
 
   // 格式化时间

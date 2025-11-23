@@ -2,25 +2,21 @@
 <view class="page" wx:if="{{!loading && orderDetail}}">
   <!-- 进度条 -->
   <view class="progress-section">
-    <view class="progress-bar">
-      <view class="progress-item {{step.status === 'completed' ? 'completed' : step.status === 'waiting' ? 'waiting' : 'disabled'}}" 
-            wx:for="{{orderDetail.progressSteps}}" 
-            wx:key="key"
-            wx:for-index="idx"
-            wx:for-item="step"
-            wx:if="{{step.show}}">
-        <view class="progress-dot"></view>
-        <view class="progress-line {{step.lineStatus === 'completed' ? 'completed' : 'disabled'}}" 
-              wx:if="{{idx < orderDetail.progressSteps.length - 1}}"></view>
-      </view>
-    </view>
-    <view class="progress-labels">
-      <view class="progress-label {{step.status === 'completed' ? 'completed' : step.status === 'waiting' ? 'waiting' : 'disabled'}}"
-            wx:for="{{orderDetail.progressSteps}}" 
-            wx:key="key"
-            wx:for-item="step"
-            wx:if="{{step.show}}">
-        <text>{{step.title}}</text>
+    <view class="progress-wrapper">
+      <view class="progress-nodes">
+        <view class="progress-node {{step.status === 'completed' ? 'completed' : step.status === 'waiting' ? 'active' : 'pending'}}" 
+              wx:for="{{orderDetail.progressSteps}}" 
+              wx:key="key"
+              wx:for-item="step"
+              wx:for-index="stepIndex"
+              wx:if="{{step.show}}">
+          <view class="node-container">
+            <view class="node-line {{stepIndex > 0 && orderDetail.progressSteps[stepIndex - 1].status === 'completed' ? 'completed' : 'pending'}}" wx:if="{{stepIndex > 0}}"></view>
+            <view class="node-dot"></view>
+            <view class="node-line {{step.status === 'completed' ? 'completed' : 'pending'}}" wx:if="{{stepIndex < orderDetail.progressSteps.length - 1}}"></view>
+          </view>
+          <view class="node-label">{{step.title}}</view>
+        </view>
       </view>
     </view>
   </view>

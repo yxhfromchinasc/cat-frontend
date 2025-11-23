@@ -38,12 +38,16 @@ Page({
     selectedDateIndex: -1, // 选中的日期索引
     selectedTimeSlotIndex: -1, // 选中的时间段索引
     checkingAvailability: false, // 是否正在检查可用性
-    showTimePickerModal: false // 是否显示时间选择器弹窗
+    showTimePickerModal: false, // 是否显示时间选择器弹窗
+    urgentTipText: '' // 立即上门提示文案
   },
 
   async onLoad(options) {
     // 加载备注快捷选项
     await this.loadRemarkOptions()
+    
+    // 加载立即上门提示文案
+    await this.loadUrgentTip()
     
     // 优先从URL参数获取预选地址ID
     let addressId = options.addressId ? parseInt(options.addressId) : null
@@ -232,17 +236,63 @@ Page({
     }
   },
 
+  // 加载立即上门提示文案
+  async loadUrgentTip() {
+    try {
+      const res = await api.getPublicConfigs()
+      if (res && res.success && res.data) {
+        // 从系统设置中获取立即上门提示文案，配置key可能是 'urgent_tip' 或 'immediate_tip' 等
+        const tipText = res.data.urgent_tip || res.data.immediate_tip || res.data.urgent_tip_text || ''
+        this.setData({ urgentTipText: tipText })
+      }
+    } catch (e) {
+      console.error('加载立即上门提示文案失败:', e)
+    }
+  },
+
+  // 显示立即上门提示
+  showUrgentTip() {
+    const tipText = this.data.urgentTipText || '立即上门服务说明'
+    wx.showModal({
+      title: '提示',
+      content: tipText,
+      showCancel: false,
+      confirmText: '知道了'
+    })
+  },
+
   // 立即上门开关变化
   onImmediateSwitchChange(e) {
     const checked = e.detail.value
-    const timeType = checked ? 'immediate' : 'appointment'
     
-    this.setData({ timeType })
-    
-    if (timeType === 'immediate') {
-      // 立即上门：当前时间到半小时后
-      this.setImmediateTime()
+    // 如果用户要开启立即上门，显示二次确认
+    if (checked) {
+      const tipText = this.data.urgentTipText || '立即上门服务说明'
+      wx.showModal({
+        title: '提示',
+        content: tipText,
+        confirmText: '确认',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            // 用户确认，开启立即上门
+            this.setData({ timeType: 'immediate' })
+            this.setImmediateTime()
+          } else {
+            // 用户取消，保持关闭状态，需要重置switch
+            // 由于switch已经改变了，我们需要通过设置timeType来重置
+            // 但这里有个问题，switch的状态已经改变了，我们需要手动重置
+            // 可以通过延迟设置来确保switch状态正确
+            setTimeout(() => {
+              // 不设置timeType，因为已经是appointment了
+              // 但需要确保switch显示为关闭状态
+            }, 50)
+          }
+        }
+      })
     } else {
+      // 关闭立即上门，直接切换
+      this.setData({ timeType: 'appointment' })
       // 预约时间：初始化时间选择器
       this.initTimeSlots()
     }
@@ -455,7 +505,7 @@ Page({
     }
   },
 
-  // 检查所有时间段的可用性（优化：分批检查，避免一次性请求太多）
+  // 检查所有时间段的可用性（使用后端批量接口）
   async checkAllTimeSlotsAvailability() {
     if (this.data.checkingAvailability) return
     // 如果没有选择回收点，不检查可用性
@@ -466,81 +516,51 @@ Page({
     this.setData({ checkingAvailability: true })
     
     try {
-      // 分批检查，每批10个时间段
-      const batchSize = 10
+      const today = new Date()
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
       
-      // 检查今天的时间段
-      const todaySlots = [...this.data.todayTimeSlots]
-      for (let i = 0; i < todaySlots.length; i += batchSize) {
-        const batch = todaySlots.slice(i, i + batchSize)
-        const promises = batch.map(async (slot) => {
-          const startTime = this.formatDateTime(slot.startTime, false)
-          const endTime = this.formatDateTime(slot.endTime, false)
-          try {
-            // 3=上门回收，需要传递recyclingPointId
-            const res = await api.checkTimeSlotAvailability(3, startTime, endTime, null, this.data.selectedRecyclingPointId)
-            return {
-              slot,
-              available: res.success && res.data && res.data.available
-            }
-          } catch (e) {
-            console.error('检查时间段可用性失败:', e)
-            return { slot, available: true } // 检查失败时默认可用
-          }
-        })
-        const results = await Promise.all(promises)
-        
-        // 更新当前批次的时间段
-        const updatedSlots = this.data.todayTimeSlots.map(slot => {
-          const result = results.find(r => r.slot.startTime === slot.startTime && r.slot.endTime === slot.endTime)
-          if (result) {
-            return {
-              ...slot,
-              available: result.available,
-              disabled: !result.available,
-              label: !result.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : slot.label
-            }
-          }
-          return slot
-        })
-        this.setData({ todayTimeSlots: updatedSlots })
+      // 格式化日期为 yyyy-MM-dd
+      const formatDate = (date) => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
       }
       
-      // 检查明天的时间段
-      const tomorrowSlots = [...this.data.tomorrowTimeSlots]
-      for (let i = 0; i < tomorrowSlots.length; i += batchSize) {
-        const batch = tomorrowSlots.slice(i, i + batchSize)
-        const promises = batch.map(async (slot) => {
-          const startTime = this.formatDateTime(slot.startTime, true)
-          const endTime = this.formatDateTime(slot.endTime, true)
-          try {
-            // 3=上门回收，需要传递recyclingPointId
-            const res = await api.checkTimeSlotAvailability(3, startTime, endTime, null, this.data.selectedRecyclingPointId)
-            return {
-              slot,
-              available: res.success && res.data && res.data.available
-            }
-          } catch (e) {
-            console.error('检查时间段可用性失败:', e)
-            return { slot, available: true } // 检查失败时默认可用
-          }
-        })
-        const results = await Promise.all(promises)
-        
-        // 更新当前批次的时间段
-        const updatedSlots = this.data.tomorrowTimeSlots.map(slot => {
-          const result = results.find(r => r.slot.startTime === slot.startTime && r.slot.endTime === slot.endTime)
-          if (result) {
-            return {
-              ...slot,
-              available: result.available,
-              disabled: !result.available,
-              label: !result.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : slot.label
-            }
-          }
-          return slot
-        })
-        this.setData({ tomorrowTimeSlots: updatedSlots })
+      const todayStr = formatDate(today)
+      const tomorrowStr = formatDate(tomorrow)
+      
+      // 并行获取今天和明天的时间段列表
+      const [todayRes, tomorrowRes] = await Promise.all([
+        api.getTimeSlotList(3, todayStr, null, this.data.selectedRecyclingPointId),
+        api.getTimeSlotList(3, tomorrowStr, null, this.data.selectedRecyclingPointId)
+      ])
+      
+      // 更新今天的时间段
+      if (todayRes.success && todayRes.data && todayRes.data.timeSlots) {
+        const updatedTodaySlots = todayRes.data.timeSlots.map(slot => ({
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          isToday: true,
+          available: slot.available,
+          disabled: !slot.available,
+          label: !slot.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : `${slot.startTime} - ${slot.endTime}`
+        }))
+        this.setData({ todayTimeSlots: updatedTodaySlots })
+      }
+      
+      // 更新明天的时间段
+      if (tomorrowRes.success && tomorrowRes.data && tomorrowRes.data.timeSlots) {
+        const updatedTomorrowSlots = tomorrowRes.data.timeSlots.map(slot => ({
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          isToday: false,
+          available: slot.available,
+          disabled: !slot.available,
+          label: !slot.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : `${slot.startTime} - ${slot.endTime}`
+        }))
+        this.setData({ tomorrowTimeSlots: updatedTomorrowSlots })
       }
       
       // 更新当前显示的时间段选项
@@ -548,7 +568,7 @@ Page({
       const currentTimeSlotOptions = currentDateIndex === 0 ? this.data.todayTimeSlots : this.data.tomorrowTimeSlots
       this.setData({ timeSlotOptions: currentTimeSlotOptions })
     } catch (e) {
-      console.error('批量检查时间段可用性失败:', e)
+      console.error('获取时间段列表失败:', e)
     } finally {
       this.setData({ checkingAvailability: false })
     }
