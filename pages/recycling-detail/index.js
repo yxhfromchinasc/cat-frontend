@@ -74,8 +74,10 @@ Page({
           detail.timeline = []
         }
 
-        // 计算进度节点（保留用于进度条显示）
-        detail.progressSteps = this.calculateProgressSteps(detail)
+        // 使用后端返回的进度条步骤（如果后端没有返回，则使用空数组）
+        if (!detail.progressSteps || !Array.isArray(detail.progressSteps)) {
+          detail.progressSteps = []
+        }
         
         // 计算进度百分比（用于进度条填充）
         const progressPercent = this.calculateProgressPercent(detail.progressSteps)

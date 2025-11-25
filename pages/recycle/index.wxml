@@ -64,7 +64,7 @@
       
       <!-- 拍照留念（选填） -->
       <view class="form-item">
-        <view class="label">上传图片</view>
+        <view class="label">拍照留念</view>
         <view class="image-upload-container">
           <view class="image-list">
             <view class="image-item" wx:for="{{form.images}}" wx:key="index">
@@ -74,6 +74,19 @@
             <view class="upload-btn" wx:if="{{form.images.length < 9}}" bindtap="chooseImages">
               <image class="upload-placeholder-icon" src="/assets/tabbar/图片占位符.png" mode="aspectFit"></image>
             </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 备注 -->
+      <view class="form-item">
+        <view class="label">备注（选填）</view>
+        <textarea class="textarea item-remark-textarea" placeholder="请填写回收物品相关信息" value="{{form.itemDescription}}" bindinput="onInputItemRemark" maxlength="500"></textarea>
+        
+        <!-- 快捷选项 -->
+        <view class="quick-options">
+          <view class="quick-option-item" hover-class="quick-option-item-hover" hover-start-time="0" hover-stay-time="70" wx:for="{{quickOptions}}" wx:key="index" bindtap="addQuickOption" data-text="{{item}}">
+            <text>{{item}}</text>
           </view>
         </view>
       </view>

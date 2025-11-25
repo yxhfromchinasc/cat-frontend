@@ -20,7 +20,8 @@ Page({
       images: [], // 上传的图片URL列表
       startTime: null, // 开始时间（用于提交）
       endTime: null, // 结束时间（用于提交）
-      startTimeStr: '' // 开始时间显示字符串
+      startTimeStr: '', // 开始时间显示字符串
+      itemDescription: '' // 物品备注
     },
     
     // 是否可以提交（用于按钮禁用状态）
@@ -809,6 +810,39 @@ Page({
     this.setData({ 'form.images': images })
   },
 
+  // 输入物品备注
+  onInputItemRemark(e) {
+    this.setData({
+      'form.itemDescription': e.detail.value
+    })
+  },
+
+  // 添加快捷选项到物品备注
+  addQuickOption(e) {
+    const quickText = e.currentTarget.dataset.text
+    const currentText = this.data.form.itemDescription || ''
+    
+    // 如果当前文本为空，直接添加
+    if (!currentText.trim()) {
+      this.setData({
+        'form.itemDescription': quickText
+      })
+      return
+    }
+    
+    // 检查是否已经包含该快捷选项
+    if (currentText.includes(quickText)) {
+      wx.showToast({ title: '已添加该选项', icon: 'none', duration: 1000 })
+      return
+    }
+    
+    // 追加到现有文本，用空格分隔
+    const newText = currentText.trim() + ' ' + quickText
+    this.setData({
+      'form.itemDescription': newText
+    })
+  },
+
   // 验证表单
   validateForm() {
     if (!this.data.selectedAddressId) {
@@ -912,7 +946,7 @@ Page({
         endTime: isUrgent ? null : this.data.form.endTime,
         // 后端需要这些字段，但前端已隐藏，传默认值
         estWeight: null,
-        itemDescription: '废品回收',
+        itemDescription: this.data.form.itemDescription && this.data.form.itemDescription.trim() ? this.data.form.itemDescription.trim() : '废品回收',
         // 回收点ID（如果前端没有选择，后端会根据地址自动选择第一个）
         recyclingPointId: this.data.selectedRecyclingPointId,
         // 是否加急（立即上门）

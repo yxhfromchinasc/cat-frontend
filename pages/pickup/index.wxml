@@ -81,7 +81,7 @@
 
       <!-- 取件照片 -->
       <view class="form-item">
-        <view class="label">上传图片</view>
+        <view class="label">取件码截图（选填）</view>
         <view class="image-upload-container">
           <view class="image-list">
             <view class="image-item" wx:for="{{form.pickPics}}" wx:key="index">

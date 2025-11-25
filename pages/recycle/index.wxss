@@ -300,6 +300,36 @@
   color: #111;
 }
 
+/* 物品备注文本框 */
+.item-remark-textarea {
+  min-height: 50rpx;
+  max-height: 80rpx;
+}
+
+/* 快捷选项 */
+.quick-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.quick-option-item {
+  padding: 12rpx 24rpx;
+  background: #f0f4ff;
+  border: 1rpx solid #09ccb5;
+  border-radius: 20rpx;
+  font-size: 26rpx;
+  color: #09ccb5;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.quick-option-item-hover {
+  background: #09ccb5;
+  color: #fff;
+}
+
 /* 图片上传 */
 .image-upload-container {
   width: 100%;

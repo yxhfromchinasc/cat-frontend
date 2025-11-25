@@ -191,26 +191,18 @@
 }
 
 .phone-btn {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 50%;
-  background: #fff;
-  border: 2rpx solid #4ad97b;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 32rpx;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6rpx 12rpx rgba(19, 194, 107, 0.15);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.phone-btn:active {
-  transform: scale(0.92);
-  box-shadow: 0 4rpx 12rpx rgba(19, 194, 107, 0.25);
 }
 
 .phone-icon {
-  width: 36rpx;
-  height: 36rpx;
+  width: 32rpx;
+  height: 32rpx;
 }
 
 /* 时间线滚动区域 */

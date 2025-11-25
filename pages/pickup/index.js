@@ -570,8 +570,9 @@ Page({
   // 输入取件码
   onInputPickCodes(e) {
     const value = e.detail.value
+    // 将逗号替换为顿号，保留空格
     this.setData({
-      'form.pickCodes': value.replace(/,/g, '、').trim() // 将逗号替换为顿号
+      'form.pickCodes': value.replace(/,/g, '、')
     })
   },
 

@@ -116,17 +116,19 @@ Page({
             }
             // 格式化预约时间段（CREATED事件）
             if (event.type === 'CREATED' && event.data.startTime && event.data.endTime) {
-              // 格式化开始时间和结束时间，只显示日期和时间部分（去掉秒）
-              event.data.startTimeFormatted = this.formatTimeSlot(event.data.startTime)
-              event.data.endTimeFormatted = this.formatTimeSlot(event.data.endTime)
+              // 格式化开始时间和结束时间
+              const formatted = this.formatTimeRange(event.data.startTime, event.data.endTime)
+              event.data.timeRangeFormatted = formatted
             }
           })
         } else {
           detail.timeline = []
         }
 
-        // 计算进度节点（保留用于进度条显示）
-        detail.progressSteps = this.calculateProgressSteps(detail)
+        // 使用后端返回的进度条步骤（如果后端没有返回，则使用空数组）
+        if (!detail.progressSteps || !Array.isArray(detail.progressSteps)) {
+          detail.progressSteps = []
+        }
         
         // 计算进度百分比（用于进度条填充）
         const progressPercent = this.calculateProgressPercent(detail.progressSteps)
@@ -301,6 +303,43 @@ Page({
       return normalized.substring(5, 16) // 截取 MM-dd HH:mm 部分
     } catch (e) {
       return timeStr
+    }
+  },
+
+  formatTimeRange(startTimeStr, endTimeStr) {
+    if (!startTimeStr || !endTimeStr) {
+      return ''
+    }
+    try {
+      // 处理 "yyyy-MM-dd HH:mm:ss" 或 "yyyy-MM-ddTHH:mm:ss" 格式
+      const normalize = (str) => str.replace('T', ' ').substring(0, 16) // 取 yyyy-MM-dd HH:mm
+      
+      const startNormalized = normalize(startTimeStr)
+      const endNormalized = normalize(endTimeStr)
+      
+      // 提取开始时间的日期和时间部分
+      const startMatch = startNormalized.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})/)
+      const endMatch = endNormalized.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})/)
+      
+      if (startMatch && endMatch) {
+        const startDate = startMatch[1]
+        const startTime = startMatch[2]
+        const endDate = endMatch[1]
+        const endTime = endMatch[2]
+        
+        // 如果开始和结束时间在同一天，只显示一次日期
+        if (startDate === endDate) {
+          return `${startDate} ${startTime} 到 ${endTime}`
+        } else {
+          // 如果不在同一天，显示完整日期和时间
+          return `${startDate} ${startTime} 到 ${endDate} ${endTime}`
+        }
+      }
+      
+      // 如果解析失败，返回原始格式
+      return `${startNormalized} - ${endNormalized}`
+    } catch (e) {
+      return `${startTimeStr} - ${endTimeStr}`
     }
   },
 

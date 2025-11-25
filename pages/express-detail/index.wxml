@@ -76,14 +76,14 @@
           </view>
           <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.startTime && event.data.endTime}}">
             <text class="info-label">预约时间：</text>
-            <text class="info-value">{{event.data.startTimeFormatted || event.data.startTime}} - {{event.data.endTimeFormatted || event.data.endTime}}</text>
+            <text class="info-value">{{event.data.timeRangeFormatted || (event.data.startTime + ' - ' + event.data.endTime)}}</text>
           </view>
           <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.pickCodes}}">
             <text class="info-label">取件码：</text>
             <text class="info-value">{{event.data.pickCodes}}</text>
           </view>
           <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.pickPics && event.data.pickPics.length > 0}}">
-            <text class="info-label">取件图片：</text>
+            <text class="info-label">取件码截图：</text>
             <view class="image-list">
               <image class="info-image" 
                      wx:for="{{event.data.pickPics}}" 
