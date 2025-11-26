@@ -122,6 +122,9 @@
         </view>
       </view>
     </view>
+    
+    <!-- 底部空白区域，避免内容被底部按钮遮挡 -->
+    <view class="scroll-bottom-spacer"></view>
   </scroll-view>
 
   <!-- 提交按钮 -->

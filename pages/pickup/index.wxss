@@ -13,6 +13,12 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* 滚动区域底部空白，避免内容被底部按钮遮挡 */
+.scroll-bottom-spacer {
+  height: 200rpx;
+  min-height: 200rpx;
+}
+
 .card {
   background: #fff;
   margin: 24rpx;

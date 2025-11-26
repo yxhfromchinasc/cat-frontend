@@ -1,12 +1,22 @@
 /* pages/recycle/index.wxss */
 .recycle-page {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   background: #f7f8fa;
-  padding-bottom: 120rpx;
+  overflow: hidden;
 }
 
 .scroll-area {
-  height: calc(100vh - 120rpx);
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 滚动区域底部空白，避免内容被底部按钮遮挡 */
+.scroll-bottom-spacer {
+  height: 200rpx;
+  min-height: 200rpx;
 }
 
 .card {
@@ -599,13 +609,10 @@
 
 /* 提交按钮 */
 .submit-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex-shrink: 0;
+  background: #fff;
   padding: 24rpx 32rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-  background: #fff;
   box-shadow: 0 -4rpx 32rpx rgba(0, 0, 0, 0.08);
 }
 
