@@ -5,8 +5,8 @@
 
 // 基础配置
 const API_CONFIG = {
-  baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
-  // baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
+  // baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
+  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
 
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
@@ -37,7 +37,7 @@ function goLoginWithRedirect() {
   const redirect = encodeURIComponent(getCurrentFullPath())
   wx.showModal({
     title: '未登录',
-    content: '当前操作需要登录，是否前往登录？',
+    content: '当前操作需要登录，前往登录？',
     confirmText: '去登录',
     cancelText: '取消',
     success: (res) => {
@@ -900,6 +900,20 @@ function getRecyclingPointsByAddress(addressId) {
 }
 
 /**
+ * 根据经纬度获取附近的回收点
+ * @param {Number} latitude 纬度
+ * @param {Number} longitude 经度
+ * @param {Number} radius 搜索半径（公里），可选
+ */
+function getRecyclingPointsByLocation(latitude, longitude, radius) {
+  const params = { latitude, longitude }
+  if (radius) {
+    params.radius = radius
+  }
+  return get('/recycling-point/points-by-location', params, { showSuccess: false })
+}
+
+/**
  * 创建上门回收订单
  */
 function createRecyclingOrder(payload) {
@@ -1157,6 +1171,7 @@ module.exports = {
   
   // 回收相关
   getRecyclingPointsByAddress,
+  getRecyclingPointsByLocation,
   createRecyclingOrder,
   cancelRecyclingOrder,
   getRecyclingOrderDetail,

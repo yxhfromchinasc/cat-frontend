@@ -1,0 +1,134 @@
+page {
+  height: 100vh;
+  background: #f5f5f5;
+}
+
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.map-container {
+  flex: 1;
+  width: 100%;
+  position: relative;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.loading-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.loading-content {
+  padding: 30rpx 50rpx;
+  background: #ffffff;
+  border-radius: 10rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+  font-size: 28rpx;
+  color: #333333;
+}
+
+.point-list {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 30rpx 30rpx 0 0;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.1);
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.list-header {
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.list-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.list-content {
+  flex: 1;
+  max-height: calc(60vh - 100rpx);
+}
+
+.point-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.point-item:last-child {
+  border-bottom: none;
+}
+
+.point-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.point-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 10rpx;
+}
+
+.point-address {
+  font-size: 26rpx;
+  color: #666666;
+  margin-bottom: 8rpx;
+  line-height: 1.4;
+}
+
+.point-contact {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.point-arrow {
+  font-size: 32rpx;
+  color: #cccccc;
+  margin-left: 20rpx;
+}
+
+.empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999999;
+  padding: 30rpx 50rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10rpx;
+}
+

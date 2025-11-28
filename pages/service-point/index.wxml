@@ -1,0 +1,59 @@
+<view class="page">
+  <!-- 地图容器 -->
+  <view class="map-container">
+    <map
+      id="servicePointMap"
+      class="map"
+      longitude="{{longitude}}"
+      latitude="{{latitude}}"
+      scale="{{scale}}"
+      markers="{{markers}}"
+      show-location="{{false}}"
+      enable-scroll="{{true}}"
+      enable-zoom="{{true}}"
+      enable-3D="{{false}}"
+      enable-overlooking="{{false}}"
+      enable-rotate="{{false}}"
+      bindmarkertap="onMarkerTap"
+      bindregionchange="onRegionChange"
+    ></map>
+  </view>
+
+  <!-- 加载提示 -->
+  <view class="loading-mask" wx:if="{{loading}}">
+    <view class="loading-content">
+      <text>正在加载附近服务点...</text>
+    </view>
+  </view>
+
+  <!-- 服务点列表 -->
+  <view class="point-list" wx:if="{{!loading && points.length > 0}}">
+    <view class="list-header">
+      <text class="list-title">附近服务点（{{points.length}}）</text>
+    </view>
+    <scroll-view class="list-content" scroll-y>
+      <view
+        class="point-item"
+        wx:for="{{points}}"
+        wx:key="id"
+        bindtap="onPointItemTap"
+        data-point="{{item}}"
+      >
+        <view class="point-info">
+          <view class="point-name">{{item.pointName}}</view>
+          <view class="point-address">{{item.address}}</view>
+          <view class="point-contact" wx:if="{{item.contactPhone}}">
+            <text>联系电话：{{item.contactPhone}}</text>
+          </view>
+        </view>
+        <view class="point-arrow">></view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && points.length === 0}}">
+    <text class="empty-text">附近暂无服务点</text>
+  </view>
+</view>
+

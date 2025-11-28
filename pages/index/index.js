@@ -184,7 +184,7 @@ Page({
   // 跳转到服务点地图页面
   goToServicePoint() {
     wx.navigateTo({
-      url: '/pages/placeholder/index'
+      url: '/pages/service-point/index'
     })
   },
 

@@ -26,7 +26,8 @@
     "pages/withdraw-detail/index",
     "pages/withdraw-operate/index",
     "pages/payment/index",
-    "pages/recharge-detail/index"
+    "pages/recharge-detail/index",
+    "pages/service-point/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -43,20 +44,20 @@
       {
         "pagePath": "pages/index/index",
         "text": "首页",
-        "iconPath": "assets/tabbar/home.png",
-        "selectedIconPath": "assets/tabbar/home-active.png"
+        "iconPath": "assets/tabbar/首页.png",
+        "selectedIconPath": "assets/tabbar/首页 -选中.png"
       },
       {
         "pagePath": "pages/orders/index",
         "text": "订单",
-        "iconPath": "assets/tabbar/order.png",
-        "selectedIconPath": "assets/tabbar/order-active.png"
+        "iconPath": "assets/tabbar/订单管理.png",
+        "selectedIconPath": "assets/tabbar/订单管理 -选中.png"
       },
       {
         "pagePath": "pages/profile/index",
         "text": "我的",
-        "iconPath": "assets/tabbar/profile.png",
-        "selectedIconPath": "assets/tabbar/profile-active.png"
+        "iconPath": "assets/tabbar/个人中心.png",
+        "selectedIconPath": "assets/tabbar/个人中心-选中 .png"
       }
     ]
   },
