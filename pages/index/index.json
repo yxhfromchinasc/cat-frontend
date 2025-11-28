@@ -1,3 +1,9 @@
 {
+  "navigationBarTitleText": "喵到家",
+  "navigationBarBackgroundColor": "#09ccb5",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#09ccb5",
+  "backgroundColorTop": "#09ccb5",
+  "backgroundColorBottom": "#f5f5f5",
   "usingComponents": {}
 }

@@ -1,16 +1,95 @@
 <!--index.wxml-->
 <scroll-view class="scrollarea" scroll-y type="list">
-  <view class="container">
+  <view class="index-container">
+    <!-- 头部区域：小程序图标和信息 -->
+    <view class="header-section">
+      <view class="header-content">
+        <view class="logo-container">
+          <image class="app-logo" src="/assets/tabbar/miao.png" mode="aspectFit"></image>
+        </view>
+        <view class="app-info">
+          <view class="app-name">喵到家</view>
+          <view class="login-status" bindtap="goToPhoneLogin" wx:if="{{!isLogin}}">
+            <text>暂未登录,点击登录>></text>
+          </view>
+          <view class="user-info-header" wx:if="{{isLogin}}">
+            <text>{{userInfo ? userInfo.name : '用户'}}</text>
+          </view>
+          <view class="service-phone" wx:if="{{servicePhone}}">客服电话: {{servicePhone}}</view>
+        </view>
+      </view>
+    </view>
+
     <!-- 顶部：业务入口双卡片 -->
     <view class="biz-section">
       <view class="biz-grid">
-        <view class="biz-card" bindtap="goToPickup">
-          <view class="biz-title">取快递</view>
-          <view class="biz-desc">及时取件 省心更高效</view>
+        <!-- 第一行：上门回收 + 提现教程 -->
+        <view class="biz-row">
+          <view class="biz-card biz-card-recycle">
+            <view class="biz-card-content">
+              <view class="biz-card-left">
+                <view class="biz-title">上门回收</view>
+                <view class="biz-recycle-btn" bindtap="goToRecycle">立即上门</view>
+              </view>
+              <view class="biz-card-right">
+                <image class="biz-card-image" src="/assets/tabbar/货车卡车汽车.png" mode="aspectFit"></image>
+              </view>
+            </view>
+          </view>
+          <view class="small-card small-card-withdraw" bindtap="onSmallCardTap" data-type="withdraw">
+            <image class="small-card-image" src="/assets/tabbar/提现 (1).png" mode="aspectFit"></image>
+            <view class="small-card-title">提现教程</view>
+          </view>
         </view>
-        <view class="biz-card" bindtap="goToRecycle">
-          <view class="biz-title">上门回收</view>
-          <view class="biz-desc">预约上门 分类更省力</view>
+        
+        <!-- 第二行：服务介绍 + 快递代取 -->
+        <view class="biz-row">
+          <view class="small-card small-card-service" bindtap="onSmallCardTap" data-type="service">
+            <image class="small-card-image" src="/assets/tabbar/介绍.png" mode="aspectFit"></image>
+            <view class="small-card-title">服务介绍</view>
+          </view>
+          <view class="biz-card biz-card-pickup">
+            <view class="biz-card-content">
+              <view class="biz-card-left">
+                <view class="biz-title">快递上门</view>
+                <view class="biz-pickup-btn" bindtap="goToPickup">立即取件</view>
+              </view>
+              <view class="biz-card-right">
+                <image class="biz-card-image" src="/assets/tabbar/首页_快递.png" mode="aspectFit"></image>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 查看附近服务点链接 -->
+    <view class="service-point-link" bindtap="goToServicePoint">
+      <text>查看附近服务点>></text>
+    </view>
+
+    <!-- 下方：竖版卡片区域 -->
+    <view class="vertical-card-section">
+      <view class="vertical-card-row">
+        <view class="vertical-card">
+          <view class="vertical-card-content">
+            <image class="vertical-card-image" src="/assets/tabbar/玻璃垃圾.png" mode="aspectFit"></image>
+            <view class="vertical-card-title-wrapper">
+              <view class="vertical-card-title">可回收物</view>
+              <view class="vertical-card-subtitle">分类小科普</view>
+              <view class="vertical-card-arrow">>></view>
+            </view>
+          </view>
+        </view>
+        <view class="vertical-card">
+          <view class="vertical-card-content">
+            <image class="vertical-card-image" src="/assets/tabbar/现金.png" mode="aspectFit"></image>
+            <view class="vertical-card-title-wrapper">
+              <view class="vertical-card-title">邀请奖励</view>
+              <view class="vertical-card-subtitle">拉新得现金</view>
+              <view class="vertical-card-arrow">>></view>
+            </view>
+          </view>
         </view>
       </view>
     </view>

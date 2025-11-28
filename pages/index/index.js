@@ -5,11 +5,13 @@ Page({
   data: {
     userInfo: null,
     isLogin: false,
-    showLoginModal: false
+    showLoginModal: false,
+    servicePhone: '' // 客服电话
   },
 
   onLoad() {
     this.checkLoginStatus()
+    this.loadServicePhone()
   },
 
   onShow() {
@@ -154,13 +156,45 @@ Page({
     })
   },
 
+  // 小卡片点击事件
+  onSmallCardTap(e) {
+    const type = e.currentTarget.dataset.type
+    wx.showToast({
+      title: '暂未开放',
+      icon: 'none',
+      duration: 2000
+    })
+  },
+
+  // 获取客服电话
+  async loadServicePhone() {
+    try {
+      const res = await api.getPublicConfigs()
+      if (res && res.success && res.data) {
+        const phone = res.data.customer_service_phone
+        if (phone) {
+          this.setData({ servicePhone: phone })
+        }
+      }
+    } catch (e) {
+      console.error('获取客服电话失败:', e)
+    }
+  },
+
+  // 跳转到服务点地图页面
+  goToServicePoint() {
+    wx.navigateTo({
+      url: '/pages/placeholder/index'
+    })
+  },
+
   // 分享给好友
   onShareAppMessage() {
     const app = getApp()
     const shareImageUrl = app.getShareImageUrl()
     const sharePath = app.getSharePath()
     const shareConfig = {
-      title: '喵屋管家 - 便捷的生活服务小程序',
+      title: '喵到家 - 便捷的生活服务小程序',
       path: sharePath // 使用配置的分享路径
     }
     // 只有在配置了有效的分享图片URL时才设置，否则不设置imageUrl（不使用默认截图）
