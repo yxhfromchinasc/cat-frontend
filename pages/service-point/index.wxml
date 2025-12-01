@@ -16,7 +16,13 @@
       enable-rotate="{{false}}"
       bindmarkertap="onMarkerTap"
       bindregionchange="onRegionChange"
-    ></map>
+    >
+      <!-- 回到我的位置按钮 - 使用 cover-view 显示在地图上方 -->
+      <cover-view class="back-to-location-btn" bindtap="backToMyLocation">
+        <cover-text class="btn-icon">📍</cover-text>
+        <cover-text class="btn-text">我的位置</cover-text>
+      </cover-view>
+    </map>
   </view>
 
   <!-- 加载提示 -->

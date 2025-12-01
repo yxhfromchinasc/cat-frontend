@@ -132,3 +132,31 @@ page {
   border-radius: 10rpx;
 }
 
+/* 回到我的位置按钮 - cover-view 样式 */
+/* cover-view 不支持 flex，使用 inline-block 布局 */
+.back-to-location-btn {
+  position: absolute;
+  bottom: 250rpx;
+  right: 30rpx;
+  background-color: #ffffff;
+  border-radius: 50rpx;
+  padding: 20rpx 30rpx;
+  z-index: 999;
+  white-space: nowrap;
+}
+
+.btn-icon {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.btn-text {
+  font-size: 26rpx;
+  color: #333333;
+  font-weight: 500;
+  display: inline-block;
+  vertical-align: middle;
+}
+

@@ -5,7 +5,7 @@
     <view class="header-section">
       <view class="header-content">
         <view class="logo-container">
-          <image class="app-logo" src="/assets/tabbar/miao.png" mode="aspectFit"></image>
+          <image class="app-logo" src="/assets/tabbar/logo.svg" mode="aspectFit"></image>
         </view>
         <view class="app-info">
           <view class="app-name">喵到家</view>
@@ -25,11 +25,11 @@
       <view class="biz-grid">
         <!-- 第一行：上门回收 + 提现教程 -->
         <view class="biz-row">
-          <view class="biz-card biz-card-recycle">
+          <view class="biz-card biz-card-recycle" bindtap="goToRecycle">
             <view class="biz-card-content">
               <view class="biz-card-left">
                 <view class="biz-title">上门回收</view>
-                <view class="biz-recycle-btn" bindtap="goToRecycle">立即上门</view>
+                <view class="biz-recycle-btn">先用后付</view>
               </view>
               <view class="biz-card-right">
                 <image class="biz-card-image" src="/assets/tabbar/货车卡车汽车.png" mode="aspectFit"></image>
@@ -48,11 +48,11 @@
             <image class="small-card-image" src="/assets/tabbar/介绍.png" mode="aspectFit"></image>
             <view class="small-card-title">服务介绍</view>
           </view>
-          <view class="biz-card biz-card-pickup">
+          <view class="biz-card biz-card-pickup" bindtap="goToPickup">
             <view class="biz-card-content">
               <view class="biz-card-left">
                 <view class="biz-title">快递上门</view>
-                <view class="biz-pickup-btn" bindtap="goToPickup">立即取件</view>
+                <view class="biz-pickup-btn">再少也收</view>
               </view>
               <view class="biz-card-right">
                 <image class="biz-card-image" src="/assets/tabbar/首页_快递.png" mode="aspectFit"></image>
