@@ -63,6 +63,21 @@
       </view>
     </view>
 
+    <!-- 快递计价说明 -->
+    <view class="card price-card" wx:if="{{expressPricePerItem}}">
+      <view class="price-header">
+        <view class="price-dot"></view>
+        <text class="price-label">快递计价说明</text>
+      </view>
+      <view class="price-main">
+        <text class="price-value">{{expressPricePerItem}}</text>
+        <text class="price-unit">元/件</text>
+      </view>
+      <view class="price-desc">
+        {{expressPriceDesc}}
+      </view>
+    </view>
+
     <!-- 包裹信息 -->
     <view class="card">
       <view class="card-title">包裹信息</view>

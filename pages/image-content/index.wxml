@@ -1,0 +1,16 @@
+<view class="page">
+  <!-- 图片内容 -->
+  <view class="image-container" wx:if="{{imageUrl}}">
+    <scroll-view class="scroll-view" scroll-y>
+      <image class="content-image" src="{{imageUrl}}" mode="widthFix" binderror="onImageError"></image>
+    </scroll-view>
+  </view>
+  
+  <!-- 空白状态 -->
+  <view class="empty-state" wx:else>
+    <image class="empty-illustration" src="{{emptyIllustration}}" mode="widthFix"></image>
+    <view class="empty-title">暂无内容</view>
+    <view class="empty-subtitle">敬请期待</view>
+  </view>
+</view>
+

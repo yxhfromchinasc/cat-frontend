@@ -58,6 +58,21 @@
       </view>
     </view>
 
+    <!-- 今日回收价格提示 -->
+    <view class="card price-card" wx:if="{{todayRecyclePriceText}}">
+      <view class="price-header">
+        <view class="price-dot"></view>
+        <text class="price-label">今日回收价格</text>
+      </view>
+      <view class="price-main">
+        <text class="price-value">{{todayRecyclePrice}}</text>
+        <text class="price-unit">元/公斤</text>
+      </view>
+      <view class="price-desc">
+        实际结算以上门称重后的综合价格为准
+      </view>
+    </view>
+
     <!-- 回收信息 -->
     <view class="card">
       <view class="card-title">回收信息</view>

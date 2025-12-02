@@ -40,7 +40,11 @@ Page({
     selectedTimeSlotIndex: -1, // 选中的时间段索引
     checkingAvailability: false, // 是否正在检查可用性
     showTimePickerModal: false, // 是否显示时间选择器弹窗
-    urgentTipText: '' // 立即上门提示文案
+    urgentTipText: '', // 立即上门提示文案
+
+    // 今日回收价格（从系统设置获取）
+    todayRecyclePrice: null,
+    todayRecyclePriceText: ''
   },
 
   async onLoad(options) {
@@ -49,6 +53,9 @@ Page({
     
     // 加载立即上门提示文案
     await this.loadUrgentTip()
+
+    // 加载今日回收价格
+    await this.loadTodayRecyclePrice()
     
     // 优先从URL参数获取预选地址ID
     let addressId = options.addressId ? parseInt(options.addressId) : null
@@ -252,6 +259,35 @@ Page({
       }
     } catch (e) {
       console.error('加载立即上门提示文案失败:', e)
+    }
+  },
+
+  // 加载今日回收价格
+  async loadTodayRecyclePrice() {
+    try {
+      // 配置键：recycling_price_per_kg（与后端系统配置保持一致）
+      const res = await api.getConfigValue('recycling_price_per_kg')
+      if (res && res.success && res.data) {
+        const value = String(res.data).trim()
+        if (value) {
+          this.setData({
+            todayRecyclePrice: value,
+            todayRecyclePriceText: `今日综合回收价 ${value} 元/公斤`
+          })
+          return
+        }
+      }
+      // 未配置价格时，保持为空，不展示卡片
+      this.setData({
+        todayRecyclePrice: null,
+        todayRecyclePriceText: ''
+      })
+    } catch (e) {
+      console.error('加载今日回收价格失败:', e)
+      this.setData({
+        todayRecyclePrice: null,
+        todayRecyclePriceText: ''
+      })
     }
   },
 

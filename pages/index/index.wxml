@@ -80,7 +80,7 @@
             </view>
           </view>
         </view>
-        <view class="vertical-card">
+        <view class="vertical-card" bindtap="goToInviteReward">
           <view class="vertical-card-content">
             <image class="vertical-card-image" src="/assets/tabbar/现金.png" mode="aspectFit"></image>
             <view class="vertical-card-title-wrapper">

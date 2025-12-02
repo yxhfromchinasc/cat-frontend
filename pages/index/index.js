@@ -193,6 +193,13 @@ Page({
     })
   },
 
+  // 跳转到邀请奖励
+  goToInviteReward() {
+    wx.navigateTo({
+      url: '/pages/image-content/index?type=invite-reward'
+    })
+  },
+
   // 跳转到服务点地图页面
   goToServicePoint() {
     wx.navigateTo({

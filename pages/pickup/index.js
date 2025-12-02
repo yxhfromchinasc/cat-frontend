@@ -45,7 +45,12 @@ Page({
     selectedTimeSlotIndex: -1, // 选中的时间段索引
     checkingAvailability: false, // 是否正在检查可用性
     showTimePickerModal: false, // 是否显示时间选择器弹窗
-    urgentTipText: '' // 立即上门提示文案
+    urgentTipText: '', // 立即上门提示文案
+
+    // 快递单价相关（从系统设置获取）
+    expressPricePerItem: null,
+    expressPriceText: '',
+    expressPriceDesc: ''
   },
 
   async onLoad(options) {
@@ -60,6 +65,9 @@ Page({
     
     // 加载立即上门提示文案
     await this.loadUrgentTip()
+
+    // 加载快递单价配置
+    await this.loadExpressPrice()
     
     // 优先从URL参数获取预选地址ID
     let addressId = options.addressId ? parseInt(options.addressId) : null
@@ -622,6 +630,62 @@ Page({
       }
     } catch (e) {
       console.error('加载立即上门提示文案失败:', e)
+    }
+  },
+
+  // 加载快递单价配置
+  async loadExpressPrice() {
+    try {
+      // 单价配置键：express_price_per_item，与后端计价逻辑保持一致
+      const priceRes = await api.getConfigValue('express_price_per_item')
+      let pricePerItem = null
+      if (priceRes && priceRes.success && priceRes.data) {
+        const value = String(priceRes.data).trim()
+        if (value) {
+          pricePerItem = value
+        }
+      }
+
+      // 加急费用配置（可选），用于说明规则
+      let urgentFee = null
+      try {
+        const urgentRes = await api.getConfigValue('express_urgent_fee')
+        if (urgentRes && urgentRes.success && urgentRes.data) {
+          const v = String(urgentRes.data).trim()
+          if (v) {
+            urgentFee = v
+          }
+        }
+      } catch (e) {
+        console.warn('获取加急费用配置失败:', e)
+      }
+
+      if (pricePerItem) {
+        let desc = '基础服务费 = 单价 × 件数'
+        if (urgentFee) {
+          desc += `，立即上门订单可能额外收取约 ${urgentFee} 元加急费用`
+        }
+        desc += '，实际以完成时结算金额为准'
+
+        this.setData({
+          expressPricePerItem: pricePerItem,
+          expressPriceText: `快递代取服务费 ${pricePerItem} 元/件`,
+          expressPriceDesc: desc
+        })
+      } else {
+        this.setData({
+          expressPricePerItem: null,
+          expressPriceText: '',
+          expressPriceDesc: ''
+        })
+      }
+    } catch (e) {
+      console.error('加载快递单价配置失败:', e)
+      this.setData({
+        expressPricePerItem: null,
+        expressPriceText: '',
+        expressPriceDesc: ''
+      })
     }
   },
 

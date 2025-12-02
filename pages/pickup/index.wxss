@@ -453,6 +453,53 @@
   flex-shrink: 0;
 }
 
+/* 快递计价卡片，与回收价格卡片风格统一 */
+.price-card {
+  margin-top: 16rpx;
+}
+
+.price-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.price-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #09ccb5;
+  margin-right: 12rpx;
+}
+
+.price-label {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.price-main {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 8rpx;
+}
+
+.price-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #09ccb5;
+  margin-right: 8rpx;
+}
+
+.price-unit {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.price-desc {
+  font-size: 22rpx;
+  color: #999;
+}
+
 /* 预约时间选择器 */
 .appointment-time-selector {
   display: flex;
