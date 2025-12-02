@@ -27,7 +27,7 @@ page {
 .logo-wrapper {
   width: 160rpx;
   height: 160rpx;
-  background: #09ccb5;
+  background: transparent;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -36,8 +36,8 @@ page {
 }
 
 .logo-icon {
-  font-size: 100rpx;
-  line-height: 1;
+  width: 160rpx;
+  height: 160rpx;
 }
 
 .title {

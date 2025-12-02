@@ -15,7 +15,6 @@
           <view class="user-info-header" wx:if="{{isLogin}}">
             <text>{{userInfo ? userInfo.name : '用户'}}</text>
           </view>
-          <view class="service-phone" wx:if="{{servicePhone}}">客服电话: {{servicePhone}}</view>
         </view>
       </view>
     </view>
@@ -29,7 +28,7 @@
             <view class="biz-card-content">
               <view class="biz-card-left">
                 <view class="biz-title">上门回收</view>
-                <view class="biz-recycle-btn">先用后付</view>
+                <view class="biz-recycle-btn">再少也收</view>
               </view>
               <view class="biz-card-right">
                 <image class="biz-card-image" src="/assets/tabbar/货车卡车汽车.png" mode="aspectFit"></image>
@@ -52,7 +51,7 @@
             <view class="biz-card-content">
               <view class="biz-card-left">
                 <view class="biz-title">快递上门</view>
-                <view class="biz-pickup-btn">再少也收</view>
+                <view class="biz-pickup-btn">先用后付</view>
               </view>
               <view class="biz-card-right">
                 <image class="biz-card-image" src="/assets/tabbar/首页_快递.png" mode="aspectFit"></image>
@@ -71,7 +70,7 @@
     <!-- 下方：竖版卡片区域 -->
     <view class="vertical-card-section">
       <view class="vertical-card-row">
-        <view class="vertical-card">
+        <view class="vertical-card" bindtap="goToRecycleGuide">
           <view class="vertical-card-content">
             <image class="vertical-card-image" src="/assets/tabbar/玻璃垃圾.png" mode="aspectFit"></image>
             <view class="vertical-card-title-wrapper">

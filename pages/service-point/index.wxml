@@ -16,13 +16,40 @@
       enable-rotate="{{false}}"
       bindmarkertap="onMarkerTap"
       bindregionchange="onRegionChange"
-    >
-      <!-- 回到我的位置按钮 - 使用 cover-view 显示在地图上方 -->
-      <cover-view class="back-to-location-btn" bindtap="backToMyLocation">
-        <cover-text class="btn-icon">📍</cover-text>
-        <cover-text class="btn-text">我的位置</cover-text>
-      </cover-view>
+    > 
     </map>
+  </view>
+
+  <!-- 回到我的位置按钮，固定在地图可视区域右下角 -->
+  <view class="back-to-location-btn" bindtap="backToMyLocation" wx:if="{{!loading}}">
+    <image class="btn-icon" src="/assets/icons/我的位置.svg" mode="aspectFit"></image>
+  </view>
+
+  <!-- 服务点列表层 -->
+  <view class="point-layer" wx:if="{{!loading && points.length > 0}}">
+    <view class="point-list">
+      <view class="list-header">
+        <text class="list-title">附近服务点（{{points.length}}）</text>
+      </view>
+      <scroll-view class="list-content" scroll-y>
+        <view
+          class="point-item"
+          wx:for="{{points}}"
+          wx:key="id"
+          bindtap="onPointItemTap"
+          data-point="{{item}}"
+        >
+          <view class="point-info">
+            <view class="point-name">{{item.pointName}}</view>
+            <view class="point-address">{{item.address}}</view>
+            <view class="point-contact" wx:if="{{item.contactPhone}}">
+              <text>联系电话：{{item.contactPhone}}</text>
+            </view>
+          </view>
+          <view class="point-arrow">></view>
+        </view>
+      </scroll-view>
+    </view>
   </view>
 
   <!-- 加载提示 -->
@@ -30,31 +57,6 @@
     <view class="loading-content">
       <text>正在加载附近服务点...</text>
     </view>
-  </view>
-
-  <!-- 服务点列表 -->
-  <view class="point-list" wx:if="{{!loading && points.length > 0}}">
-    <view class="list-header">
-      <text class="list-title">附近服务点（{{points.length}}）</text>
-    </view>
-    <scroll-view class="list-content" scroll-y>
-      <view
-        class="point-item"
-        wx:for="{{points}}"
-        wx:key="id"
-        bindtap="onPointItemTap"
-        data-point="{{item}}"
-      >
-        <view class="point-info">
-          <view class="point-name">{{item.pointName}}</view>
-          <view class="point-address">{{item.address}}</view>
-          <view class="point-contact" wx:if="{{item.contactPhone}}">
-            <text>联系电话：{{item.contactPhone}}</text>
-          </view>
-        </view>
-        <view class="point-arrow">></view>
-      </view>
-    </scroll-view>
   </view>
 
   <!-- 空状态 -->

@@ -5,13 +5,11 @@ Page({
   data: {
     userInfo: null,
     isLogin: false,
-    showLoginModal: false,
-    servicePhone: '' // 客服电话
+    showLoginModal: false
   },
 
   onLoad() {
     this.checkLoginStatus()
-    this.loadServicePhone()
   },
 
   onShow() {
@@ -159,26 +157,40 @@ Page({
   // 小卡片点击事件
   onSmallCardTap(e) {
     const type = e.currentTarget.dataset.type
-    wx.showToast({
-      title: '暂未开放',
-      icon: 'none',
-      duration: 2000
+    if (type === 'withdraw') {
+      // 提现教程
+      this.goToWithdrawGuide()
+    } else if (type === 'service') {
+      // 服务介绍
+      this.goToServiceIntro()
+    } else {
+      wx.showToast({
+        title: '暂未开放',
+        icon: 'none',
+        duration: 2000
+      })
+    }
+  },
+
+  // 跳转到回收分类科普
+  goToRecycleGuide() {
+    wx.navigateTo({
+      url: '/pages/image-content/index?type=recycle-guide'
     })
   },
 
-  // 获取客服电话
-  async loadServicePhone() {
-    try {
-      const res = await api.getPublicConfigs()
-      if (res && res.success && res.data) {
-        const phone = res.data.customer_service_phone
-        if (phone) {
-          this.setData({ servicePhone: phone })
-        }
-      }
-    } catch (e) {
-      console.error('获取客服电话失败:', e)
-    }
+  // 跳转到提现教程
+  goToWithdrawGuide() {
+    wx.navigateTo({
+      url: '/pages/image-content/index?type=withdraw-guide'
+    })
+  },
+
+  // 跳转到服务介绍
+  goToServiceIntro() {
+    wx.navigateTo({
+      url: '/pages/image-content/index?type=service-intro'
+    })
   },
 
   // 跳转到服务点地图页面

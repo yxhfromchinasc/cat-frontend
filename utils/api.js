@@ -537,6 +537,11 @@ function getNearestAddress(latitude, longitude) {
     return get('/config/value', { configKey: 'share_path' }, { showLoading: false, showError: false })
   }
 
+  // 获取配置值（通用方法）
+  function getConfigValue(configKey) {
+    return get('/config/value', { configKey }, { showLoading: false, showError: false })
+  }
+
 /**
  * 创建充值订单
  * 返回包含 orderNo、formData 的结构
@@ -1194,6 +1199,7 @@ module.exports = {
   getRechargeAmounts,
   getShareImage,
   getSharePath,
+  getConfigValue,
   
   // 支付相关（充值）
   createRecharge,

@@ -3,7 +3,7 @@
   <!-- Logo和标题 -->
   <view class="header">
     <view class="logo-wrapper">
-      <view class="logo-icon">🐱</view>
+      <image class="logo-icon" src="/assets/tabbar/logo.svg" mode="aspectFit"></image>
     </view>
     <view class="title">喵屋管家</view>
     <view class="subtitle">MIAOWU HOUSEKEEPER</view>

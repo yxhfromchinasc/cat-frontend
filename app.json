@@ -27,7 +27,8 @@
     "pages/withdraw-operate/index",
     "pages/payment/index",
     "pages/recharge-detail/index",
-    "pages/service-point/index"
+    "pages/service-point/index",
+    "pages/image-content/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

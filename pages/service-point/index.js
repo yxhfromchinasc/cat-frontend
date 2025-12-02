@@ -25,18 +25,39 @@ Page({
     
     // 用户位置（用于回到我的位置）
     userLatitude: null,
-    userLongitude: null
+    userLongitude: null,
+    
+    // 用户头像
+    userAvatar: '/assets/tabbar/profile.png'
   },
   
   mapCtx: null,
 
   onLoad() {
+    this.loadUserAvatar()
     this.initMap()
   },
 
   onReady() {
     // 创建地图上下文
     this.mapCtx = wx.createMapContext('servicePointMap', this)
+  },
+
+  /**
+   * 加载用户头像
+   */
+  async loadUserAvatar() {
+    try {
+      const result = await api.getUserInfo()
+      if (result.success && result.data && result.data.avatarUrl) {
+        this.setData({
+          userAvatar: result.data.avatarUrl
+        })
+      }
+    } catch (error) {
+      console.error('获取用户头像失败:', error)
+      // 使用默认头像
+    }
   },
 
   /**
@@ -126,14 +147,14 @@ Page({
       const result = await api.getRecyclingPointsByLocation(latitude, longitude, 10)
       const points = (result.success && result.data) ? result.data : []
       
-      // 构建用户位置标记
+      // 构建用户位置标记（使用用户头像）
       const userMarker = {
         id: 0,
         latitude: latitude,
         longitude: longitude,
-        iconPath: '/assets/tabbar/miao.png',
-        width: 30,
-        height: 30,
+        iconPath: this.data.userAvatar,
+        width: 40,
+        height: 40,
         anchor: { x: 0.5, y: 0.5 }
       }
       
