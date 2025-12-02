@@ -8,7 +8,7 @@
           <image class="app-logo" src="/assets/tabbar/logo.svg" mode="aspectFit"></image>
         </view>
         <view class="app-info">
-          <view class="app-name">喵到家</view>
+          <view class="app-name">秒上门</view>
           <view class="login-status" bindtap="goToPhoneLogin" wx:if="{{!isLogin}}">
             <text>暂未登录,点击登录>></text>
           </view>

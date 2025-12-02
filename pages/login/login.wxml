@@ -5,8 +5,8 @@
     <view class="logo-wrapper">
       <image class="logo-icon" src="/assets/tabbar/logo.svg" mode="aspectFit"></image>
     </view>
-    <view class="title">喵屋管家</view>
-    <view class="subtitle">MIAOWU HOUSEKEEPER</view>
+    <view class="title">秒上门</view>
+    <view class="subtitle">INSTANT DOOR SERVICE</view>
   </view>
 
   <!-- 登录按钮区域 -->
