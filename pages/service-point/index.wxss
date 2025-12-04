@@ -10,6 +10,72 @@ page {
   position: relative;
 }
 
+/* New Address Selector Styles */
+.address-selector {
+  position: absolute;
+  top: 10rpx;
+  left: 10rpx;
+  /* right: 10rpx; */ /* Removed to prevent stretching */
+  max-width: 70vw; /* Set a max width */
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  padding: 16rpx 20rpx;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.add-address-btn {
+  text-align: center;
+  color: #007aff;
+  font-size: 28rpx;
+  font-weight: 500;
+  height: 70rpx;
+  line-height: 70rpx;
+  cursor: pointer;
+}
+
+.selected-address-view {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 70rpx;
+}
+
+.selected-address-info {
+  flex: 1;
+  min-width: 0;
+  padding-right: 10rpx;
+}
+
+.selected-address-main {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.selected-address-sub {
+  font-size: 22rpx;
+  color: #888;
+  margin-top: 2rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.address-selector-arrow {
+  font-size: 32rpx;
+  color: #ccc;
+  font-weight: bold;
+}
+
 .map-container {
   flex: 1;
   width: 100%;
@@ -135,25 +201,3 @@ page {
   background: rgba(255, 255, 255, 0.9);
   border-radius: 10rpx;
 }
-
-/* 回到我的位置按钮 - 固定在地图可视区域右下角 */
-.back-to-location-btn {
-  position: absolute;
-  bottom: calc(33vh + 20rpx); /* 紧贴列表上方，处于地图区域内 */
-  right: 30rpx;
-  background-color: #ffffff;
-  border-radius: 50%;
-  padding: 16rpx;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
-}
-
-.btn-icon {
-  width: 32rpx;
-  height: 32rpx;
-  flex-shrink: 0;
-}
-

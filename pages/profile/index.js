@@ -43,8 +43,10 @@ Page({
       this.setData({
         userInfo: null,
         balance: 0,
+        balanceStr: '0.00',
         couponCount: 0,
-        addressCount: 0
+        addressCount: 0,
+        avatarSrc: '/assets/tabbar/profile.png' // 重置头像为默认
       })
     }
   },

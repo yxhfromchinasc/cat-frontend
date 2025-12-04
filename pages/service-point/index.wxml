@@ -1,4 +1,19 @@
 <view class="page">
+  <!-- 地址选择器，固定在地图左上角 -->
+  <view class="address-selector">
+    <!-- 去添加地址 -->
+    <view class="add-address-btn" wx:if="{{!loading && !addressList.length}}" bindtap="onAddAddressTap">
+      去添加地址
+    </view>
+    <!-- 显示当前地址 -->
+    <view class="selected-address-view" wx:if="{{!loading && addressList.length}}" bindtap="onSelectAddressTap">
+      <view class="selected-address-info">
+        <view class="selected-address-main">{{selectedAddressText}}</view>
+      </view>
+      <view class="address-selector-arrow">›</view>
+    </view>
+  </view>
+
   <!-- 地图容器 -->
   <view class="map-container">
     <map
@@ -16,13 +31,8 @@
       enable-rotate="{{false}}"
       bindmarkertap="onMarkerTap"
       bindregionchange="onRegionChange"
-    > 
+    >
     </map>
-  </view>
-
-  <!-- 回到我的位置按钮，固定在地图可视区域右下角 -->
-  <view class="back-to-location-btn" bindtap="backToMyLocation" wx:if="{{!loading}}">
-    <image class="btn-icon" src="/assets/icons/我的位置.svg" mode="aspectFit"></image>
   </view>
 
   <!-- 服务点列表层 -->
