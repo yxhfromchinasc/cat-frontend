@@ -50,7 +50,7 @@
           <view class="biz-card biz-card-pickup" bindtap="goToPickup">
             <view class="biz-card-content">
               <view class="biz-card-left">
-                <view class="biz-title">快递上门</view>
+                <view class="biz-title">快递代取</view>
                 <view class="biz-pickup-btn">先用后付</view>
               </view>
               <view class="biz-card-right">
