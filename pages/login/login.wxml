@@ -5,7 +5,7 @@
     <view class="logo-wrapper">
       <image class="logo-icon" src="/assets/tabbar/logo.svg" mode="aspectFit"></image>
     </view>
-    <view class="title">秒上门</view>
+    <view class="title">喵上门</view>
     <view class="subtitle">INSTANT DOOR SERVICE</view>
   </view>
 
