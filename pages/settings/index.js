@@ -73,9 +73,20 @@ Page({
     })
   },
 
-  // 处理打开设置按钮点击
-  onOpenSetting(e) {
-    console.log('[设置] 用户点击打开设置按钮')
-    // openSetting 会打开小程序设置页面，用户可以在其中管理订阅消息
+  // 打开消息设置
+  openMessageSetting() {
+    console.log('[设置] 用户点击消息设置')
+    wx.openSetting({
+      success: (res) => {
+        console.log('[设置] 打开设置页面成功', res)
+      },
+      fail: (err) => {
+        console.error('[设置] 打开设置页面失败', err)
+        wx.showToast({
+          title: '打开设置失败',
+          icon: 'none'
+        })
+      }
+    })
   }
 })
