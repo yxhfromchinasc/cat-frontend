@@ -22,6 +22,15 @@
       <text class="menu-label">隐私政策</text>
       <text class="menu-arrow">›</text>
     </view>
+
+    <!-- 消息订阅设置 -->
+    <view class="menu-item">
+      <image class="menu-icon" src="/assets/tabbar/提醒.png" mode="aspectFit"></image>
+      <text class="menu-label">消息订阅设置</text>
+      <button class="menu-button" open-type="openSetting" bindtap="onOpenSetting">
+        <text class="menu-arrow">›</text>
+      </button>
+    </view>
   </view>
 
   <!-- 退出登录 -->
@@ -30,4 +39,5 @@
       <text class="btn-text">退出登录</text>
     </button>
   </view>
+
 </view>

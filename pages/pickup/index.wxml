@@ -161,6 +161,6 @@
 
   <!-- 底部提交按钮 -->
   <view class="bottom-bar">
-    <button class="submit-btn" bindtap="onSubmit">提交订单</button>
+    <button class="submit-btn" bindtap="onSubmit" disabled="{{isSubmitting}}">{{isSubmitting ? '提交中...' : '提交订单'}}</button>
   </view>
 </view>

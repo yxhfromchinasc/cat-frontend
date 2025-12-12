@@ -15,6 +15,7 @@
   padding: 32rpx 24rpx;
   border-bottom: 1rpx solid #f0f0f0;
   min-height: 48rpx;
+  position: relative;
 }
 
 .menu-item:last-child{
@@ -76,4 +77,29 @@
 
 .btn-text{
   font-size: 32rpx;
+}
+
+/* 菜单按钮样式（用于消息订阅设置） */
+.menu-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 24rpx;
+  font-size: 32rpx;
+  color: #999;
+}
+
+.menu-button::after {
+  border: none;
 }

@@ -144,6 +144,6 @@
 
   <!-- 提交按钮 -->
   <view class="submit-bar">
-    <button class="submit-btn" bindtap="submitOrder" disabled="{{!canSubmitData}}">提交订单</button>
+    <button class="submit-btn" bindtap="submitOrder" disabled="{{!canSubmitData || isSubmitting}}">{{isSubmitting ? '提交中...' : '提交订单'}}</button>
   </view>
 </view>

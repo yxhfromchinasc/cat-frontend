@@ -1305,15 +1305,5 @@ module.exports = {
   // 获取回收订单备注快捷选项
   getRecyclingRemarkOptions() {
     return get('/config/recycling-remark-options', {}, { showLoading: false, showError: false })
-  },
-
-  // 按业务类型更新用户订阅消息状态
-  updateSubscribeMessageStatusByType(serviceType, enabled) {
-    return post('/user/subscribe-message/update-status-by-type', { serviceType, enabled }, { showLoading: false, showError: false })
-  },
-
-  // 查询用户订阅消息状态（按业务类型）
-  getSubscribeMessageStatus(serviceType) {
-    return get('/user/subscribe-message/status', { serviceType }, { showLoading: false, showError: false })
   }
 }
