@@ -23,13 +23,12 @@
       <text class="menu-arrow">›</text>
     </view>
 
-    <!-- 消息订阅设置 -->
+    <!-- 消息设置 -->
     <view class="menu-item">
       <image class="menu-icon" src="/assets/tabbar/提醒.png" mode="aspectFit"></image>
-      <text class="menu-label">消息订阅设置</text>
-      <button class="menu-button" open-type="openSetting" bindtap="onOpenSetting">
-        <text class="menu-arrow">›</text>
-      </button>
+      <text class="menu-label">消息设置</text>
+      <text class="menu-arrow">›</text>
+      <button class="menu-button" open-type="openSetting" bindtap="onOpenSetting"></button>
     </view>
   </view>
 

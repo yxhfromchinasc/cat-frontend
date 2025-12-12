@@ -79,7 +79,7 @@
   font-size: 32rpx;
 }
 
-/* 菜单按钮样式（用于消息订阅设置） */
+/* 菜单按钮样式（用于消息设置） */
 .menu-button {
   position: absolute;
   right: 0;
@@ -92,12 +92,6 @@
   border: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 24rpx;
-  font-size: 32rpx;
-  color: #999;
 }
 
 .menu-button::after {

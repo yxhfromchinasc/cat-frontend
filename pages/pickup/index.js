@@ -991,6 +991,14 @@ Page({
         wx.requestSubscribeMessage({
           tmplIds: templateIds,
           success: (res) => {
+            console.log('[订阅消息] 快递订单订阅结果:', JSON.stringify(res))
+            // 输出每个模板的订阅状态
+            templateIds.forEach(tmplId => {
+              const status = res[tmplId]
+              if (status) {
+                console.log(`[订阅消息] 模板 ${tmplId}: ${status}`)
+              }
+            })
             resolve(res)
           },
           fail: (res) => {
