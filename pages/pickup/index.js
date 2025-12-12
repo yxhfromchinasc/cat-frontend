@@ -974,6 +974,219 @@ Page({
     return true
   },
 
+  // 请求订阅消息（快递订单相关模板）
+  requestSubscribeMessage() {
+    return new Promise((resolve, reject) => {
+      try {
+        // 检查本地存储的订阅状态（快递订单使用独立的key）
+        const subscribeMessageEnabled = wx.getStorageSync('expressSubscribeMessageEnabled') || false
+        console.log('[订阅消息] 检查本地订阅状态（快递订单）:', subscribeMessageEnabled)
+        
+        // 快递订单需要的3个模板ID
+        const templateIds = [
+          'pXaibFtPuAC6FjFaKOvtyumdp15GAjYPKk5paT9ziPk', // 快递接单通知（服务上门提醒）
+          'oeVEt-ycxcxsx1OsaDIEdRA56TXEhJim_bNZQQZIOqE', // 快递取件成功通知
+          'f-S3WcL_jxE48yCcA7k4CQ2Bz50YhPDHvekCi2KLbFI'  // 快递送达通知（订单送达提醒）
+        ]
+        
+        // 如果已启用，直接调用订阅接口（不会弹窗，静默通过）
+        if (subscribeMessageEnabled) {
+          console.log('[订阅消息] 用户已启用订阅（快递订单），静默调用订阅接口（不会弹窗）')
+          wx.requestSubscribeMessage({
+            tmplIds: templateIds,
+            success: (res) => {
+              console.log('[订阅消息] 静默调用成功（已启用，不弹窗）:', JSON.stringify(res))
+              if (res.errMsg === 'requestSubscribeMessage:ok') {
+                const allAccepted = templateIds.every(tmplId => res[tmplId] === 'accept')
+                if (allAccepted) {
+                  console.log('[订阅消息] ✅ 静默调用验证通过，所有模板都已接受')
+                  resolve(res)
+                } else {
+                  console.warn('[订阅消息] ⚠️ 静默调用结果异常，部分模板未接受:', res)
+                  wx.removeStorageSync('expressSubscribeMessageEnabled')
+                  api.updateSubscribeMessageStatusByType(2, false).catch(e => {
+                    console.error('[订阅消息] 更新后端状态失败:', e)
+                  })
+                  resolve(res)
+                }
+              } else {
+                resolve(res)
+              }
+            },
+            fail: (res) => {
+              console.error('[订阅消息] 静默调用失败:', JSON.stringify(res))
+              wx.removeStorageSync('expressSubscribeMessageEnabled')
+              api.updateSubscribeMessageStatusByType(2, false).catch(e => {
+                console.error('[订阅消息] 更新后端状态失败:', e)
+              })
+              resolve(res)
+            }
+          })
+          return
+        }
+        
+        // 如果未启用，弹窗让用户订阅
+        console.log('[订阅消息] 用户未启用订阅（快递订单），弹窗让用户订阅')
+        console.log('[订阅消息] 准备请求的模板ID列表:', templateIds)
+        console.log('[订阅消息] 模板数量:', templateIds.length)
+        
+        console.log('[订阅消息] 开始调用 wx.requestSubscribeMessage（必须在用户点击的同步调用链中）')
+        wx.requestSubscribeMessage({
+          tmplIds: templateIds,
+          success: (res) => {
+            console.log('[订阅消息] 订阅消息弹窗结果:', JSON.stringify(res))
+            console.log('[订阅消息] 弹窗已关闭，用户操作完成')
+            
+            if (res.errMsg !== 'requestSubscribeMessage:ok') {
+              console.log('[订阅消息] ⚠️ 订阅消息调用异常:', res.errMsg)
+              resolve(res)
+              return
+            }
+            
+            // 检查每个模板ID的订阅结果
+            const templateResults = {}
+            let hasAnyAccept = false
+            let hasAnyReject = false
+            const filteredTemplates = []
+            
+            for (const tmplId of templateIds) {
+              const status = res[tmplId]
+              templateResults[tmplId] = status || 'unknown'
+              
+              if (status === 'filter') {
+                filteredTemplates.push(tmplId)
+                console.warn(`[订阅消息] ⚠️ 模板被过滤（标题可能重复）: ${tmplId}`)
+              } else if (status === 'accept') {
+                hasAnyAccept = true
+              } else if (status === 'reject') {
+                hasAnyReject = true
+              } else if (status === 'ban') {
+                console.warn(`[订阅消息] ⚠️ 模板被封禁: ${tmplId}`)
+              } else if (!status || status === 'unknown') {
+                console.warn(`[订阅消息] ⚠️ 模板未返回状态（可能不存在或类型不对应）: ${tmplId}`)
+              }
+            }
+            
+            const displayedCount = Object.keys(templateResults).filter(
+              tmplId => templateResults[tmplId] !== 'unknown' && templateResults[tmplId] !== 'filter'
+            ).length
+            
+            console.log('[订阅消息] 各模板订阅结果:', JSON.stringify(templateResults))
+            console.log('[订阅消息] 实际显示的模板数量:', displayedCount, '/', templateIds.length)
+            console.log('[订阅消息] 是否有接受:', hasAnyAccept, '是否有拒绝:', hasAnyReject)
+            
+            if (filteredTemplates.length > 0) {
+              console.error('[订阅消息] ❌ 以下模板被过滤（标题重复）:', filteredTemplates)
+            }
+            
+            if (displayedCount < templateIds.length) {
+              const missingCount = templateIds.length - displayedCount
+              console.warn(`[订阅消息] ⚠️ 警告：请求了 ${templateIds.length} 个模板，但只显示了 ${displayedCount} 个`)
+            }
+            
+            // 如果用户接受了至少一个模板，检查是否勾选了"总是保持以上选择"
+            if (hasAnyAccept) {
+              console.log('[订阅消息] 用户接受了订阅，开始检查是否勾选了"总是保持以上选择"')
+              wx.getSetting({
+                withSubscriptions: true,
+                success: (settingRes) => {
+                  const subscriptionsSetting = settingRes.subscriptionsSetting
+                  
+                  if (subscriptionsSetting?.mainSwitch === false) {
+                    console.log('[订阅消息] ⚠️ 用户关闭了订阅消息总开关')
+                    resolve(res)
+                    return
+                  }
+                  
+                  const itemSettings = subscriptionsSetting?.itemSettings || {}
+                  
+                  console.log('[订阅消息] 订阅设置详情:', JSON.stringify({
+                    mainSwitch: subscriptionsSetting?.mainSwitch,
+                    itemSettings: itemSettings,
+                    itemSettingsKeys: Object.keys(itemSettings)
+                  }))
+                  
+                  let allAccepted = true
+                  const templateStatus = {}
+                  for (const tmplId of templateIds) {
+                    const status = itemSettings[tmplId]
+                    templateStatus[tmplId] = status || 'not_found'
+                    if (status !== 'accept') {
+                      allAccepted = false
+                    }
+                  }
+                  
+                  console.log('[订阅消息] 各模板在itemSettings中的状态:', JSON.stringify(templateStatus))
+                  console.log('[订阅消息] 是否所有模板都勾选了"总是保持以上选择":', allAccepted)
+                  
+                  // 如果所有模板都在itemSettings中且值为'accept'，说明用户勾选了"总是保持以上选择"
+                  if (allAccepted && templateIds.every(tmplId => itemSettings.hasOwnProperty(tmplId))) {
+                    console.log('[订阅消息] ✅ 用户勾选了"总是保持以上选择"，准备更新后端状态（快递订单 serviceType=2）')
+                    // 更新后端状态（快递订单 serviceType = 2）
+                    api.updateSubscribeMessageStatusByType(2, true).then(() => {
+                      // 保存到本地存储
+                      wx.setStorageSync('expressSubscribeMessageEnabled', true)
+                      console.log('[订阅消息] ✅ 订阅消息状态已更新为启用（后端+本地存储）')
+                      resolve(res)
+                    }).catch((e) => {
+                      console.error('[订阅消息] ❌ 更新订阅消息状态失败:', e)
+                      resolve(res)
+                    })
+                  } else {
+                    console.log('[订阅消息] ⚠️ 用户未勾选"总是保持以上选择"')
+                    console.log('[订阅消息] 原因分析:', {
+                      allAccepted: allAccepted,
+                      templateStatus: templateStatus,
+                      itemSettings: itemSettings
+                    })
+                    // 用户未勾选，更新后端状态为false（快递订单 serviceType = 2）
+                    api.updateSubscribeMessageStatusByType(2, false).catch(e => {
+                      console.error('[订阅消息] ❌ 更新订阅消息状态失败:', e)
+                    })
+                    resolve(res)
+                  }
+                },
+                fail: (e) => {
+                  console.error('[订阅消息] ❌ 获取订阅设置失败:', e)
+                  resolve(res)
+                }
+              })
+            } else if (hasAnyReject) {
+              console.log('[订阅消息] ⚠️ 用户拒绝了订阅')
+              resolve(res)
+            } else {
+              console.log('[订阅消息] ⚠️ 订阅结果异常，无法判断用户操作')
+              resolve(res)
+            }
+          },
+          fail: (res) => {
+            console.error('[订阅消息] ❌ 订阅消息调用失败:', JSON.stringify(res))
+            if (res.errCode) {
+              const errorMessages = {
+                10001: '参数传空了',
+                10002: '网络问题，请求消息列表失败',
+                10003: '网络问题，订阅请求发送失败',
+                10004: '参数类型错误',
+                10005: '无法展示UI，小程序可能退后台了',
+                20001: '没有模板数据，模板ID不存在或类型不对应',
+                20002: '模板消息类型既有一次性的又有永久的',
+                20003: '模板消息数量超过上限',
+                20004: '用户关闭了主开关，无法进行订阅',
+                20005: '小程序被禁封',
+                20013: '不允许通过该接口订阅设备消息'
+              }
+              console.error('[订阅消息] 错误码:', res.errCode, '错误说明:', errorMessages[res.errCode] || '未知错误')
+            }
+            resolve(res)
+          }
+        })
+      } catch (e) {
+        console.error('[订阅消息] ❌ 请求订阅消息异常:', e)
+        resolve(null)
+      }
+    })
+  },
+
   // 提交订单
   async onSubmit() {
     console.log('开始提交订单，表单验证...')
@@ -983,6 +1196,40 @@ Page({
     }
     
     console.log('表单验证通过，检查时间段...')
+    
+    // 在下单前请求订阅消息
+    // 注意：必须在用户点击的同步调用链中调用 wx.requestSubscribeMessage
+    // 先隐藏loading，确保订阅弹窗不被遮挡
+    wx.hideLoading()
+    
+    // 先查询后端订阅状态（快递订单 serviceType = 2）
+    let subscribeMessageEnabled = false
+    try {
+      const statusRes = await api.getSubscribeMessageStatus(2)
+      if (statusRes.success && statusRes.data) {
+        subscribeMessageEnabled = statusRes.data.enabled === true
+        console.log('[订阅消息] 查询后端订阅状态（快递订单）:', subscribeMessageEnabled, '说明:', subscribeMessageEnabled ? '用户已勾选"总是保持以上选择"，不弹窗' : '用户未勾选"总是保持以上选择"，需要弹窗')
+        // 同步更新本地存储
+        wx.setStorageSync('expressSubscribeMessageEnabled', subscribeMessageEnabled)
+      } else {
+        // 查询失败，使用本地存储作为fallback
+        subscribeMessageEnabled = wx.getStorageSync('expressSubscribeMessageEnabled') || false
+        console.log('[订阅消息] 查询后端订阅状态失败，使用本地存储:', subscribeMessageEnabled)
+      }
+    } catch (e) {
+      // 查询异常，使用本地存储作为fallback
+      subscribeMessageEnabled = wx.getStorageSync('expressSubscribeMessageEnabled') || false
+      console.error('[订阅消息] 查询后端订阅状态异常:', e, '使用本地存储:', subscribeMessageEnabled)
+    }
+    
+    if (!subscribeMessageEnabled) {
+      console.log('[订阅消息] 准备显示订阅消息弹窗（快递订单）')
+    } else {
+      console.log('[订阅消息] 用户已勾选"总是保持以上选择"（快递订单），静默调用订阅接口（不弹窗）')
+    }
+    
+    // 同步调用 requestSubscribeMessage（内部会同步调用 wx.requestSubscribeMessage）
+    await this.requestSubscribeMessage()
     
     // 再次检查时间段是否已约满（防止用户通过其他方式选择了已约满的时间）
     if (!this.data.form.isUrgent) {
