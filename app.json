@@ -28,7 +28,8 @@
     "pages/payment/index",
     "pages/recharge-detail/index",
     "pages/service-point/index",
-    "pages/image-content/index"
+    "pages/image-content/index",
+    "pages/activity/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

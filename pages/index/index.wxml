@@ -80,7 +80,18 @@
             </view>
           </view>
         </view>
-        <view class="vertical-card" bindtap="goToInviteReward">
+        <view class="vertical-card" bindtap="goToActivity" wx:if="{{showActivityCard}}">
+          <view class="vertical-card-content">
+            <image class="vertical-card-image" src="{{activityConfig.iconUrl}}" mode="aspectFit"></image>
+            <view class="vertical-card-title-wrapper">
+              <view class="vertical-card-title" wx:if="{{activityConfig.descriptions[0]}}">{{activityConfig.descriptions[0]}}</view>
+              <view class="vertical-card-subtitle" wx:if="{{activityConfig.descriptions[1]}}">{{activityConfig.descriptions[1]}}</view>
+              <view class="vertical-card-arrow">>></view>
+            </view>
+          </view>
+        </view>
+        <!-- 如果没有配置活动，显示原来的邀请奖励卡片 -->
+        <view class="vertical-card" bindtap="goToInviteReward" wx:else>
           <view class="vertical-card-content">
             <image class="vertical-card-image" src="/assets/tabbar/现金.png" mode="aspectFit"></image>
             <view class="vertical-card-title-wrapper">

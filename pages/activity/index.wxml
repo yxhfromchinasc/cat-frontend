@@ -1,0 +1,8 @@
+<!--活动页面，使用web-view显示外部网页-->
+<view class="activity-container">
+  <web-view wx:if="{{activityUrl}}" src="{{activityUrl}}"></web-view>
+  <view wx:else class="error-container">
+    <text class="error-text">活动链接未配置</text>
+  </view>
+</view>
+

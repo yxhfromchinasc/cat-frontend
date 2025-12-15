@@ -5,11 +5,20 @@ Page({
   data: {
     userInfo: null,
     isLogin: false,
-    showLoginModal: false
+    showLoginModal: false,
+    // 活动入口配置
+    activityConfig: {
+      iconUrl: '/assets/tabbar/现金.png', // 默认图标
+      descriptions: ['邀请奖励', '拉新得现金'], // 默认描述
+      linkUrl: '', // 活动链接
+      title: '活动' // 默认标题
+    },
+    showActivityCard: false // 是否显示活动卡片
   },
 
   onLoad() {
     this.checkLoginStatus()
+    this.loadActivityConfig()
   },
 
   onShow() {
@@ -193,11 +202,118 @@ Page({
     })
   },
 
-  // 跳转到邀请奖励
-  goToInviteReward() {
+  // 加载活动配置
+  async loadActivityConfig() {
+    try {
+      const activityConfig = {
+        iconUrl: '/assets/tabbar/现金.png', // 默认图标
+        descriptions: ['邀请奖励', '拉新得现金'], // 默认描述
+        linkUrl: '', // 活动链接
+        title: '活动' // 默认标题
+      }
+      
+      // 获取活动图标
+      try {
+        const iconResult = await api.getConfigValue('activity_entry_icon')
+        if (iconResult.success && iconResult.data) {
+          activityConfig.iconUrl = iconResult.data
+        }
+      } catch (e) {
+        console.warn('获取活动图标配置失败:', e)
+      }
+      
+      // 获取活动描述（JSON数组）
+      try {
+        const descResult = await api.getConfigValue('activity_entry_descriptions')
+        if (descResult.success && descResult.data) {
+          try {
+            const descList = JSON.parse(descResult.data)
+            if (Array.isArray(descList) && descList.length > 0) {
+              activityConfig.descriptions = descList
+            }
+          } catch (e) {
+            console.warn('解析活动描述失败:', e)
+          }
+        }
+      } catch (e) {
+        console.warn('获取活动描述配置失败:', e)
+      }
+      
+      // 获取活动链接
+      try {
+        const linkResult = await api.getConfigValue('activity_entry_link')
+        if (linkResult.success && linkResult.data) {
+          activityConfig.linkUrl = linkResult.data
+        }
+      } catch (e) {
+        console.warn('获取活动链接配置失败:', e)
+      }
+      
+      // 获取活动标题
+      try {
+        const titleResult = await api.getConfigValue('activity_entry_title')
+        if (titleResult.success && titleResult.data) {
+          activityConfig.title = titleResult.data
+        }
+      } catch (e) {
+        console.warn('获取活动标题配置失败:', e)
+      }
+      
+      // 只有当配置了链接时才显示活动卡片
+      this.setData({
+        activityConfig: activityConfig,
+        showActivityCard: !!activityConfig.linkUrl && activityConfig.linkUrl.trim() !== ''
+      })
+    } catch (error) {
+      console.error('加载活动配置失败:', error)
+      // 如果配置加载失败，不显示活动卡片
+      this.setData({
+        showActivityCard: false
+      })
+    }
+  },
+
+  // 跳转到活动页面
+  goToActivity() {
+    const { linkUrl, title } = this.data.activityConfig
+    if (!linkUrl) {
+      wx.showToast({
+        title: '活动链接未配置',
+        icon: 'none'
+      })
+      return
+    }
+    
+    // 获取用户ID，拼接到活动链接后面
+    let finalUrl = linkUrl
+    const userInfo = this.data.userInfo
+    if (userInfo && userInfo.id) {
+      // 判断URL是否已有查询参数
+      const separator = linkUrl.includes('?') ? '&' : '?'
+      finalUrl = `${linkUrl}${separator}userid=${userInfo.id}`
+    }
+    
+    // 跳转到活动页面，传递URL和title参数
+    let navigateUrl = `/pages/activity/index?url=${encodeURIComponent(finalUrl)}`
+    if (title) {
+      navigateUrl += `&title=${encodeURIComponent(title)}`
+    }
     wx.navigateTo({
-      url: '/pages/image-content/index?type=invite-reward'
+      url: navigateUrl
     })
+  },
+
+  // 跳转到邀请奖励（保留作为备用）
+  goToInviteReward() {
+    // 如果配置了活动链接，跳转到活动页面；否则跳转到原来的邀请奖励页面
+    const { linkUrl } = this.data.activityConfig
+    if (linkUrl) {
+      this.goToActivity()
+    } else {
+      wx.navigateTo({
+        url: '/pages/image-content/index?type=invite-reward'
+      })
+    }
   },
 
   // 跳转到服务点地图页面
