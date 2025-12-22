@@ -235,15 +235,29 @@ Page({
       { label: '明天', isToday: false }
     ]
     
-    // 从后端获取可预约时间范围
+    // 优先使用选中驿站的营业时间，如果没有选中驿站则使用系统配置
     let appointmentTimeRange = '08:00-20:00' // 默认值
-    try {
-      const res = await api.getExpressAppointmentTime()
-      if (res.success && res.data) {
-        appointmentTimeRange = res.data
+    if (this.data.selectedStationId && this.data.stationList && this.data.stationList.length > 0) {
+      // 找到选中的驿站
+      const selectedStation = this.data.stationList.find(s => s.id === this.data.selectedStationId)
+      if (selectedStation && selectedStation.startTime && selectedStation.endTime) {
+        // 使用驿站的营业时间（格式：HH:mm:ss，需要转换为 HH:mm）
+        const startTime = selectedStation.startTime.substring(0, 5) // 取前5位 HH:mm
+        const endTime = selectedStation.endTime.substring(0, 5) // 取前5位 HH:mm
+        appointmentTimeRange = `${startTime}-${endTime}`
       }
-    } catch (e) {
-      console.error('获取可预约时间配置失败:', e)
+    }
+    
+    // 如果没有选中驿站或驿站没有营业时间，从系统配置获取
+    if (appointmentTimeRange === '08:00-20:00') {
+      try {
+        const res = await api.getExpressAppointmentTime()
+        if (res.success && res.data) {
+          appointmentTimeRange = res.data
+        }
+      } catch (e) {
+        console.error('获取可预约时间配置失败:', e)
+      }
     }
     
     // 解析时间范围（格式：HH:mm-HH:mm）
@@ -505,8 +519,9 @@ Page({
           selectedStationIndex
         })
         
-        // 自动选择第一个驿站后，检查时间段可用性
+        // 自动选择第一个驿站后，重新初始化时间段并检查可用性
         if (selectedStationId) {
+          this.initTimeSlots()
           this.checkAllTimeSlotsAvailability()
         }
       } else {
@@ -550,6 +565,8 @@ Page({
         selectedStationName: station.stationName || '',
         selectedStationIndex: index
       })
+      // 重新初始化时间段（使用新驿站的营业时间）
+      this.initTimeSlots()
       this.checkAllTimeSlotsAvailability()
     }
   },
@@ -1279,8 +1296,9 @@ Page({
     const app = getApp()
     const shareImageUrl = app.getShareImageUrl()
     const sharePath = app.getSharePath()
+    const shareTitle = app.getShareTitle()
     const shareConfig = {
-      title: '喵上门 - 便捷的生活服务小程序',
+      title: shareTitle, // 使用配置的分享标题
       path: sharePath // 使用配置的分享路径
     }
     // 只有在配置了有效的分享图片URL时才设置，否则不设置imageUrl（不使用默认截图）

@@ -218,8 +218,9 @@ Page({
           selectedRecyclingPointId
         })
         
-        // 自动选择第一个回收点后，检查时间段可用性
+        // 自动选择第一个回收点后，重新初始化时间段并检查可用性
         if (selectedRecyclingPointId) {
+          this.initTimeSlots()
           this.checkAllTimeSlotsAvailability()
         }
         
@@ -387,15 +388,29 @@ Page({
       { label: '明天', isToday: false }
     ]
     
-    // 从后端获取可预约时间范围
+    // 优先使用选中回收点的营业时间，如果没有选中回收点则使用系统配置
     let appointmentTimeRange = '09:00-18:00' // 默认值
-    try {
-      const res = await api.getRecyclingAppointmentTime()
-      if (res.success && res.data) {
-        appointmentTimeRange = res.data
+    if (this.data.selectedRecyclingPointId && this.data.recyclingPointList && this.data.recyclingPointList.length > 0) {
+      // 找到选中的回收点
+      const selectedRecyclingPoint = this.data.recyclingPointList.find(rp => rp.id === this.data.selectedRecyclingPointId)
+      if (selectedRecyclingPoint && selectedRecyclingPoint.startTime && selectedRecyclingPoint.endTime) {
+        // 使用回收点的营业时间（格式：HH:mm:ss，需要转换为 HH:mm）
+        const startTime = selectedRecyclingPoint.startTime.substring(0, 5) // 取前5位 HH:mm
+        const endTime = selectedRecyclingPoint.endTime.substring(0, 5) // 取前5位 HH:mm
+        appointmentTimeRange = `${startTime}-${endTime}`
       }
-    } catch (e) {
-      console.error('获取可预约时间配置失败:', e)
+    }
+    
+    // 如果没有选中回收点或回收点没有营业时间，从系统配置获取
+    if (appointmentTimeRange === '09:00-18:00') {
+      try {
+        const res = await api.getRecyclingAppointmentTime()
+        if (res.success && res.data) {
+          appointmentTimeRange = res.data
+        }
+      } catch (e) {
+        console.error('获取可预约时间配置失败:', e)
+      }
     }
     
     // 解析时间范围（格式：HH:mm-HH:mm）
@@ -1108,8 +1123,9 @@ Page({
     const app = getApp()
     const shareImageUrl = app.getShareImageUrl()
     const sharePath = app.getSharePath()
+    const shareTitle = app.getShareTitle()
     const shareConfig = {
-      title: '喵上门 - 便捷的生活服务小程序',
+      title: shareTitle, // 使用配置的分享标题
       path: sharePath // 使用配置的分享路径
     }
     // 只有在配置了有效的分享图片URL时才设置，否则不设置imageUrl（不使用默认截图）

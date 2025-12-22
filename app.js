@@ -21,14 +21,16 @@ App({
   globalData: {
     userInfo: null,
     shareImageUrl: '', // 分享图片URL
-    sharePath: '/pages/index/index' // 分享后进入的页面路径，默认首页
+    sharePath: '/pages/index/index', // 分享后进入的页面路径，默认首页
+    shareTitle: '喵上门 - 便捷的生活服务小程序' // 分享标题，默认值
   },
-  // 加载分享配置（图片和路径）
+  // 加载分享配置（图片、路径和标题）
   async loadShareConfig() {
-    // 并行加载分享图片和分享路径
+    // 并行加载分享图片、分享路径和分享标题
     await Promise.all([
       this.loadShareImage(),
-      this.loadSharePath()
+      this.loadSharePath(),
+      this.loadShareTitle()
     ])
   },
   // 加载分享图片配置
@@ -77,10 +79,35 @@ App({
     // 只有当URL不为空且是有效URL时才返回
     return url && url.trim() !== '' ? url.trim() : null
   },
+  // 加载分享标题配置
+  async loadShareTitle() {
+    try {
+      const res = await api.getShareTitle()
+      if (res && res.success && res.data) {
+        const title = res.data || ''
+        // 如果配置了标题且不为空，使用配置的标题；否则使用默认标题
+        if (title && title.trim() !== '') {
+          this.globalData.shareTitle = title.trim()
+        } else {
+          this.globalData.shareTitle = '喵上门 - 便捷的生活服务小程序'
+        }
+      } else {
+        this.globalData.shareTitle = '喵上门 - 便捷的生活服务小程序'
+      }
+    } catch (e) {
+      console.error('加载分享标题配置失败:', e)
+      this.globalData.shareTitle = '喵上门 - 便捷的生活服务小程序'
+    }
+  },
   // 获取分享路径（如果未配置或为空，返回默认首页）
   getSharePath() {
     const path = this.globalData.sharePath || '/pages/index/index'
     // 确保路径以 / 开头
     return path.trim() !== '' ? path.trim() : '/pages/index/index'
+  },
+  // 获取分享标题（如果未配置或为空，返回默认标题）
+  getShareTitle() {
+    const title = this.globalData.shareTitle || '喵上门 - 便捷的生活服务小程序'
+    return title.trim() !== '' ? title.trim() : '喵上门 - 便捷的生活服务小程序'
   }
 })

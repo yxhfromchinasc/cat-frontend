@@ -288,9 +288,18 @@ Page({
     let finalUrl = linkUrl
     const userInfo = this.data.userInfo
     if (userInfo && userInfo.id) {
+      // 处理URL中的hash（#）部分，确保查询参数在hash之前
+      let urlWithoutHash = linkUrl
+      let hash = ''
+      const hashIndex = linkUrl.indexOf('#')
+      if (hashIndex !== -1) {
+        urlWithoutHash = linkUrl.substring(0, hashIndex)
+        hash = linkUrl.substring(hashIndex)
+      }
+      
       // 判断URL是否已有查询参数
-      const separator = linkUrl.includes('?') ? '&' : '?'
-      finalUrl = `${linkUrl}${separator}userid=${userInfo.id}`
+      const separator = urlWithoutHash.includes('?') ? '&' : '?'
+      finalUrl = `${urlWithoutHash}${separator}userid=${userInfo.id}${hash}`
     }
     
     // 跳转到活动页面，传递URL和title参数
@@ -328,8 +337,9 @@ Page({
     const app = getApp()
     const shareImageUrl = app.getShareImageUrl()
     const sharePath = app.getSharePath()
+    const shareTitle = app.getShareTitle()
     const shareConfig = {
-      title: '喵上门 - 便捷的生活服务小程序',
+      title: shareTitle, // 使用配置的分享标题
       path: sharePath // 使用配置的分享路径
     }
     // 只有在配置了有效的分享图片URL时才设置，否则不设置imageUrl（不使用默认截图）

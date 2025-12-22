@@ -537,6 +537,11 @@ function getNearestAddress(latitude, longitude) {
     return get('/config/value', { configKey: 'share_path' }, { showLoading: false, showError: false })
   }
 
+  // 获取分享标题配置
+  function getShareTitle() {
+    return get('/config/value', { configKey: 'share_title' }, { showLoading: false, showError: false })
+  }
+
   // 获取配置值（通用方法）
   function getConfigValue(configKey) {
     return get('/config/value', { configKey }, { showLoading: false, showError: false })
@@ -1199,6 +1204,7 @@ module.exports = {
   getRechargeAmounts,
   getShareImage,
   getSharePath,
+  getShareTitle,
   getConfigValue,
   
   // 支付相关（充值）

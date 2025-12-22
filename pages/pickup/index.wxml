@@ -143,13 +143,21 @@
             </view>
           </view>
           <view class="time-picker-right">
-            <view class="time-picker-time-item {{selectedTimeSlotIndex === index ? 'active' : ''}} {{item.disabled ? 'disabled' : ''}}" 
-                  wx:for="{{timeSlotOptions}}" 
-                  wx:key="index"
-                  bindtap="selectTimeSlot" 
-                  data-index="{{index}}">
-              {{item.label}}
-            </view>
+            <block wx:if="{{timeSlotOptions.length === 0}}">
+              <view class="time-picker-empty">
+                <text>暂无可预约时间段</text>
+              </view>
+            </block>
+            <block wx:else>
+              <view class="time-picker-time-item {{selectedTimeSlotIndex === index ? 'active' : ''}} {{item.disabled ? 'disabled' : ''}}" 
+                    wx:for="{{timeSlotOptions}}" 
+                    wx:key="index"
+                    bindtap="selectTimeSlot" 
+                    data-index="{{index}}">
+                {{item.label}}
+              </view>
+              <view class="time-picker-bottom-spacer"></view>
+            </block>
           </view>
         </view>
       </view>

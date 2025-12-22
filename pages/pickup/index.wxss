@@ -603,7 +603,7 @@
 
 .time-picker-body {
   display: flex;
-  flex: 1;
+  height: 600rpx;
   overflow: hidden;
 }
 
@@ -612,6 +612,7 @@
   border-right: 1rpx solid #f0f0f0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
 }
 
 .time-picker-date-item {
@@ -629,8 +630,30 @@
 
 .time-picker-right {
   flex: 1;
+  height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+.time-picker-bottom-spacer {
+  height: 100rpx;
+  flex-shrink: 0;
+}
+
+.time-picker-empty {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  color: #999;
+  font-size: 28rpx;
+  text-align: center;
 }
 
 .time-picker-time-item {
@@ -638,6 +661,7 @@
   font-size: 28rpx;
   color: #666;
   border-bottom: 1rpx solid #f0f0f0;
+  flex-shrink: 0;
 }
 
 .time-picker-time-item.active {
