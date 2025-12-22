@@ -108,19 +108,19 @@
     </view>
     
     <!-- 时间选择器弹窗 -->
-    <view class="time-picker-modal" wx:if="{{showTimePickerModal}}" bindtap="hideTimePicker">
+    <view class="time-picker-modal" wx:if="{{showTimePickerModal}}" catchtap="hideTimePicker">
       <view class="time-picker-content" catchtap="stopPropagation">
         <view class="time-picker-header">
-          <text class="time-picker-cancel" bindtap="hideTimePicker">取消</text>
+          <text class="time-picker-cancel" catchtap="hideTimePicker">取消</text>
           <text class="time-picker-title">选择时间段</text>
-          <text class="time-picker-confirm" bindtap="confirmTimeSelection">确认</text>
+          <text class="time-picker-confirm" catchtap="confirmTimeSelection">确认</text>
         </view>
         <view class="time-picker-body">
           <view class="time-picker-left">
             <view class="time-picker-date-item {{selectedDateIndex === index ? 'active' : ''}}" 
                   wx:for="{{dateOptions}}" 
                   wx:key="index"
-                  bindtap="selectDate" 
+                  catchtap="selectDate" 
                   data-index="{{index}}">
               {{item.label}}
             </view>
@@ -135,7 +135,7 @@
               <view class="time-picker-time-item {{selectedTimeSlotIndex === index ? 'active' : ''}} {{item.disabled ? 'disabled' : ''}}" 
                     wx:for="{{timeSlotOptions}}" 
                     wx:key="index"
-                    bindtap="selectTimeSlot" 
+                    catchtap="selectTimeSlot" 
                     data-index="{{index}}">
                 {{item.label}}
               </view>

@@ -569,7 +569,8 @@
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: flex-end;
-  z-index: 1000;
+  z-index: 9999;
+  pointer-events: auto;
 }
 
 .time-picker-content {
@@ -607,7 +608,7 @@
 
 .time-picker-body {
   display: flex;
-  height: 600rpx;
+  height: 800rpx;
   overflow: hidden;
 }
 
@@ -641,7 +642,7 @@
 }
 
 .time-picker-bottom-spacer {
-  height: 100rpx;
+  height: 300rpx;
   flex-shrink: 0;
 }
 
