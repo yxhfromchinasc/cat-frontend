@@ -12,7 +12,7 @@
   <!-- 登录按钮区域 -->
   <view class="login-section">
     <button class="wechat-btn" hover-class="wechat-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="wechatLogin">
-      微信登录
+      快捷登录
     </button>
     <button class="skip-btn" hover-class="skip-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="goHome">
       暂不登录
@@ -37,10 +37,10 @@
     ←
   </view>
 
-  <!-- 手机号授权按钮 -->
+  <!-- 手机号快捷登录按钮 -->
   <view class="phone-auth-modal" wx:if="{{showPhoneAuth}}">
     <view class="phone-auth-content">
-      <view class="phone-auth-title">授权手机号</view>
+      <view class="phone-auth-title">手机号快捷登录</view>
       <view class="phone-auth-desc">为了完成登录，需要获取您的手机号</view>
       <button 
         class="phone-auth-btn" 
@@ -50,7 +50,7 @@
         open-type="getPhoneNumber" 
         bindgetphonenumber="onPhoneNumberGet"
       >
-        授权手机号
+        手机号快捷登录
       </button>
       <button class="phone-auth-cancel" hover-class="phone-auth-cancel-hover" hover-start-time="0" hover-stay-time="70" bindtap="cancelPhoneAuth">取消</button>
     </view>

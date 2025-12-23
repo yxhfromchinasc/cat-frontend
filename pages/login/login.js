@@ -99,7 +99,7 @@ Page({
     return true
   },
 
-  // 微信授权登录
+  // 快捷登录
   wechatLogin() {
     // 检查是否同意协议
     if (!this.checkAgreeProtocol()) {
@@ -165,40 +165,40 @@ Page({
   },
 
 
-  // 授权手机号并重新登录
+  // 手机号快捷登录并重新登录
   async requestPhoneAuth(userInfo) {
     try {
-      // 显示手机号授权提示
+      // 显示手机号快捷登录提示
       wx.showModal({
-        title: '需要授权手机号',
+        title: '手机号快捷登录',
         content: '为了完成登录，需要获取您的手机号',
-        confirmText: '授权',
+        confirmText: '确定',
         cancelText: '取消',
         success: (res) => {
           if (res.confirm) {
-            // 用户确认授权，显示手机号授权按钮
+            // 用户确认，显示手机号快捷登录按钮
             this.showPhoneAuthButton(userInfo)
           } else {
-            // 用户取消授权
+            // 用户取消
             wx.showToast({
-              title: '需要授权手机号才能登录',
+              title: '需要手机号才能登录',
               icon: 'none'
             })
           }
         }
       })
     } catch (error) {
-      console.error('手机号授权失败:', error)
+      console.error('手机号快捷登录失败:', error)
       wx.showToast({
-        title: '手机号授权失败',
+        title: '手机号快捷登录失败',
         icon: 'none'
       })
     }
   },
 
-  // 显示手机号授权按钮
+  // 显示手机号快捷登录按钮
   showPhoneAuthButton(userInfo) {
-    // 设置数据，显示手机号授权按钮
+    // 设置数据，显示手机号快捷登录按钮
     this.setData({
       showPhoneAuth: true,
       phoneAuthData: {
@@ -207,15 +207,15 @@ Page({
     })
   },
 
-  // 处理手机号授权结果
+  // 处理手机号快捷登录结果
   async onPhoneNumberGet(e) {
     try {
       const { userInfo } = this.data.phoneAuthData
       
       if (e.detail.encryptedData && e.detail.iv) {
-        this.setData({ loading: true, loadingText: '授权处理中...' })
+        this.setData({ loading: true, loadingText: '处理中...' })
         
-        // 重新获取微信授权码（避免code重复使用）
+        // 重新获取登录码（避免code重复使用）
         const loginRes = await wx.login()
         const freshCode = loginRes.code
         
@@ -225,7 +225,7 @@ Page({
         if (decryptResult.success) {
           this.setData({ loadingText: '登录中...' })
           
-          // 重新获取微信授权码用于登录（避免code重复使用）
+          // 重新获取登录码用于登录（避免code重复使用）
           const loginRes = await wx.login()
           const loginCode = loginRes.code
           
@@ -238,7 +238,7 @@ Page({
           if (result.success) {
             // 登录成功，处理结果
             this.handleLoginSuccess(result.data)
-            // 隐藏手机号授权按钮
+            // 隐藏手机号快捷登录按钮
             this.setData({
               showPhoneAuth: false,
               phoneAuthData: null
@@ -273,22 +273,22 @@ Page({
       }
     } catch (error) {
       this.setData({ loading: false })
-      console.error('手机号授权处理失败:', error)
+      console.error('手机号快捷登录处理失败:', error)
       wx.showToast({
-        title: '手机号授权失败',
+        title: '手机号快捷登录失败',
         icon: 'none'
       })
     }
   },
 
-  // 取消手机号授权
+  // 取消手机号快捷登录
   cancelPhoneAuth() {
     this.setData({
       showPhoneAuth: false,
       phoneAuthData: null
     })
     wx.showToast({
-      title: '需要授权手机号才能登录',
+      title: '需要手机号才能登录',
       icon: 'none'
     })
   },

@@ -109,10 +109,10 @@ Page({
     })
   },
 
-  // 微信登录
+  // 快捷登录
   wechatLogin() {
-    // 实现微信登录逻辑
-    console.log('微信登录')
+    // 实现快捷登录逻辑
+    console.log('快捷登录')
     this.closeLoginModal()
   },
 
