@@ -403,13 +403,13 @@ Page({
     
     // 如果没有选中回收点或回收点没有营业时间，从系统配置获取
     if (appointmentTimeRange === '09:00-18:00') {
-      try {
-        const res = await api.getRecyclingAppointmentTime()
-        if (res.success && res.data) {
-          appointmentTimeRange = res.data
-        }
-      } catch (e) {
-        console.error('获取可预约时间配置失败:', e)
+    try {
+      const res = await api.getRecyclingAppointmentTime()
+      if (res.success && res.data) {
+        appointmentTimeRange = res.data
+      }
+    } catch (e) {
+      console.error('获取可预约时间配置失败:', e)
       }
     }
     

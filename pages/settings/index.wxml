@@ -29,6 +29,13 @@
       <text class="menu-label">消息设置</text>
       <text class="menu-arrow">›</text>
     </view>
+
+    <!-- 展示公告 -->
+    <view class="menu-item" bindtap="showAnnouncements">
+      <image class="menu-icon" src="/assets/tabbar/公告.png" mode="aspectFit"></image>
+      <text class="menu-label">展示公告</text>
+      <text class="menu-arrow">›</text>
+    </view>
   </view>
 
   <!-- 退出登录 -->
@@ -38,4 +45,46 @@
     </button>
   </view>
 
+</view>
+
+<!-- 公告弹窗（复用首页的样式和结构） -->
+<view id="announcement-modal" class="announcement-modal" wx:if="{{showAnnouncementModal}}" bindtap="closeAnnouncementModal">
+  <view class="announcement-popup" catchtap="stopPropagation">
+    <!-- 标题区域（如果有标题） -->
+    <view 
+      wx:if="{{announcementData.title}}" 
+      class="announcement-title"
+      bindtap="onAnnouncementTap"
+    >
+      {{announcementData.title}}
+    </view>
+    
+    <!-- 图片区域（如果有图片） -->
+    <image 
+      wx:if="{{announcementData.imageUrl}}" 
+      class="announcement-image {{announcementData.title ? 'announcement-image-with-title' : 'announcement-image-without-title'}}" 
+      src="{{announcementData.imageUrl}}" 
+      mode="widthFix"
+      style="{{announcementData.imageHeight ? 'height: ' + announcementData.imageHeight + 'px;' : ''}}"
+      bindtap="onAnnouncementTap"
+    ></image>
+    
+    <!-- 文字内容区域（如果有文字） -->
+    <view 
+      wx:if="{{announcementData.textContent}}" 
+      class="announcement-text"
+      style="font-size: {{announcementData.textFontSize || 16}}px; color: {{announcementData.textFontColor || '#000000'}};"
+      bindtap="onAnnouncementTap"
+    >
+      {{announcementData.textContent}}
+    </view>
+    
+    <!-- 底部按钮区域 -->
+    <view class="announcement-footer">
+      <view class="announcement-close-btn {{isCloseBtnLoading ? 'announcement-close-btn-loading' : ''}}" bindtap="closeAnnouncementModal">
+        <view wx:if="{{isCloseBtnLoading}}" class="announcement-close-btn-loading-icon"></view>
+        <text>{{isCloseBtnLoading ? '加载中' : '关闭'}}</text>
+      </view>
+    </view>
+  </view>
 </view>

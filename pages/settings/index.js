@@ -4,7 +4,12 @@ const { api } = require('../../utils/util.js')
 Page({
   data: {
     isLogin: false,
-    appVersion: '1.0.0' // 小程序版本号
+    appVersion: '1.0.0', // 小程序版本号
+    // 公告相关
+    showAnnouncementModal: false,
+    announcementData: null,
+    isRequestingNextAnnouncement: false,
+    isCloseBtnLoading: false
   },
 
   onLoad() {
@@ -88,5 +93,168 @@ Page({
         })
       }
     })
+  },
+
+  // 展示公告（忽略隐藏限制）
+  async showAnnouncements() {
+    if (!this.data.isLogin) {
+      wx.showToast({ title: '请先登录', icon: 'none' })
+      return
+    }
+
+    try {
+      // 获取第一个公告（忽略隐藏限制）
+      const result = await api.getCurrentAnnouncementIgnoreHide()
+      
+      if (result.success && result.data) {
+        // 显示公告弹窗
+        this.setData({
+          showAnnouncementModal: true,
+          announcementData: result.data
+        })
+      } else {
+        wx.showToast({
+          title: '暂无公告',
+          icon: 'none'
+        })
+      }
+    } catch (error) {
+      console.error('获取公告失败:', error)
+      wx.showToast({
+        title: '获取公告失败',
+        icon: 'none'
+      })
+    }
+  },
+
+  // 关闭公告弹窗
+  async closeAnnouncementModal(e) {
+    // 防止重复点击
+    if (this.data.isRequestingNextAnnouncement) {
+      return
+    }
+
+    // 如果点击的是背景（不是关闭按钮），直接关闭弹窗，不获取下一个
+    if (e && e.target && e.target.id === 'announcement-modal') {
+      this.setData({
+        showAnnouncementModal: false,
+        announcementData: null
+      })
+      return
+    }
+
+    const currentAnnouncement = this.data.announcementData
+    if (!currentAnnouncement) {
+      return
+    }
+
+    const currentPriority = currentAnnouncement.priority
+    
+    // 设置关闭按钮加载状态
+    this.setData({
+      isCloseBtnLoading: true
+    })
+    
+    // 请求下一个公告（忽略隐藏限制，不隐藏当前公告）
+    await this.getNextAnnouncement(currentPriority)
+    
+    // 清除关闭按钮加载状态
+    this.setData({
+      isCloseBtnLoading: false
+    })
+  },
+
+  // 获取下一个公告（忽略隐藏限制）
+  async getNextAnnouncement(currentPriority) {
+    // 防止重复请求
+    if (this.data.isRequestingNextAnnouncement) {
+      return
+    }
+
+    // 设置请求中状态
+    this.setData({
+      isRequestingNextAnnouncement: true
+    })
+
+    try {
+      // 请求下一个公告（忽略隐藏限制）
+      const result = await api.getNextAnnouncementIgnoreHide(currentPriority)
+      
+      if (result.success && result.data) {
+        // 有下一个公告，显示它
+        this.setData({
+          announcementData: result.data,
+          isRequestingNextAnnouncement: false,
+          isCloseBtnLoading: false
+        })
+      } else {
+        // 没有下一个公告了，关闭弹窗
+        this.setData({
+          showAnnouncementModal: false,
+          announcementData: null,
+          isRequestingNextAnnouncement: false,
+          isCloseBtnLoading: false
+        })
+      }
+    } catch (error) {
+      console.error('获取下一个公告失败:', error)
+      // 即使失败也关闭弹窗
+      this.setData({
+        showAnnouncementModal: false,
+        announcementData: null,
+        isRequestingNextAnnouncement: false,
+        isCloseBtnLoading: false
+      })
+    }
+  },
+
+  // 阻止事件冒泡
+  stopPropagation(e) {
+    if (e) {
+      e.stopPropagation && e.stopPropagation()
+    }
+  },
+
+  // 点击公告内容（跳转）
+  async onAnnouncementTap() {
+    const announcement = this.data.announcementData
+    if (!announcement) {
+      return
+    }
+
+    const jumpType = announcement.jumpType
+    const jumpValue = announcement.jumpValue
+
+    // 关闭弹窗并获取下一个公告
+    await this.closeAnnouncementModal()
+
+    // 根据跳转类型处理
+    if (jumpType === 1 && jumpValue) {
+      // 小程序页面跳转
+      try {
+        wx.navigateTo({
+          url: jumpValue,
+          fail: (err) => {
+            console.error('页面跳转失败:', err)
+            wx.switchTab({
+              url: jumpValue,
+              fail: () => {
+                wx.showToast({
+                  title: '页面不存在',
+                  icon: 'none'
+                })
+              }
+            })
+          }
+        })
+      } catch (e) {
+        console.error('跳转异常:', e)
+      }
+    } else if (jumpType === 2 && jumpValue) {
+      // 外部链接跳转
+      wx.navigateTo({
+        url: `/pages/activity/index?url=${encodeURIComponent(jumpValue)}`
+      })
+    }
   }
 })

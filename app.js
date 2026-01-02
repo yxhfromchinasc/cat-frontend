@@ -17,12 +17,19 @@ App({
 
     // 加载分享配置
     this.loadShareConfig()
+
+    // 标记这是首次启动小程序（用于显示公告）
+    this.globalData.isFirstLaunch = true
+    
+    // 清除登录后显示公告的标记（每次启动小程序时重置，允许登录后再次显示）
+    wx.removeStorageSync('announcement_shown_after_login')
   },
   globalData: {
     userInfo: null,
     shareImageUrl: '', // 分享图片URL
     sharePath: '/pages/index/index', // 分享后进入的页面路径，默认首页
-    shareTitle: '喵上门 - 便捷的生活服务小程序' // 分享标题，默认值
+    shareTitle: '喵上门 - 便捷的生活服务小程序', // 分享标题，默认值
+    isFirstLaunch: false // 是否是首次启动小程序
   },
   // 加载分享配置（图片、路径和标题）
   async loadShareConfig() {

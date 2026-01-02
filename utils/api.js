@@ -1311,5 +1311,52 @@ module.exports = {
   // 获取回收订单备注快捷选项
   getRecyclingRemarkOptions() {
     return get('/config/recycling-remark-options', {}, { showLoading: false, showError: false })
+  },
+
+  // ========== 公告相关 ==========
+  /**
+   * 获取当前用户应显示的公告（优先级最高的一个）
+   */
+  getCurrentAnnouncement() {
+    return get('/announcement/current', {}, { showLoading: false, showError: false })
+  },
+
+  /**
+   * 获取下一个公告
+   * @param {number} currentPriority 当前公告的优先级
+   * @param {number} currentAnnouncementId 当前公告ID（用于隐藏）
+   * @param {boolean} hideToday 是否隐藏当前公告
+   */
+  getNextAnnouncement(currentPriority, currentAnnouncementId, hideToday = false) {
+    return post('/announcement/next', {
+      currentPriority,
+      currentAnnouncementId,
+      hideToday
+    }, { showLoading: false, showError: false })
+  },
+
+  /**
+   * 获取当前公告（忽略隐藏限制）
+   */
+  getCurrentAnnouncementIgnoreHide() {
+    return get('/announcement/current/ignore-hide', {}, { showLoading: false, showError: false })
+  },
+
+  /**
+   * 获取下一个公告（忽略隐藏限制）
+   * @param {number} currentPriority 当前公告的优先级
+   */
+  getNextAnnouncementIgnoreHide(currentPriority) {
+    return post('/announcement/next/ignore-hide', {
+      currentPriority
+    }, { showLoading: false, showError: false })
+  },
+
+  /**
+   * 隐藏今日公告
+   * @param {number} announcementId 公告ID
+   */
+  hideAnnouncementToday(announcementId) {
+    return post('/announcement/hide', { announcementId }, { showLoading: false, showError: false })
   }
 }

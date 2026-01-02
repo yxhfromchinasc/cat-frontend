@@ -127,3 +127,53 @@
     </view>
   </view>
 </view>
+
+<!-- 公告弹窗 -->
+<view id="announcement-modal" class="announcement-modal" wx:if="{{showAnnouncementModal}}" bindtap="closeAnnouncementModal">
+  <view class="announcement-popup" catchtap="stopPropagation">
+    <!-- 标题区域（如果有标题） -->
+    <view 
+      wx:if="{{announcementData.title}}" 
+      class="announcement-title"
+      bindtap="onAnnouncementTap"
+    >
+      {{announcementData.title}}
+    </view>
+    
+    <!-- 图片区域（如果有图片） -->
+    <image 
+      wx:if="{{announcementData.imageUrl}}" 
+      class="announcement-image {{announcementData.title ? 'announcement-image-with-title' : 'announcement-image-without-title'}}" 
+      src="{{announcementData.imageUrl}}" 
+      mode="widthFix"
+      style="{{announcementData.imageHeight ? 'height: ' + announcementData.imageHeight + 'px;' : ''}}"
+      bindtap="onAnnouncementTap"
+    ></image>
+    
+    <!-- 文字内容区域（如果有文字） -->
+    <view 
+      wx:if="{{announcementData.textContent}}" 
+      class="announcement-text"
+      style="font-size: {{announcementData.textFontSize || 16}}px; color: {{announcementData.textFontColor || '#000000'}};"
+      bindtap="onAnnouncementTap"
+    >
+      {{announcementData.textContent}}
+    </view>
+    
+    <!-- 底部按钮区域 -->
+    <view class="announcement-footer">
+      <view class="announcement-footer-left" catchtap="stopPropagation" wx:if="{{isLogin}}">
+        <checkbox-group bindchange="onHideCheckboxChange">
+          <view class="announcement-checkbox-wrapper">
+            <checkbox class="announcement-checkbox" value="hide" checked="{{hideTodayChecked}}" />
+            <text class="announcement-checkbox-text">今天不再展示</text>
+          </view>
+        </checkbox-group>
+      </view>
+      <view class="announcement-close-btn {{isCloseBtnLoading ? 'announcement-close-btn-loading' : ''}}" bindtap="closeAnnouncementModal">
+        <view wx:if="{{isCloseBtnLoading}}" class="announcement-close-btn-loading-icon"></view>
+        <text>{{isCloseBtnLoading ? '加载中' : '关闭'}}</text>
+      </view>
+    </view>
+  </view>
+</view>

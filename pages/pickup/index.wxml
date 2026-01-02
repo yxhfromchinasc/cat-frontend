@@ -149,13 +149,13 @@
               </view>
             </block>
             <block wx:else>
-              <view class="time-picker-time-item {{selectedTimeSlotIndex === index ? 'active' : ''}} {{item.disabled ? 'disabled' : ''}}" 
-                    wx:for="{{timeSlotOptions}}" 
-                    wx:key="index"
+            <view class="time-picker-time-item {{selectedTimeSlotIndex === index ? 'active' : ''}} {{item.disabled ? 'disabled' : ''}}" 
+                  wx:for="{{timeSlotOptions}}" 
+                  wx:key="index"
                     catchtap="selectTimeSlot" 
-                    data-index="{{index}}">
-                {{item.label}}
-              </view>
+                  data-index="{{index}}">
+              {{item.label}}
+            </view>
               <view class="time-picker-bottom-spacer"></view>
             </block>
           </view>
