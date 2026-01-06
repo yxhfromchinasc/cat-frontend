@@ -151,6 +151,68 @@
             </view>
           </view>
           
+          <!-- OFFLINE_SETTLEMENT事件的数据（线下结算完成） -->
+          <view class="info-item" wx:if="{{event.type === 'OFFLINE_SETTLEMENT' && event.data.weight}}">
+            <text class="info-label">实际重量：</text>
+            <text class="info-value">{{event.data.weight}}kg</text>
+          </view>
+          <view class="info-item" wx:if="{{event.type === 'OFFLINE_SETTLEMENT' && event.data.price}}">
+            <text class="info-label">结算金额：</text>
+            <text class="info-value price">￥{{event.data.price}}</text>
+          </view>
+          
+          <!-- 价格组成信息（OFFLINE_SETTLEMENT事件） -->
+          <view class="price-breakdown" wx:if="{{event.type === 'OFFLINE_SETTLEMENT' && event.data.recyclingPricePerKg}}">
+            <view class="breakdown-title">价格组成</view>
+            <view class="breakdown-item">
+              <text class="breakdown-label">回收价：</text>
+              <text class="breakdown-value">￥{{event.data.recyclingPricePerKg}}/kg</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{event.data.baseAmount}}">
+              <text class="breakdown-label">基础金额：</text>
+              <text class="breakdown-value">￥{{event.data.baseAmount}}</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{event.data.overtimeCompensation > 0}}">
+              <text class="breakdown-label">超时补偿：</text>
+              <text class="breakdown-value positive">+￥{{event.data.overtimeCompensation}}</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{event.data.urgentFee > 0}}">
+              <text class="breakdown-label">加急费用：</text>
+              <text class="breakdown-value negative">-￥{{event.data.urgentFee}}</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{event.data.urgentFeeZeroReason}}">
+              <text class="breakdown-label">加急费用说明：</text>
+              <text class="breakdown-value reason">{{event.data.urgentFeeZeroReason}}</text>
+            </view>
+          </view>
+          
+          <view class="info-item" wx:if="{{event.type === 'OFFLINE_SETTLEMENT' && event.data.images && event.data.images.length > 0}}">
+            <text class="info-label">回收照片：</text>
+            <view class="image-list">
+              <image class="info-image" 
+                     wx:for="{{event.data.images}}" 
+                     wx:key="*this"
+                     src="{{item}}" 
+                     mode="aspectFill"
+                     bindtap="previewImage"
+                     data-url="{{item}}"
+                     data-urls="{{event.data.images}}"></image>
+            </view>
+          </view>
+          <view class="info-item" wx:if="{{event.type === 'OFFLINE_SETTLEMENT' && event.data.settlementImage && event.data.settlementImage.length > 0}}">
+            <text class="info-label">结算照片：</text>
+            <view class="image-list">
+              <image class="info-image" 
+                     wx:for="{{event.data.settlementImage}}" 
+                     wx:key="*this"
+                     src="{{item}}" 
+                     mode="aspectFill"
+                     bindtap="previewImage"
+                     data-url="{{item}}"
+                     data-urls="{{event.data.settlementImage}}"></image>
+            </view>
+          </view>
+          
           <!-- PAYMENT事件的数据（打款完成） -->
           <view class="info-item" wx:if="{{event.type === 'PAYMENT' && event.data.amount}}">
             <text class="info-label">打款金额：</text>

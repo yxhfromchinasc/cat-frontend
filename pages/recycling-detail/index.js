@@ -37,6 +37,10 @@ Page({
         if (detail.images && !Array.isArray(detail.images)) {
           detail.images = []
         }
+        // 处理结算照片列表，确保是数组
+        if (detail.settlementImage && !Array.isArray(detail.settlementImage)) {
+          detail.settlementImage = []
+        }
         
         // 评分默认5分并生成星数组
         detail.recyclerRating = 5
