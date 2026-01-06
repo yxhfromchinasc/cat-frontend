@@ -43,7 +43,8 @@ Page({
     urgentTipText: '', // 立即上门提示文案
 
     // 今日回收价格（从系统设置获取）
-    todayRecyclePrice: null,
+    todayRecyclePrice: null, // 最低价格（从后端获取）
+    todayRecyclePriceMax: '5', // 最高价格（固定值）
     todayRecyclePriceText: '',
     
     // 提交状态标记，防止重复提交
@@ -276,21 +277,22 @@ Page({
         if (value) {
           this.setData({
             todayRecyclePrice: value,
-            todayRecyclePriceText: `今日综合回收价 ${value} 元/公斤`
+            todayRecyclePriceText: '今日回收价格'
           })
           return
         }
       }
-      // 未配置价格时，保持为空，不展示卡片
+      // 未配置价格时，使用默认值0.65
       this.setData({
-        todayRecyclePrice: null,
-        todayRecyclePriceText: ''
+        todayRecyclePrice: '0.65',
+        todayRecyclePriceText: '今日回收价格'
       })
     } catch (e) {
       console.error('加载今日回收价格失败:', e)
+      // 获取失败时使用默认值
       this.setData({
-        todayRecyclePrice: null,
-        todayRecyclePriceText: ''
+        todayRecyclePrice: '0.65',
+        todayRecyclePriceText: '今日回收价格'
       })
     }
   },

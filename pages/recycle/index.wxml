@@ -66,10 +66,13 @@
       </view>
       <view class="price-main">
         <text class="price-value">{{todayRecyclePrice}}</text>
+        <text class="price-unit">元</text>
+        <text class="price-separator">-</text>
+        <text class="price-value">{{todayRecyclePriceMax}}</text>
         <text class="price-unit">元/公斤</text>
       </view>
       <view class="price-desc">
-        实际结算以上门称重后的综合价格为准
+        塑料瓶，易拉罐，其他金属类，单一品类超过10公斤，可以找小哥议价
       </view>
     </view>
 

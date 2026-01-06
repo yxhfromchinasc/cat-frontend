@@ -306,13 +306,13 @@
   display: flex;
   align-items: baseline;
   margin-bottom: 8rpx;
+  flex-wrap: wrap;
 }
 
 .price-value {
   font-size: 40rpx;
   font-weight: 700;
   color: #09ccb5;
-  margin-right: 8rpx;
 }
 
 .price-unit {
@@ -320,9 +320,17 @@
   color: #666;
 }
 
+.price-separator {
+  font-size: 28rpx;
+  color: #666;
+  margin: 0 4rpx;
+}
+
 .price-desc {
-  font-size: 22rpx;
-  color: #999;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.6;
+  margin-top: 8rpx;
 }
 
 .label {
