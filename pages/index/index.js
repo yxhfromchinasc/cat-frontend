@@ -22,7 +22,13 @@ Page({
     isCloseBtnLoading: false // 关闭按钮是否正在加载
   },
 
-  onLoad() {
+  onLoad(options) {
+    // 检查是否有邀请码参数
+    if (options && options.referralCode) {
+      // 保存邀请码到本地存储，用于注册时使用
+      wx.setStorageSync('pendingReferralCode', options.referralCode)
+    }
+    
     this.checkLoginStatus()
     this.loadActivityConfig()
     // 检查是否需要显示公告（仅在首次进入小程序时）

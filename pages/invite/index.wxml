@@ -1,0 +1,63 @@
+<!--pages/invite/index.wxml-->
+<view class="invite-page">
+  <!-- 上半部分：邀请奖励介绍 -->
+  <view class="invite-intro">
+    <view class="intro-title">邀请好友，获得奖励</view>
+    <view class="intro-content">
+      <text>邀请好友注册并完成首单，您将获得奖励</text>
+    </view>
+    
+    <!-- 邀请码展示区域 -->
+    <view class="invite-code-section">
+      <view class="code-label">我的邀请码：</view>
+      <view class="code-wrapper">
+        <text class="code-value">{{referralCode}}</text>
+        <view class="copy-btn" bindtap="copyReferralCode">
+          <text class="copy-text">复制</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 分享按钮 -->
+    <button class="share-btn" bindtap="onShareAppMessage">
+      <text class="share-text">分享邀请</text>
+    </button>
+  </view>
+
+  <!-- 下半部分：邀请记录列表 -->
+  <view class="invite-records">
+    <view class="records-title">邀请记录</view>
+    
+    <scroll-view 
+      class="records-list" 
+      scroll-y 
+      lower-threshold="50"
+      bindscrolltolower="loadMore" 
+      wx:if="{{recordList.length > 0 || loading}}"
+    >
+      <view class="record-item" wx:for="{{recordList}}" wx:key="refereeId">
+        <view class="record-info">
+          <view class="record-name">{{item.refereeNickname || '用户'}}</view>
+          <view class="record-phone">{{item.refereePhone || ''}}</view>
+        </view>
+        <view class="record-status status-{{item.rewardStatusCode}}">
+          {{item.rewardStatusText || item.rewardStatus}}
+        </view>
+      </view>
+      
+      <!-- 加载状态 -->
+      <view class="loading-more" wx:if="{{loading}}">
+        <text>加载中...</text>
+      </view>
+      <view class="no-more" wx:if="{{!hasMore && recordList.length > 0}}">
+        <text>没有更多了</text>
+      </view>
+    </scroll-view>
+    
+    <!-- 空状态 -->
+    <view class="empty" wx:if="{{recordList.length === 0 && !loading}}">
+      <text class="empty-icon">👥</text>
+      <text class="empty-text">暂无邀请记录</text>
+    </view>
+  </view>
+</view>

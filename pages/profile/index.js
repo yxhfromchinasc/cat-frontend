@@ -234,7 +234,17 @@ Page({
       api.showError('获取客服信息失败，请稍后重试')
     }
   },
-  goInvite(){ wx.navigateTo({ url: '/pages/placeholder/index' }) },
+  goInvite(){ 
+    // 检查是否登录
+    if (!this.data.isLogin) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      })
+      return
+    }
+    wx.navigateTo({ url: '/pages/invite/index' }) 
+  },
   goSettings(){ wx.navigateTo({ url: '/pages/settings/index' }) },
   goEditProfile(){ 
     if (!this.data.isLogin) {

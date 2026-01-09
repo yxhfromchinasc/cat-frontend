@@ -5,8 +5,8 @@
 
 // 基础配置
 const API_CONFIG = {
-  baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
-  // baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
+  // baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
+  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
 
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
@@ -393,6 +393,13 @@ function wechatLogin(loginData, code) {
     wechatUserInfo: loginData
   }
   
+  // 如果有邀请码，添加到请求数据中
+  if (loginData.referralCode) {
+    requestData.referralCode = loginData.referralCode
+    // 从wechatUserInfo中移除referralCode，避免重复
+    delete loginData.referralCode
+  }
+  
   return post('/login/wechat-miniprogram', requestData, {
     showSuccess: true,
     successMessage: '微信登录成功'
@@ -418,14 +425,26 @@ function decryptPhoneNumber(encryptedData, iv, code) {
 /**
  * 手机号验证码登录
  */
-function phoneSmsLogin(phone, verificationCode) {
-  return post('/login/phone-sms', {}, {
+function phoneSmsLogin(phone, verificationCode, referralCode) {
+  // 获取本地存储的邀请码（如果有）
+  const pendingReferralCode = referralCode || wx.getStorageSync('pendingReferralCode') || ''
+  
+  const requestData = {}
+  if (pendingReferralCode) {
+    requestData.referralCode = pendingReferralCode
+  }
+  
+  return post('/login/phone-sms', requestData, {
     url: `/login/phone-sms?phone=${phone}&verificationCode=${verificationCode}`,
     showSuccess: true,
     successMessage: '登录成功'
   }).then(result => {
     if (result.success && result.data.accessToken) {
       setToken(result.data.accessToken)
+      // 登录成功后清除邀请码
+      if (pendingReferralCode) {
+        wx.removeStorageSync('pendingReferralCode')
+      }
     }
     return result
   })
@@ -1244,6 +1263,14 @@ module.exports = {
   calculateCouponDiscountByOrder,
   getUserCouponReceiveCount,
   getCouponDetail,
+  
+  // 邀请相关
+  getMyReferralCode() {
+    return get('/referral/my-code', {}, { showLoading: false, showError: false })
+  },
+  getReferralRecords(params) {
+    return post('/referral/records', params, { showLoading: false, showError: false })
+  },
   
   // 订单相关
   getOrderList,

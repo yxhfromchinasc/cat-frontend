@@ -120,14 +120,24 @@ Page({
           // 构建用户信息
           const userInfo = this.buildUserInfo(res.userInfo)
           
+          // 获取本地存储的邀请码（如果有）
+          const referralCode = wx.getStorageSync('pendingReferralCode') || ''
+          
           // 构建登录数据（首次登录不带手机号）
           const loginData = this.buildLoginData(userInfo)
+          if (referralCode) {
+            loginData.referralCode = referralCode
+          }
           
           // 首次登录请求（不带手机号）
           const result = await api.wechatLogin(loginData, code)
           this.setData({ loading: false })
 
           if (result.success) {
+            // 登录成功后清除邀请码
+            if (referralCode) {
+              wx.removeStorageSync('pendingReferralCode')
+            }
             // 登录成功，处理结果
             this.handleLoginSuccess(result.data)
           } else {
@@ -229,10 +239,21 @@ Page({
           const loginRes = await wx.login()
           const loginCode = loginRes.code
           
+          // 获取本地存储的邀请码（如果有）
+          const referralCode = wx.getStorageSync('pendingReferralCode') || ''
+          
           // 重新调用登录接口，带上手机号
           const loginData = this.buildLoginData(userInfo, decryptResult.data.phone)
+          if (referralCode) {
+            loginData.referralCode = referralCode
+          }
           
           const result = await api.wechatLogin(loginData, loginCode)
+          
+          // 登录成功后清除邀请码
+          if (result.success && referralCode) {
+            wx.removeStorageSync('pendingReferralCode')
+          }
           this.setData({ loading: false })
           
           if (result.success) {
