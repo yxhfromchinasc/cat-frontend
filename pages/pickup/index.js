@@ -46,6 +46,7 @@ Page({
     checkingAvailability: false, // 是否正在检查可用性
     showTimePickerModal: false, // 是否显示时间选择器弹窗
     urgentTipText: '', // 立即上门提示文案
+    isUrgentDisabled: false, // 立即上门开关是否禁用（不在营业时间内时禁用）
 
     // 快递单价相关（从系统设置获取）
     
@@ -85,6 +86,11 @@ Page({
     
     // 初始化时间选择器
     this.initTimeSlots()
+    
+    // 如果有选中的驿站，检查当前时间是否在营业时间内
+    if (this.data.selectedStationId) {
+      this.checkIfInBusinessHours()
+    }
   },
 
   // 加载备注快捷选项
@@ -384,6 +390,11 @@ Page({
     // 如果已选择驿站，则检查可用性；否则在驿站选择后会自动检查
     if (this.data.selectedStationId) {
       this.checkAllTimeSlotsAvailability()
+      // 检查当前时间是否在营业时间内，更新立即上门开关状态
+      this.checkIfInBusinessHours()
+    } else {
+      // 如果没有选中驿站，禁用立即上门开关
+      this.setData({ isUrgentDisabled: true })
     }
     
     // 默认选择第一个可用时间段
@@ -523,6 +534,8 @@ Page({
         if (selectedStationId) {
           this.initTimeSlots()
           this.checkAllTimeSlotsAvailability()
+          // 检查当前时间是否在营业时间内，更新立即上门开关状态
+          this.checkIfInBusinessHours()
         }
       } else {
         // 如果没有数据，设置为空数组
@@ -568,6 +581,14 @@ Page({
       // 重新初始化时间段（使用新驿站的营业时间）
       this.initTimeSlots()
       this.checkAllTimeSlotsAvailability()
+      // 检查当前时间是否在营业时间内，更新立即上门开关状态
+      this.checkIfInBusinessHours()
+      // 如果不在营业时间内，关闭立即上门开关
+      if (this.data.isUrgentDisabled && this.data.form.isUrgent) {
+        this.setData({
+          'form.isUrgent': false
+        })
+      }
     }
   },
 
@@ -709,8 +730,53 @@ Page({
     }
   },
 
+  // 检查当前时间是否在营业时间内
+  checkIfInBusinessHours() {
+    const now = new Date()
+    const currentHour = now.getHours()
+    const currentMinute = now.getMinutes()
+    const currentMinutes = currentHour * 60 + currentMinute
+    
+    // 获取营业时间范围
+    let startTime = '08:00'
+    let endTime = '20:00'
+    
+    if (this.data.selectedStationId && this.data.stationList && this.data.stationList.length > 0) {
+      const selectedStation = this.data.stationList.find(s => s.id === this.data.selectedStationId)
+      if (selectedStation && selectedStation.startTime && selectedStation.endTime) {
+        startTime = selectedStation.startTime.substring(0, 5) // HH:mm
+        endTime = selectedStation.endTime.substring(0, 5) // HH:mm
+      }
+    }
+    
+    // 解析营业时间
+    const [startHour, startMin] = startTime.split(':').map(Number)
+    const [endHour, endMin] = endTime.split(':').map(Number)
+    const startMinutes = startHour * 60 + startMin
+    const endMinutes = endHour * 60 + endMin
+    
+    // 判断当前时间是否在营业时间内
+    const isInBusinessHours = currentMinutes >= startMinutes && currentMinutes < endMinutes
+    
+    this.setData({ isUrgentDisabled: !isInBusinessHours })
+    
+    return isInBusinessHours
+  },
+
   // 显示立即上门提示
   showUrgentTip() {
+    // 如果不在营业时间内，显示特殊提示
+    if (this.data.isUrgentDisabled) {
+      wx.showModal({
+        title: '提示',
+        content: '不在营业时间',
+        showCancel: false,
+        confirmText: '知道了'
+      })
+      return
+    }
+    
+    // 正常显示立即上门服务说明
     const tipText = this.data.urgentTipText || '立即上门服务说明'
     wx.showModal({
       title: '提示',
@@ -883,6 +949,19 @@ Page({
 
   // 加急开关变化处理
   onUrgentSwitchChange(e) {
+    // 如果开关被禁用，不允许操作
+    if (this.data.isUrgentDisabled) {
+      wx.showToast({
+        title: '不在营业时间',
+        icon: 'none'
+      })
+      // 重置开关状态
+      this.setData({
+        'form.isUrgent': false
+      })
+      return
+    }
+    
     const isUrgent = e.detail.value
     
     // 如果用户要开启立即上门，显示二次确认

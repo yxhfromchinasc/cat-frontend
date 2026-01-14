@@ -3,25 +3,51 @@
   <!-- 上半部分：邀请奖励介绍 -->
   <view class="invite-intro">
     <view class="intro-title">邀请好友，获得奖励</view>
-    <view class="intro-content">
-      <text>邀请好友注册并完成首单，您将获得奖励</text>
-    </view>
     
-    <!-- 邀请码展示区域 -->
-    <view class="invite-code-section">
-      <view class="code-label">我的邀请码：</view>
-      <view class="code-wrapper">
-        <text class="code-value">{{referralCode}}</text>
-        <view class="copy-btn" bindtap="copyReferralCode">
-          <text class="copy-text">复制</text>
+    <!-- 返现规则卡片 -->
+    <view class="reward-rules-card">
+      <view class="rules-title">返现规则</view>
+      <view class="rules-content">
+        <view class="rule-item">
+          <view class="rule-step">1</view>
+          <view class="rule-text">
+            <text class="rule-text-bold">分享邀请</text>
+            <text class="rule-text-desc">将邀请链接分享给好友或朋友圈</text>
+          </view>
+        </view>
+        <view class="rule-item">
+          <view class="rule-step">2</view>
+          <view class="rule-text">
+            <text class="rule-text-bold">好友注册</text>
+            <text class="rule-text-desc">好友通过您的邀请链接注册</text>
+          </view>
+        </view>
+        <view class="rule-item">
+          <view class="rule-step">3</view>
+          <view class="rule-text">
+            <text class="rule-text-bold">完成首单</text>
+            <text class="rule-text-desc">好友首次完成回收/快递订单</text>
+          </view>
+        </view>
+        <view class="rule-item rule-item-reward">
+          <view class="reward-icon">💰</view>
+          <view class="rule-text">
+            <text class="rule-text-bold">获得奖励</text>
+            <text class="reward-amount">¥{{rewardAmount}}</text>
+          </view>
         </view>
       </view>
     </view>
     
-    <!-- 分享按钮 -->
-    <button class="share-btn" bindtap="onShareAppMessage">
-      <text class="share-text">分享邀请</text>
-    </button>
+    <!-- 分享按钮组 -->
+    <view class="share-buttons">
+      <button class="share-btn share-btn-friend" open-type="share">
+        <text class="share-text">分享给好友</text>
+      </button>
+      <button class="share-btn share-btn-moments" bindtap="shareToMoments">
+        <text class="share-text">分享到朋友圈</text>
+      </button>
+    </view>
   </view>
 
   <!-- 下半部分：邀请记录列表 -->
@@ -40,8 +66,13 @@
           <view class="record-name">{{item.refereeNickname || '用户'}}</view>
           <view class="record-phone">{{item.refereePhone || ''}}</view>
         </view>
-        <view class="record-status status-{{item.rewardStatusCode}}">
-          {{item.rewardStatusText || item.rewardStatus}}
+        <view class="record-right">
+          <view class="record-amount" wx:if="{{item.rewardAmount}}">
+            ¥{{item.rewardAmount}}
+          </view>
+          <view class="record-status status-{{item.rewardStatusCode}}">
+            {{item.rewardStatusText || item.rewardStatus}}
+          </view>
         </view>
       </view>
       
@@ -58,6 +89,22 @@
     <view class="empty" wx:if="{{recordList.length === 0 && !loading}}">
       <text class="empty-icon">👥</text>
       <text class="empty-text">暂无邀请记录</text>
+    </view>
+  </view>
+
+  <!-- 分享到朋友圈提示遮罩 -->
+  <view class="share-mask" wx:if="{{showShareMask}}" bindtap="closeShareMask">
+    <!-- 右上角指向图片 -->
+    <view class="guide-point" catchtap="">
+      <image class="arrow-icon-img" src="/assets/tabbar/transfer-out.png" mode="aspectFit"></image>
+      <view class="tip-text-top">
+        <text class="tip-line">1、点击右上角 ···</text>
+        <text class="tip-line">2、点击"分享到朋友圈"</text>
+      </view>
+      <!-- 确认按钮 -->
+      <view class="guide-btn" bindtap="closeShareMask" catchtap="">
+        <text class="confirm-text">我知道了!</text>
+      </view>
     </view>
   </view>
 </view>

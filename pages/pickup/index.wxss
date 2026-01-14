@@ -453,6 +453,10 @@
   flex-shrink: 0;
 }
 
+.disabled-text {
+  color: #c0c4cc;
+}
+
 /* 快递计价卡片，与回收价格卡片风格统一 */
 .price-card {
   margin-top: 16rpx;

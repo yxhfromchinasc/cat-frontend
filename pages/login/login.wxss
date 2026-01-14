@@ -54,6 +54,46 @@ page {
   font-weight: 400;
 }
 
+/* 邀请人信息展示（拉新专属） */
+.referrer-info-section {
+  width: 100%;
+  margin-bottom: 40rpx;
+}
+
+.referrer-info-card {
+  background: linear-gradient(135deg, #09ccb5 0%, #08b8a3 100%);
+  border-radius: 16rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 12rpx rgba(9, 204, 181, 0.2);
+}
+
+.referrer-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.referrer-info-label {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  letter-spacing: 1rpx;
+}
+
+.referrer-info-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.5;
+}
+
+.referrer-info-desc {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+  margin-top: 4rpx;
+}
+
 /* 登录按钮区域 */
 .login-section {
   width: 100%;

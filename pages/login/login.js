@@ -9,7 +9,10 @@ Page({
     redirect: '',
     loading: false,
     loadingText: '处理中...',
-    agreedProtocol: false // 是否同意协议
+    agreedProtocol: false, // 是否同意协议
+    referralCode: '', // 邀请码
+    referrerInfo: null, // 邀请人信息
+    showReferrerInfo: false // 是否显示邀请人信息
   },
 
   onLoad(options) {
@@ -17,6 +20,24 @@ Page({
     if (options && options.redirect) {
       this.setData({ redirect: decodeURIComponent(options.redirect) })
     }
+    
+    // 读取邀请码参数
+    if (options && options.referralCode) {
+      const referralCode = options.referralCode
+      this.setData({ referralCode })
+      // 存储邀请码到本地，确保浏览其他页面后仍能使用
+      wx.setStorageSync('pendingReferralCode', referralCode)
+      // 查询邀请人信息
+      this.loadReferrerInfo(referralCode)
+    } else {
+      // 如果没有URL参数，尝试从本地存储读取
+      const storedReferralCode = wx.getStorageSync('pendingReferralCode')
+      if (storedReferralCode) {
+        this.setData({ referralCode: storedReferralCode })
+        this.loadReferrerInfo(storedReferralCode)
+      }
+    }
+    
     // 检查是否已登录
     this.checkLoginStatus()
   },
@@ -121,7 +142,7 @@ Page({
           const userInfo = this.buildUserInfo(res.userInfo)
           
           // 获取本地存储的邀请码（如果有）
-          const referralCode = wx.getStorageSync('pendingReferralCode') || ''
+          const referralCode = this.data.referralCode || wx.getStorageSync('pendingReferralCode') || ''
           
           // 构建登录数据（首次登录不带手机号）
           const loginData = this.buildLoginData(userInfo)
@@ -240,7 +261,7 @@ Page({
           const loginCode = loginRes.code
           
           // 获取本地存储的邀请码（如果有）
-          const referralCode = wx.getStorageSync('pendingReferralCode') || ''
+          const referralCode = this.data.referralCode || wx.getStorageSync('pendingReferralCode') || ''
           
           // 重新调用登录接口，带上手机号
           const loginData = this.buildLoginData(userInfo, decryptResult.data.phone)
@@ -428,6 +449,34 @@ Page({
     } else {
       // 如果没有上一页，则跳转到首页
       wx.switchTab({ url: '/pages/index/index' })
+    }
+  },
+
+  // 加载邀请人信息
+  async loadReferrerInfo(referralCode) {
+    if (!referralCode) return
+    
+    try {
+      const res = await api.getReferrerInfoByCode(referralCode)
+      if (res && res.success && res.data) {
+        this.setData({
+          referrerInfo: res.data,
+          showReferrerInfo: true
+        })
+      } else {
+        // 邀请码无效，清除本地存储
+        wx.removeStorageSync('pendingReferralCode')
+        this.setData({
+          referralCode: '',
+          showReferrerInfo: false
+        })
+      }
+    } catch (e) {
+      console.error('获取邀请人信息失败:', e)
+      // 获取失败不影响登录流程，只隐藏邀请人信息
+      this.setData({
+        showReferrerInfo: false
+      })
     }
   }
 })

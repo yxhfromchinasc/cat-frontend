@@ -352,10 +352,10 @@ Page({
     }
   },
 
-  // 跳转到服务点地图页面
-  goToServicePoint() {
+  // 跳转到邀请好友页面
+  goToInvite() {
     wx.navigateTo({
-      url: '/pages/service-point/index'
+      url: '/pages/invite/index'
     })
   },
 

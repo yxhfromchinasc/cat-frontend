@@ -62,9 +62,9 @@
       </view>
     </view>
 
-    <!-- 查看附近服务点链接 -->
-    <view class="service-point-link" bindtap="goToServicePoint">
-      <text>查看附近服务点>></text>
+    <!-- 邀请好友链接 -->
+    <view class="service-point-link" bindtap="goToInvite">
+      <text>邀请好友得奖励>></text>
     </view>
 
     <!-- 下方：竖版卡片区域 -->

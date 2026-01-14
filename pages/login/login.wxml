@@ -9,6 +9,17 @@
     <view class="subtitle">INSTANT DOOR SERVICE</view>
   </view>
 
+  <!-- 邀请人信息展示（拉新专属） -->
+  <view class="referrer-info-section" wx:if="{{showReferrerInfo && referrerInfo}}">
+    <view class="referrer-info-card">
+      <view class="referrer-info-content">
+        <view class="referrer-info-label">好友邀请</view>
+        <view class="referrer-info-title">{{referrerInfo.referrerNickname}} 邀请您加入</view>
+        <view class="referrer-info-desc">注册即可获得新人奖励</view>
+      </view>
+    </view>
+  </view>
+
   <!-- 登录按钮区域 -->
   <view class="login-section">
     <button class="wechat-btn" hover-class="wechat-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="wechatLogin">
