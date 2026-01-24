@@ -11,12 +11,15 @@ Page({
     balance: null,
     balanceStr: '0.00',
     loading: true,
-    withdrawAmounts: [] // 允许的提现金额列表
+    withdrawAmounts: [], // 允许的提现金额列表
+    allowFullWithdraw: false, // 是否允许全部提现
+    isFullWithdraw: false // 是否选择了全部提现
   },
 
   onLoad() {
     this.loadBalance()
     this.loadWithdrawAmounts()
+    this.loadAllowFullWithdraw()
   },
 
   onShow() {},
@@ -52,6 +55,19 @@ Page({
       this.setData({ withdrawAmounts: formattedAmounts })
   },
 
+  // 加载是否允许全部提现配置
+  async loadAllowFullWithdraw() {
+    try {
+      const res = await api.getAllowFullWithdraw()
+      if (res && res.success && res.data) {
+        const allowFullWithdraw = res.data === 'true' || res.data === true
+        this.setData({ allowFullWithdraw })
+      }
+    } catch (e) {
+      console.error('加载全部提现配置失败:', e)
+    }
+  },
+
   // 已移除 onAmountInput 方法，用户只能从预设金额中选择
 
   // 快捷选择金额
@@ -60,7 +76,30 @@ Page({
     const value = val.toFixed(2)
     const amountStr = amount.formatAmount(val)
     // 从预设金额中选择，直接设置为有效
-    this.setData({ amount: value, amountStr, canSubmit: true })
+    // 检查是否是全部提现（金额等于余额）
+    const balanceValue = this.data.balance ? Number(this.data.balance.toFixed(2)) : 0
+    const selectedValue = Number(value)
+    const isFullWithdraw = this.data.balance && balanceValue > 0 && selectedValue === balanceValue
+    this.setData({ amount: value, amountStr, canSubmit: true, isFullWithdraw: !!isFullWithdraw })
+  },
+
+  // 全部提现
+  onFullWithdraw() {
+    const balanceNum = this.data.balance
+    if (!balanceNum || balanceNum <= 0) {
+      wx.showToast({ title: '余额不足', icon: 'none' })
+      return
+    }
+    // 确保balanceNum是数字类型
+    const balance = Number(balanceNum)
+    const balanceValue = balance.toFixed(2)
+    const balanceStr = amount.formatAmount(balance)
+    this.setData({ 
+      amount: balanceValue, 
+      amountStr: balanceStr, 
+      canSubmit: true,
+      isFullWithdraw: true
+    })
   },
 
   // 确认提现：创建订单并跳转到订单详情页

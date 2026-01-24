@@ -5,8 +5,8 @@
 
 // 基础配置
 const API_CONFIG = {
-  baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
-  // baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
+  // baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
+  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
 
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
@@ -539,6 +539,11 @@ function getNearestAddress(latitude, longitude) {
   // 获取提现金额配置列表
   function getWithdrawAmounts() {
     return get('/config/withdraw-amounts', {}, { showLoading: false, showError: false })
+  }
+
+  // 获取是否允许全部提现配置
+  function getAllowFullWithdraw() {
+    return get('/config/allow-full-withdraw', {}, { showLoading: false, showError: false })
   }
 
   // 获取充值金额配置列表
@@ -1220,6 +1225,7 @@ module.exports = {
   getPublicConfigs,
   getCustomerServicePhone,
   getWithdrawAmounts,
+  getAllowFullWithdraw,
   getRechargeAmounts,
   getShareImage,
   getSharePath,

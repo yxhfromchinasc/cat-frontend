@@ -28,6 +28,14 @@
       >
         ¥{{item.display}}
       </view>
+      <view 
+        wx:if="{{allowFullWithdraw && balance > 0}}"
+        class="amount-btn full-withdraw-btn {{isFullWithdraw ? 'active' : ''}}" 
+        bindtap="onFullWithdraw"
+      >
+        <view class="full-withdraw-label">全部提现</view>
+        <view class="limited-badge">限时</view>
+      </view>
     </view>
     <button class="pay-btn" type="primary" loading="{{submitting}}" disabled="{{!canSubmit || submitting}}" bindtap="onWithdraw">确认提现</button>
   </view>
