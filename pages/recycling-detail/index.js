@@ -348,6 +348,13 @@ Page({
     } catch (e) {
       console.error('取消订单异常:', e)
     }
+  },
+
+  // 点击联系按钮
+  onContactTap() {
+    wx.navigateTo({
+      url: `/pages/chat/index?orderNo=${this.data.orderNo}`
+    })
   }
 })
 

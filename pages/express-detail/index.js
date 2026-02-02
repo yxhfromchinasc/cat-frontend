@@ -141,6 +141,14 @@ Page({
         const act = amount.parseBigDecimalLike(actSrc, 0)
         const disc = Math.max(0, amount.parseBigDecimalLike(discSrc, 0))
 
+        // 调试：打印联系按钮相关的数据
+        console.log('=== 联系按钮显示条件检查 ===')
+        console.log('courierId:', detail.courierId)
+        console.log('expressStatus:', detail.expressStatus)
+        console.log('orderStatus:', detail.orderStatus)
+        const canShowContact = detail.courierId && detail.expressStatus >= 2 && detail.expressStatus <= 7 && detail.expressStatus !== 5 && detail.expressStatus !== 6
+        console.log('显示条件结果:', canShowContact)
+        
         this.setData({
           orderDetail: detail,
           amountStr: amountStr,
@@ -520,6 +528,13 @@ Page({
     } catch (e) {
       console.error('取消订单异常:', e)
     }
+  },
+
+  // 点击联系按钮
+  onContactTap() {
+    wx.navigateTo({
+      url: `/pages/chat/index?orderNo=${this.data.orderNo}`
+    })
   }
 })
 

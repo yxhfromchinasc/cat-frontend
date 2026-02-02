@@ -188,6 +188,7 @@
   margin-left: auto;
   display: flex;
   align-items: center;
+  gap: 16rpx;
 }
 
 .phone-btn {
@@ -203,6 +204,21 @@
 .phone-icon {
   width: 32rpx;
   height: 32rpx;
+}
+
+.contact-btn-small {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 32rpx;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contact-icon-small {
+  width: 36rpx;
+  height: 36rpx;
 }
 
 /* 时间线滚动区域 */
@@ -472,4 +488,5 @@
   font-size: 28rpx;
   color: #999;
 }
+
 

@@ -5,8 +5,8 @@
 
 // 基础配置
 const API_CONFIG = {
-  baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
-  // baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
+  // baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
+  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
 
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
@@ -1394,5 +1394,68 @@ module.exports = {
    */
   hideAnnouncementToday(announcementId) {
     return post('/announcement/hide', { announcementId }, { showLoading: false, showError: false })
+  },
+
+  // ========== 聊天相关 ==========
+  /**
+   * 获取用户会话列表
+   */
+  getConversationList() {
+    return post('/conversation/list', {}, { showLoading: false, showError: false })
+  },
+
+  /**
+   * 获取会话详情
+   * @param {number} conversationId 会话ID
+   */
+  getConversationDetail(conversationId) {
+    return get('/conversation/detail', { conversationId }, { showLoading: false, showError: false })
+  },
+
+  /**
+   * 创建会话（根据订单号）
+   * @param {string} orderNo 订单号
+   */
+  createConversation(orderNo) {
+    return post('/conversation/create', { orderNo }, { showLoading: true, showError: true })
+  },
+
+  /**
+   * 发送消息
+   * @param {Object} data 消息数据
+   * @param {number} data.conversationId 会话ID
+   * @param {number} data.messageType 消息类型（1-文本，2-图片，3-位置）
+   * @param {string} data.content 文本内容（文本消息）
+   * @param {string} data.imageUrl 图片URL（图片消息）
+   * @param {number} data.locationLatitude 位置纬度（位置消息）
+   * @param {number} data.locationLongitude 位置经度（位置消息）
+   * @param {string} data.locationAddress 位置地址（位置消息）
+   */
+  sendMessage(data) {
+    return post('/message/send', data, { showLoading: false, showError: true })
+  },
+
+  /**
+   * 获取消息列表
+   * @param {Object} params 查询参数
+   * @param {number} params.conversationId 会话ID
+   * @param {number} params.pageNum 页码（从1开始）
+   * @param {number} params.pageSize 页大小
+   */
+  getMessageList(params) {
+    const { conversationId, pageNum = 1, pageSize = 20 } = params
+    return post('/message/list', {
+      conversationId,
+      pageNum,
+      pageSize
+    }, { showLoading: false, showError: false })
+  },
+
+  /**
+   * 标记消息已读
+   * @param {number} conversationId 会话ID
+   */
+  markAsRead(conversationId) {
+    return post('/message/read', { conversationId }, { showLoading: false, showError: false })
   }
 }

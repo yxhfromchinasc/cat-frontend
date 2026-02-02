@@ -35,9 +35,12 @@
         <text class="courier-desc">业务员</text>
       </view>
     </view>
-    <view class="courier-actions" wx:if="{{orderDetail.courierPhone}}">
-      <view class="phone-btn" bindtap="callCourier" data-phone="{{orderDetail.courierPhone}}">
+    <view class="courier-actions" wx:if="{{orderDetail.courierPhone || orderDetail.courierId}}">
+      <view class="phone-btn" wx:if="{{orderDetail.courierPhone}}" bindtap="callCourier" data-phone="{{orderDetail.courierPhone}}">
         <image class="phone-icon" src="/assets/tabbar/call.png" mode="aspectFit" />
+      </view>
+      <view class="contact-btn-small" wx:if="{{orderDetail.courierId}}" bindtap="onContactTap">
+        <image class="contact-icon-small" src="/assets/tabbar/会话.svg" mode="aspectFit" />
       </view>
     </view>
   </view>

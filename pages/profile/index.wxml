@@ -18,6 +18,13 @@
       <text class="menu-arrow">›</text>
     </view>
 
+    <!-- 消息中心 -->
+    <view class="menu-item" bindtap="goConversationList">
+      <image class="menu-icon" src="/assets/tabbar/客服.png" mode="aspectFit"></image>
+      <text class="menu-label">消息中心</text>
+      <text class="menu-arrow">›</text>
+    </view>
+
     <!-- 卡券中心 -->
     <view class="menu-item" bindtap="goCouponCenter">
       <image class="menu-icon" src="/assets/tabbar/优惠券.png" mode="aspectFit"></image>

@@ -184,6 +184,13 @@ Page({
   goRecharge(){ wx.navigateTo({ url: '/pages/recharge/recharge' }) },
   goBindPhone(){ wx.navigateTo({ url: '/pages/bind-phone/bind-phone' }) },
   goWallet(){ wx.navigateTo({ url: '/pages/wallet/index' }) },
+  goConversationList(){ 
+    if (!this.data.isLogin) {
+      wx.showToast({ title: '请先登录', icon: 'none' })
+      return
+    }
+    wx.navigateTo({ url: '/pages/conversation-list/index' }) 
+  },
 
   // 地址管理已实现
   goAddress(){ wx.navigateTo({ url: '/pages/address/index' }) },

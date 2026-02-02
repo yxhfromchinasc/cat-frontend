@@ -1,0 +1,180 @@
+<!-- pages/chat/index.wxml -->
+<view class="page">
+  <!-- 消息列表 -->
+  <scroll-view 
+    id="message-list"
+    class="message-list" 
+    scroll-y="{{true}}"
+    scroll-top="{{scrollTop}}"
+    scroll-into-view="{{scrollIntoView}}"
+    bindscroll="onScroll"
+    bindscrolltolower="onReachBottom">
+    
+    <view class="message-item" wx:for="{{messageList}}" wx:key="id" wx:for-item="msg">
+      <!-- 消息气泡 -->
+      <!-- 对方消息：头像在左，内容在右 -->
+      <view class="message-bubble other" wx:if="{{!msg.isMine}}">
+        <image 
+          class="avatar" 
+          src="{{conversation.otherUser.avatarUrl || '/assets/tabbar/profile.png'}}" 
+          mode="aspectFill"></image>
+        
+        <view class="content-wrapper">
+          <view class="content">
+            <!-- 文本消息 -->
+            <view wx:if="{{msg.messageType === 1}}" class="text-message">
+              <text>{{msg.content}}</text>
+            </view>
+            
+            <!-- 图片消息 -->
+            <view wx:if="{{msg.messageType === 2}}" class="image-message">
+              <image 
+                src="{{msg.imageUrl}}" 
+                mode="widthFix"
+                bindtap="previewImage"
+                data-url="{{msg.imageUrl}}"></image>
+            </view>
+            
+            <!-- 位置消息 -->
+            <view wx:if="{{msg.messageType === 3}}" class="location-message" bindtap="openLocation" 
+                  data-latitude="{{msg.locationLatitude}}" 
+                  data-longitude="{{msg.locationLongitude}}" 
+                  data-address="{{msg.locationAddress}}">
+              <view class="location-icon">📍</view>
+              <view class="location-info">
+                <text class="location-name">{{msg.locationAddress || '位置'}}</text>
+                <text class="location-hint">点击查看位置</text>
+              </view>
+            </view>
+          </view>
+          <!-- 消息时间 -->
+          <view class="message-time" wx:if="{{msg.timeFormatted}}">
+            <text>{{msg.timeFormatted}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 我的消息：内容在左，头像在右 -->
+      <view class="message-bubble mine" wx:if="{{msg.isMine}}">
+        <view class="content-wrapper">
+          <view class="content">
+            <!-- 文本消息 -->
+            <view wx:if="{{msg.messageType === 1}}" class="text-message">
+              <text>{{msg.content}}</text>
+            </view>
+            
+            <!-- 图片消息 -->
+            <view wx:if="{{msg.messageType === 2}}" class="image-message">
+              <image 
+                src="{{msg.imageUrl}}" 
+                mode="widthFix"
+                bindtap="previewImage"
+                data-url="{{msg.imageUrl}}"></image>
+            </view>
+            
+            <!-- 位置消息 -->
+            <view wx:if="{{msg.messageType === 3}}" class="location-message" bindtap="openLocation" 
+                  data-latitude="{{msg.locationLatitude}}" 
+                  data-longitude="{{msg.locationLongitude}}" 
+                  data-address="{{msg.locationAddress}}">
+              <view class="location-icon">📍</view>
+              <view class="location-info">
+                <text class="location-name">{{msg.locationAddress || '位置'}}</text>
+                <text class="location-hint">点击查看位置</text>
+              </view>
+            </view>
+          </view>
+          <!-- 消息时间 -->
+          <view class="message-time" wx:if="{{msg.timeFormatted}}">
+            <text>{{msg.timeFormatted}}</text>
+          </view>
+        </view>
+        
+        <image 
+          class="avatar" 
+          src="{{currentUserAvatar || '/assets/tabbar/profile.png'}}" 
+          mode="aspectFill"></image>
+      </view>
+    </view>
+    
+    <!-- 空状态 -->
+    <view class="empty" wx:if="{{!loading && messageList.length === 0}}">
+      <text>暂无消息</text>
+    </view>
+    
+    <!-- 加载更多 -->
+    <view class="loading-more" wx:if="{{loading && !hasMore}}">
+      <text>加载中...</text>
+    </view>
+  </scroll-view>
+  
+  <!-- 输入工具栏 -->
+  <view class="input-bar" wx:if="{{conversation && conversation.isClosed !== 1}}">
+    <!-- 输入栏 -->
+    <view class="input-row">
+      <textarea 
+        class="input" 
+        placeholder="输入消息..." 
+        value="{{inputValue}}"
+        bindinput="onInput"
+        confirm-type="send"
+        bindconfirm="sendTextMessage"
+        auto-height="{{true}}"
+        maxlength="{{500}}"
+        show-confirm-bar="{{false}}"
+        cursor-spacing="{{0}}"></textarea>
+      <!-- 有输入内容时显示发送按钮，否则显示展开/收起按钮 -->
+      <view 
+        class="add-btn {{showMoreTools ? 'collapsed' : ''}}" 
+        wx:if="{{!hasInput}}"
+        bindtap="toggleMoreTools">
+        <image class="add-icon" src="{{showMoreTools ? '/assets/tabbar/减号.svg' : '/assets/tabbar/展开.svg'}}" mode="aspectFit"></image>
+      </view>
+      <button 
+        class="send-btn" 
+        wx:if="{{hasInput}}"
+        bindtap="sendTextMessage" 
+        disabled="{{sending}}">
+        <image class="send-icon" src="/assets/tabbar/发送.svg" mode="aspectFit"></image>
+      </button>
+    </view>
+    
+    <!-- 扩展工具栏（点击加号后展开） -->
+    <view class="more-tools {{showMoreTools ? 'show' : ''}}">
+      <view class="tool-item" bindtap="chooseImage">
+        <view class="tool-icon-wrapper">
+          <image class="tool-icon" src="/assets/tabbar/照片.png" mode="aspectFit"></image>
+        </view>
+        <text class="tool-label">照片</text>
+      </view>
+      <view class="tool-item" bindtap="chooseLocation">
+        <view class="tool-icon-wrapper">
+          <image class="tool-icon" src="/assets/tabbar/定位.png" mode="aspectFit"></image>
+        </view>
+        <text class="tool-label">位置</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 会话已关闭提示 -->
+  <view class="closed-tip" wx:if="{{conversation && conversation.isClosed === 1}}">
+    <text>订单已结束，无法发送消息</text>
+  </view>
+  
+  <!-- 图片预览确认弹窗 -->
+  <view class="image-preview-modal" wx:if="{{showImagePreview}}" bindtap="closeImagePreview">
+    <view class="image-preview-popup" catchtap="stopPropagation">
+      <view class="image-preview-header">
+        <text class="image-preview-title">预览图片</text>
+        <text class="image-preview-close" bindtap="closeImagePreview">×</text>
+      </view>
+      <view class="image-preview-content">
+        <image class="image-preview-img" src="{{previewImagePath}}" mode="aspectFit"></image>
+      </view>
+      <view class="image-preview-footer">
+        <button class="image-preview-btn cancel-btn" bindtap="closeImagePreview">取消</button>
+        <button class="image-preview-btn confirm-btn" bindtap="confirmSendImage">发送</button>
+      </view>
+    </view>
+  </view>
+</view>

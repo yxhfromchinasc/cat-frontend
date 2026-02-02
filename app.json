@@ -30,7 +30,9 @@
     "pages/service-point/index",
     "pages/image-content/index",
     "pages/activity/index",
-    "pages/invite/index"
+    "pages/invite/index",
+    "pages/conversation-list/index",
+    "pages/chat/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",
