@@ -127,26 +127,24 @@ Page({
   async createConversationFromOrder(orderNo) {
     try {
       wx.showLoading({ title: '创建会话中...' })
-      
       const res = await api.createConversation(orderNo)
-      
       wx.hideLoading()
-      
       if (res.success && res.data) {
-        this.setData({ 
+        this.setData({
           conversationId: res.data.id,
           conversation: res.data
         })
         this.loadConversationDetail()
       } else {
-        wx.showToast({ title: res.message || '创建会话失败', icon: 'none' })
-        setTimeout(() => wx.navigateBack(), 1500)
+        const msg = res.message || res.error || '创建会话失败'
+        wx.showToast({ title: msg, icon: 'none', duration: 2000 })
+        setTimeout(() => wx.navigateBack(), 2000)
       }
     } catch (e) {
       wx.hideLoading()
-      console.error('创建会话失败:', e)
-      wx.showToast({ title: '创建会话失败', icon: 'none' })
-      setTimeout(() => wx.navigateBack(), 1500)
+      const msg = (e && (e.message || e.error)) || '创建会话失败'
+      wx.showToast({ title: msg, icon: 'none', duration: 2000 })
+      setTimeout(() => wx.navigateBack(), 2000)
     }
   },
 

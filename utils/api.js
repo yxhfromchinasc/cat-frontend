@@ -1419,7 +1419,7 @@ module.exports = {
    * @param {string} orderNo 订单号
    */
   createConversation(orderNo) {
-    return post('/conversation/create', { orderNo }, { showLoading: true, showError: true })
+    return post('/conversation/create', { orderNo }, { showLoading: false, showError: false })
   },
 
   /**
