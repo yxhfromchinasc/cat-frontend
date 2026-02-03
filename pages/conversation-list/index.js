@@ -1,8 +1,11 @@
 // pages/conversation-list/index.js
 const { api } = require('../../utils/util.js')
 
+const ORDER_STATUS = { IN_PROGRESS: 1, COMPLETED: 2 }
+
 Page({
   data: {
+    activeTab: 0,
     conversationList: [],
     loading: false,
     pollTimer: null,
@@ -11,6 +14,17 @@ Page({
 
   onLoad() {
     this.loadConversationList()
+  },
+
+  onTabChange(e) {
+    const index = parseInt(e.currentTarget.dataset.index, 10)
+    if (this.data.activeTab === index) return
+    this.setData({ activeTab: index, conversationList: [] })
+    this.loadConversationList()
+  },
+
+  getOrderStatus() {
+    return this.data.activeTab === 1 ? ORDER_STATUS.COMPLETED : ORDER_STATUS.IN_PROGRESS
   },
 
   onShow() {
@@ -34,8 +48,8 @@ Page({
         this.setData({ loading: true })
       }
       
-      const res = await api.getConversationList()
-      
+      const res = await api.getConversationList({ orderStatus: this.getOrderStatus() })
+
       if (res.success && res.data) {
         // 格式化时间
         const list = res.data.map(item => {

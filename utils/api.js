@@ -1399,9 +1399,11 @@ module.exports = {
   // ========== 聊天相关 ==========
   /**
    * 获取用户会话列表
+   * @param {Object} [params]
+   * @param {number} [params.orderStatus] 1-进行中 2-已完成，不传默认进行中
    */
-  getConversationList() {
-    return post('/conversation/list', {}, { showLoading: false, showError: false })
+  getConversationList(params = {}) {
+    return post('/conversation/list', params, { showLoading: false, showError: false })
   },
 
   /**
