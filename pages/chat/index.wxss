@@ -6,6 +6,41 @@
   background-color: #f7f8fa;
 }
 
+/* 进入会话时的加载遮罩 */
+.init-loading-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.init-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+.init-loading-spinner {
+  width: 64rpx;
+  height: 64rpx;
+  border: 6rpx solid #e5e6eb;
+  border-top-color: #09ccb5;
+  border-radius: 50%;
+  animation: init-loading-spin 0.8s linear infinite;
+}
+.init-loading-text {
+  font-size: 28rpx;
+  color: #646566;
+}
+@keyframes init-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* 悬浮订单气泡：类型、预约时间、地址 */
 .order-bubble-bar {
   flex-shrink: 0;
@@ -287,11 +322,44 @@
   font-size: 28rpx;
 }
 
-.loading-more {
-  padding: 24rpx 0;
-  text-align: center;
-  color: #999;
+/* 加载更多历史消息按钮 */
+.load-more-bar {
+  padding: 20rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8rpx;
+}
+
+.load-more-text {
   font-size: 24rpx;
+  color: #1989fa;
+  padding: 10rpx 30rpx;
+  background-color: rgba(25, 137, 250, 0.05);
+  border-radius: 30rpx;
+}
+
+/* 上滑加载历史消息时的加载条（顶部） */
+.history-loading-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+}
+.history-loading-spinner {
+  width: 36rpx;
+  height: 36rpx;
+  border: 4rpx solid #e5e6eb;
+  border-top-color: #09ccb5;
+  border-radius: 50%;
+  animation: history-loading-spin 0.7s linear infinite;
+}
+.history-loading-text {
+  font-size: 26rpx;
+  color: #646566;
+}
+@keyframes history-loading-spin {
+  to { transform: rotate(360deg); }
 }
 
 .input-bar {

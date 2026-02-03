@@ -21,7 +21,8 @@ Page({
     
     // 轮询相关
     pollTimer: null,  // 轮询定时器
-    pollInterval: 3000,  // 轮询间隔（毫秒），默认3秒
+    pollFirstTimer: null,  // 首次轮询延迟定时器（避免与初始加载重叠导致跳动）
+    pollInterval: 5000,  // 轮询间隔（毫秒），5秒减少无谓更新与跳动
     lastMessageId: null,  // 最后一条消息的ID（用于增量获取）
     isPolling: false,  // 是否正在轮询中
     
@@ -54,7 +55,12 @@ Page({
     markReadInFlight: false,
     
     // 滚动区域高度
-    scrollViewHeight: 0
+    scrollViewHeight: 0,
+    
+    // 进入会话时的初始化遮罩（会话详情+消息列表加载完成后关闭）
+    initLoading: true,
+    // 首屏加载完成时间戳，用于忽略首屏后误触的 scrolltolower（约 1.5s 内不加载更多）
+    initLoadDoneAt: 0
   },
 
   onReady() {
@@ -85,6 +91,7 @@ Page({
       // 从订单详情页进入，需要先创建会话
       this.createConversationFromOrder(orderNo)
     } else {
+      this.setData({ initLoading: false })
       wx.showToast({ title: '参数错误', icon: 'none' })
       setTimeout(() => wx.navigateBack(), 1500)
     }
@@ -103,12 +110,10 @@ Page({
   },
 
   onShow() {
-    // 页面显示时开始轮询
-    if (this.data.conversationId) {
+    console.log('[Chat] onShow', { conversationId: this.data.conversationId, initLoading: this.data.initLoading })
+    if (this.data.conversationId && !this.data.initLoading) {
       this.startPolling()
     }
-    
-    // 检查是否有待发送的内容
     this.checkPendingContent()
   },
 
@@ -136,12 +141,14 @@ Page({
         })
         this.loadConversationDetail()
       } else {
+        this.setData({ initLoading: false })
         const msg = res.message || res.error || '创建会话失败'
         wx.showToast({ title: msg, icon: 'none', duration: 2000 })
         setTimeout(() => wx.navigateBack(), 2000)
       }
     } catch (e) {
       wx.hideLoading()
+      this.setData({ initLoading: false })
       const msg = (e && (e.message || e.error)) || '创建会话失败'
       wx.showToast({ title: msg, icon: 'none', duration: 2000 })
       setTimeout(() => wx.navigateBack(), 2000)
@@ -150,14 +157,15 @@ Page({
 
   // 加载会话详情
   async loadConversationDetail() {
+    console.log('[Chat] loadConversationDetail 开始', { conversationId: this.data.conversationId })
     try {
       const res = await api.getConversationDetail(this.data.conversationId)
-      
       if (res.success && res.data) {
         this.setData({ conversation: res.data })
         this.setNavigationBarTitle()
-        this.loadMessageList(true)
-        // 会话加载成功后启动轮询（onShow 时 conversationId 可能尚未 setData 完成，这里确保轮询一定启动）
+        console.log('[Chat] loadConversationDetail 会话详情已拉取，即将 loadMessageList(true)')
+        await this.loadMessageList(true)
+        console.log('[Chat] loadConversationDetail 首屏消息已拉取，即将 startPolling')
         this.startPolling()
       } else {
         wx.showToast({ title: res.message || '加载失败', icon: 'none' })
@@ -165,6 +173,8 @@ Page({
     } catch (e) {
       console.error('加载会话详情失败:', e)
       wx.showToast({ title: '加载失败', icon: 'none' })
+    } finally {
+      this.setData({ initLoading: false })
     }
   },
 
@@ -194,50 +204,81 @@ Page({
 
   // 加载消息列表
   async loadMessageList(reset = false) {
-    if (this.data.loading) return
-    if (!this.data.hasMore && !reset) return
-    
+    console.log('[Chat] loadMessageList 入口', { reset, loading: this.data.loading, hasMore: this.data.hasMore, messageListLen: this.data.messageList.length })
+    if (this.data.loading) {
+      console.log('[Chat] loadMessageList 跳过: loading=true')
+      return
+    }
+    if (!this.data.hasMore && !reset) {
+      console.log('[Chat] loadMessageList 跳过: hasMore=false 且非 reset')
+      return
+    }
+    const beforeMessageId = !reset && this.data.messageList.length ? this.data.messageList[0].id : null
+    console.log('[Chat] loadMessageList 发起请求', { reset, beforeMessageId, conversationId: this.data.conversationId })
+    this.setData({ loading: true }) // 立即加锁，防止 scrolltoupper 连续触发导致多次并发请求
     try {
-      this.setData({ loading: true })
-      
-      const pageNum = reset ? 1 : this.data.pageNum
-      
-      const res = await api.getMessageList({
+      let oldScrollHeight = 0
+      if (!reset) {
+        oldScrollHeight = await new Promise(resolve => {
+          wx.createSelectorQuery().in(this).select('#message-list').fields({ scrollHeight: true }, res => {
+            resolve(res && res.scrollHeight !== undefined ? res.scrollHeight : 0)
+          }).exec()
+        })
+      }
+
+      const params = {
         conversationId: this.data.conversationId,
-        pageNum: pageNum,
+        pageNum: 1,
         pageSize: this.data.pageSize
-      })
-      
+      }
+      if (beforeMessageId) params.beforeMessageId = beforeMessageId
+      console.log('[Chat] loadMessageList 请求参数', params)
+      const res = await api.getMessageList(params)
+      console.log('[Chat] loadMessageList 原始响应', { success: res.success, hasData: !!res.data, listLen: res.data?.list?.length, total: res.data?.total, hasMore: res.data?.hasMore })
+
       if (res.success && res.data) {
         const newMessages = res.data.list || []
         const formattedMessages = newMessages.map(msg => this.formatMessage(msg))
-        
+        // 只有后端明确返回 true/false 时才用 hasMore；null/undefined 时首屏用 total>pageSize，加载更多用 false
+        const hasMore = (res.data.hasMore === true || res.data.hasMore === false)
+          ? res.data.hasMore
+          : (reset && res.data.total != null ? res.data.total > this.data.pageSize : false)
+        console.log('[Chat] loadMessageList 请求返回', { reset, beforeMessageId, listLen: newMessages.length, total: res.data.total, hasMore })
         if (reset) {
           // 重置列表
           const reversedMessages = formattedMessages.reverse()
           const lastMessage = reversedMessages[reversedMessages.length - 1]
           this.setData({
             messageList: reversedMessages, // 后端返回的是倒序，需要反转
-            pageNum: 2,
-            hasMore: res.data.total > this.data.pageSize,
+            hasMore,
             loading: false,
             lastMessageId: lastMessage ? lastMessage.id : null,
             showNewMessageTip: false,
-            newMessageCount: 0
+            newMessageCount: 0,
+            initLoadDoneAt: Date.now()
           })
-          
-          // 滚动到底部
+          // 滚动到底部（scrollToBottom 内已有 300ms 延迟，列表稳定后再滚）
           this.scrollToBottom()
-          
-          // 标记已读
           this.markAsRead()
         } else {
-          // 加载更多（历史消息）
+          // 加载更多（历史消息，游标分页）：按 id 去重，避免重复请求或后端重放导致 wx:key 重复
+          const reversedNew = formattedMessages.reverse()
+          const existingIds = new Set(this.data.messageList.map(m => m.id))
+          const newOnly = reversedNew.filter(m => !existingIds.has(m.id))
           this.setData({
-            messageList: [...formattedMessages.reverse(), ...this.data.messageList],
-            pageNum: pageNum + 1,
-            hasMore: res.data.total > pageNum * this.data.pageSize,
+            messageList: [...newOnly, ...this.data.messageList],
+            hasMore,
             loading: false
+          }, () => {
+            // 计算新增内容高度并调整 scrollTop，保持视觉位置不变
+            if (oldScrollHeight > 0) {
+              wx.createSelectorQuery().in(this).select('#message-list').fields({ scrollHeight: true }, res => {
+                if (res && res.scrollHeight > oldScrollHeight) {
+                  const jump = res.scrollHeight - oldScrollHeight
+                  this.setData({ scrollTop: jump })
+                }
+              }).exec()
+            }
           })
         }
       } else {
@@ -289,7 +330,7 @@ Page({
     return `${month}-${day} ${hours}:${minutes}`
   },
 
-  // 滚动到底部（不在此处调 markAsRead，由调用方在需要时单独调用，避免重复）
+  // 滚动到底部（延迟以等列表渲染稳定，减少跳动）
   scrollToBottom() {
     setTimeout(() => {
       this.setData({
@@ -298,7 +339,7 @@ Page({
         newMessageCount: 0,
         isScrolledToBottom: true
       })
-    }, 100)
+    }, 300)
   },
   
   // 点击新消息提示气泡
@@ -344,31 +385,34 @@ Page({
     }
   },
 
-  // 开始轮询
+  // 开始轮询（首次延迟执行，避免与初始加载、滚动重叠导致列表跳动）
   startPolling() {
-    // 如果已有定时器，不重复启动
     if (this.data.pollTimer) {
+      console.log('[Chat] startPolling 跳过: 已有 pollTimer')
       return
     }
-    
-    // 如果没有会话ID，不启动轮询
-    if (!this.data.conversationId) {
-      return
-    }
-    
-    // 立即执行一次轮询
-    this.pollNewMessages()
-    
-    // 设置定时器
-    const timer = setInterval(() => {
+    if (!this.data.conversationId) return
+    console.log('[Chat] startPolling 启动，首次 2s 后执行')
+    const interval = this.data.pollInterval
+    const firstDelay = 2000
+    const firstTimer = setTimeout(() => {
+      this.setData({ pollFirstTimer: null })
+      console.log('[Chat] startPolling 首次轮询执行')
       this.pollNewMessages()
-    }, this.data.pollInterval)
-    
-    this.setData({ pollTimer: timer })
+      const timer = setInterval(() => {
+        this.pollNewMessages()
+      }, interval)
+      this.setData({ pollTimer: timer })
+    }, firstDelay)
+    this.setData({ pollFirstTimer: firstTimer })
   },
 
   // 停止轮询
   stopPolling() {
+    if (this.data.pollFirstTimer) {
+      clearTimeout(this.data.pollFirstTimer)
+      this.setData({ pollFirstTimer: null })
+    }
     if (this.data.pollTimer) {
       clearInterval(this.data.pollTimer)
       this.setData({ 
@@ -380,25 +424,20 @@ Page({
 
   // 轮询获取新消息
   async pollNewMessages() {
-    // 如果正在加载中，跳过本次轮询
     if (this.data.isPolling || this.data.loading) {
+      console.log('[Chat] pollNewMessages 跳过', { isPolling: this.data.isPolling, loading: this.data.loading })
       return Promise.resolve()
     }
-    
-    // 如果没有会话ID，停止轮询
     if (!this.data.conversationId) {
       this.stopPolling()
       return Promise.resolve()
     }
-    
+    console.log('[Chat] pollNewMessages 开始，将调用 loadNewMessages(pageNum=1)')
     try {
       this.setData({ isPolling: true })
-      
-      // 如果当前在底部，尝试标记已读
       if (this.data.isScrolledToBottom) {
         this.markAsRead()
       }
-      
       const newMessages = await this.loadNewMessages()
       
       if (newMessages && newMessages.length > 0) {
@@ -406,35 +445,57 @@ Page({
         const existingIds = new Set(currentList.map(msg => msg.id))
         const uniqueNewMessages = newMessages.filter(msg => !existingIds.has(msg.id))
 
-        // 用接口返回的最新已读状态合并到当前列表（轮询更新已读/未读）
+        // 检查已读状态是否有变化（即使没有新消息，已读状态也可能变了）
+        let hasReadStatusChanged = false
         const idToNewMsg = {}
         newMessages.forEach(m => { idToNewMsg[m.id] = m })
-        const mergedList = currentList.map(msg => {
+        
+        // 遍历当前列表中的消息，如果新拉取的消息中有此ID，且已读状态不同，则标记为变化
+        // 这里只检查最近 20 条（新拉取的那一页），之前的历史消息状态暂不更新，避免全量遍历
+        for (let i = currentList.length - 1; i >= 0; i--) {
+          const msg = currentList[i]
           const newMsg = idToNewMsg[msg.id]
-          if (newMsg && newMsg.isRead !== msg.isRead) {
-            return { ...msg, isRead: newMsg.isRead }
+          if (newMsg) {
+             // 仅检查自己发送的消息的已读状态变化
+             // 或者对方发送的消息，如果本地是未读，后端变成了已读（理论上不会发生，除非其他端读了）
+             if (msg.isMine && msg.isRead !== newMsg.isRead) {
+               hasReadStatusChanged = true
+               break
+             }
+          } else {
+            // currentList 是全量，newMessages 只有最新20条，
+            // 所以遍历到不在 newMessages 里的旧消息时，说明已经超出范围，可以停止检查
+            // 但考虑到乱序可能性（虽然id倒序），还是简单处理：
+            // 如果连续多条都没在 newMessages 里，说明已经到了历史消息区域，停止
+            if (currentList.length - i > 25) break 
           }
-          return msg
-        })
+        }
 
-        let finalList = mergedList
-        if (uniqueNewMessages.length > 0) {
-          finalList = [...mergedList, ...uniqueNewMessages]
-          const lastMessage = uniqueNewMessages[uniqueNewMessages.length - 1]
+        if (uniqueNewMessages.length > 0 || hasReadStatusChanged) {
+          // 有新消息 或 已读状态有变化：合并列表并更新
+          const mergedList = currentList.map(msg => {
+            const newMsg = idToNewMsg[msg.id]
+            if (newMsg && newMsg.isRead !== msg.isRead) return { ...msg, isRead: newMsg.isRead }
+            return msg
+          })
+          const finalList = [...mergedList, ...uniqueNewMessages]
+          const lastMessage = uniqueNewMessages.length > 0 ? uniqueNewMessages[uniqueNewMessages.length - 1] : (finalList.length > 0 ? finalList[finalList.length - 1] : null)
+          
           this.setData({
             messageList: finalList,
             lastMessageId: lastMessage ? lastMessage.id : this.data.lastMessageId
           })
-          if (this.data.isScrolledToBottom) {
-            this.scrollToBottom()
-            this.markAsRead()
-            this.setData({ showNewMessageTip: false, newMessageCount: 0 })
-          } else {
-            const newCount = (this.data.newMessageCount || 0) + uniqueNewMessages.length
-            this.setData({ showNewMessageTip: true, newMessageCount: newCount })
+          
+          if (uniqueNewMessages.length > 0) {
+             if (this.data.isScrolledToBottom) {
+               this.scrollToBottom()
+               this.markAsRead()
+               this.setData({ showNewMessageTip: false, newMessageCount: 0 })
+             } else {
+               const newCount = (this.data.newMessageCount || 0) + uniqueNewMessages.length
+               this.setData({ showNewMessageTip: true, newMessageCount: newCount })
+             }
           }
-        } else if (mergedList.some((m, i) => currentList[i] && m.isRead !== currentList[i].isRead)) {
-          this.setData({ messageList: mergedList })
         }
       }
       
@@ -451,14 +512,15 @@ Page({
 
   // 加载新消息（增量）
   async loadNewMessages() {
+    console.log('[Chat] loadNewMessages 发起请求 pageNum=1 (轮询用)')
     try {
       const res = await api.getMessageList({
         conversationId: this.data.conversationId,
         pageNum: 1,  // 获取最新一页
         pageSize: 20
       })
-      
       if (res.success && res.data) {
+        console.log('[Chat] loadNewMessages 返回', { listLen: (res.data.list || []).length })
         const newMessages = res.data.list || []
         const formattedMessages = newMessages.map(msg => this.formatMessage(msg))
         
@@ -539,15 +601,15 @@ Page({
           }, 200)
         })
       } else {
-        wx.showToast({ title: res.message || '发送失败', icon: 'none' })
+        wx.showToast({ title: res.message || res.error || '发送失败', icon: 'none' })
         this.setData({ 
           inputValue: content,
           hasInput: content.trim().length > 0
         }) // 恢复输入内容
       }
     } catch (e) {
-      console.error('发送消息失败:', e)
-      wx.showToast({ title: '发送失败', icon: 'none' })
+      const msg = (e && (e.message || e.error)) || '发送失败'
+      wx.showToast({ title: msg, icon: 'none' })
       this.setData({ 
         inputValue: content,
         hasInput: content.trim().length > 0
@@ -640,16 +702,16 @@ Page({
             }, 200)
           })
         } else {
-          wx.showToast({ title: sendRes.message || '发送失败', icon: 'none' })
+          wx.showToast({ title: sendRes.message || sendRes.error || '发送失败', icon: 'none' })
         }
       } else {
         wx.hideLoading()
-        wx.showToast({ title: uploadRes.message || '上传失败', icon: 'none' })
+        wx.showToast({ title: uploadRes.message || uploadRes.error || '上传失败', icon: 'none' })
       }
     } catch (e) {
       wx.hideLoading()
-      console.error('发送图片失败:', e)
-      wx.showToast({ title: '发送失败', icon: 'none' })
+      const msg = (e && (e.message || e.error)) || '发送失败'
+      wx.showToast({ title: msg, icon: 'none' })
     }
   },
 
@@ -725,12 +787,12 @@ Page({
           }, 200)
         })
       } else {
-        wx.showToast({ title: res.message || '发送失败', icon: 'none' })
+        wx.showToast({ title: res.message || res.error || '发送失败', icon: 'none' })
       }
     } catch (e) {
       wx.hideLoading()
-      console.error('发送位置失败:', e)
-      wx.showToast({ title: '发送失败', icon: 'none' })
+      const msg = (e && (e.message || e.error)) || '发送失败'
+      wx.showToast({ title: msg, icon: 'none' })
     }
   },
 
@@ -808,10 +870,14 @@ Page({
     }
   },
 
-  // 加载更多（上拉加载历史消息）
-  onReachBottom() {
-    if (!this.data.loading && this.data.hasMore) {
-      this.loadMessageList(false)
-    }
+  // 加载更多历史消息（点击触发）
+  loadMoreHistory() {
+    if (this.data.loading || !this.data.hasMore) return
+    this.loadMessageList(false)
+  },
+
+  // 滑到顶部时不再自动加载
+  onReachTop() {
+    // 已废弃，改为手动点击加载
   }
 })

@@ -1,5 +1,13 @@
 <!-- pages/chat/index.wxml -->
 <view class="page">
+  <!-- 进入会话时的加载遮罩：会话详情+消息列表加载完成后关闭 -->
+  <view class="init-loading-mask" wx:if="{{initLoading}}">
+    <view class="init-loading-content">
+      <view class="init-loading-spinner"></view>
+      <text class="init-loading-text">加载中...</text>
+    </view>
+  </view>
+
   <!-- 悬浮订单信息气泡：类型、预约时间、地址，点击跳转订单详情（用户端不展示手机尾号） -->
   <view class="order-bubble-bar" wx:if="{{conversation && conversation.orderNo}}" bindtap="goToOrderDetail">
     <view class="order-bubble">
@@ -21,8 +29,17 @@
     scroll-y="{{true}}"
     scroll-top="{{scrollTop}}"
     scroll-into-view="{{scrollIntoView}}"
-    bindscroll="onScroll"
-    bindscrolltolower="onReachBottom">
+    enable-scroll-anchoring="{{true}}"
+    bindscroll="onScroll">
+    
+    <!-- 加载更多历史消息按钮 -->
+    <view class="load-more-bar" wx:if="{{hasMore}}" bindtap="loadMoreHistory">
+      <view class="load-more-text" wx:if="{{!loading}}">点击加载更多历史消息</view>
+      <view class="history-loading-bar" wx:else>
+        <view class="history-loading-spinner"></view>
+        <text class="history-loading-text">加载中...</text>
+      </view>
+    </view>
     
     <view class="message-item" wx:for="{{messageList}}" wx:key="id" wx:for-item="msg">
       <!-- 消息气泡 -->
@@ -115,11 +132,6 @@
     <!-- 空状态 -->
     <view class="empty" wx:if="{{!loading && messageList.length === 0}}">
       <text>暂无消息</text>
-    </view>
-    
-    <!-- 加载更多 -->
-    <view class="loading-more" wx:if="{{loading && !hasMore}}">
-      <text>加载中...</text>
     </view>
   </scroll-view>
   

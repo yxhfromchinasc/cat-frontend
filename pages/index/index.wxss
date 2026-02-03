@@ -30,11 +30,11 @@ page {
   flex-direction: column;
 }
 
-/* 头部区域 */
+/* 头部区域：右边距与下方竖版卡片区域一致，便于会话入口右对齐 */
 .header-section {
   background: transparent;
   width: 100%;
-  padding: 60rpx 24rpx 0rpx 50rpx;
+  padding: 60rpx 50rpx 0rpx 50rpx;
   margin: 0;
   box-sizing: border-box;
 }

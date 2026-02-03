@@ -5,8 +5,8 @@
 
 // 基础配置
 const API_CONFIG = {
-  // baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
-  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
+  baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
+  // baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
 
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
@@ -1434,7 +1434,7 @@ module.exports = {
    * @param {string} data.locationAddress 位置地址（位置消息）
    */
   sendMessage(data) {
-    return post('/message/send', data, { showLoading: false, showError: true })
+    return post('/message/send', data, { showLoading: false, showError: false })
   },
 
   /**
@@ -1445,12 +1445,7 @@ module.exports = {
    * @param {number} params.pageSize 页大小
    */
   getMessageList(params) {
-    const { conversationId, pageNum = 1, pageSize = 20 } = params
-    return post('/message/list', {
-      conversationId,
-      pageNum,
-      pageSize
-    }, { showLoading: false, showError: false })
+    return post('/message/list', params, { showLoading: false, showError: false })
   },
 
   /**
