@@ -1452,6 +1452,33 @@ module.exports = {
   },
 
   /**
+   * 获取未读消息统计（新接口）
+   * 返回 { totalCount: 5, details: { "101": 2 } }
+   */
+  getUnreadStats() {
+    return get('/message/unread/stats', {}, { showLoading: false, showError: false })
+  },
+
+  /**
+   * 获取未读消息总数
+   * 兼容旧调用，直接返回数字
+   */
+  async getUnreadMessageCount() {
+    try {
+      const res = await get('/message/unread/stats', {}, { showLoading: false, showError: false })
+      if (res && res.success && res.data) {
+        return {
+          success: true,
+          data: res.data.totalCount || 0
+        }
+      }
+      return { success: false, data: 0 }
+    } catch (e) {
+      return { success: false, data: 0 }
+    }
+  },
+
+  /**
    * 标记消息已读
    * @param {number} conversationId 会话ID
    */

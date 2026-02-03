@@ -44,7 +44,27 @@ Page({
     
     // 图片预览弹窗
     showImagePreview: false,  // 是否显示图片预览弹窗
-    previewImagePath: null  // 预览的图片路径
+    previewImagePath: null,  // 预览的图片路径
+    
+    // 新消息提示
+    newMessageCount: 0,  // 新消息数量（当不在底部时）
+    showNewMessageTip: false,  // 是否显示新消息提示气泡
+    
+    // 滚动区域高度
+    scrollViewHeight: 0
+  },
+
+  onReady() {
+    this.updateScrollViewHeight()
+  },
+
+  updateScrollViewHeight() {
+    const query = wx.createSelectorQuery().in(this)
+    query.select('#message-list').boundingClientRect(rect => {
+      if (rect) {
+        this.setData({ scrollViewHeight: rect.height })
+      }
+    }).exec()
   },
 
   onLoad(options) {
@@ -145,11 +165,26 @@ Page({
     }
   },
 
-  // 设置导航栏标题
+  // 跳转订单详情（用户端：根据订单类型跳转快递/回收详情）
+  goToOrderDetail() {
+    const conv = this.data.conversation
+    if (!conv || !conv.orderNo) return
+    const serviceType = conv.orderServiceType
+    const path = serviceType === 3
+      ? `/pages/recycling-detail/index?orderNo=${conv.orderNo}`
+      : `/pages/express-detail/index?orderNo=${conv.orderNo}`
+    wx.navigateTo({ url: path })
+  },
+
+  // 设置导航栏标题（对方昵称 + 订单号）
   setNavigationBarTitle() {
-    if (this.data.conversation && this.data.conversation.otherUser) {
+    if (this.data.conversation) {
+      const name = (this.data.conversation.otherUser && this.data.conversation.otherUser.nickname)
+        ? this.data.conversation.otherUser.nickname
+        : '聊天'
+      const orderNo = this.data.conversation.orderNo ? ' ' + this.data.conversation.orderNo : ''
       wx.setNavigationBarTitle({
-        title: this.data.conversation.otherUser.nickname || '聊天'
+        title: name + orderNo
       })
     }
   },
@@ -183,7 +218,9 @@ Page({
             pageNum: 2,
             hasMore: res.data.total > this.data.pageSize,
             loading: false,
-            lastMessageId: lastMessage ? lastMessage.id : null
+            lastMessageId: lastMessage ? lastMessage.id : null,
+            showNewMessageTip: false,
+            newMessageCount: 0
           })
           
           // 滚动到底部
@@ -214,7 +251,8 @@ Page({
     return {
       ...msg,
       timeFormatted: this.formatTime(msg.createdAt),
-      isMine: msg.senderType === 1 // 1-用户，2-小哥
+      isMine: msg.senderType === 1, // 1-用户，2-小哥
+      isRead: msg.isRead !== undefined ? msg.isRead : (msg.senderType === 1 ? false : true) // 自己发送的消息显示已读状态，对方发送的消息不显示
     }
   },
 
@@ -254,21 +292,37 @@ Page({
     // scroll-view 的 scroll-top 属性控制滚动位置
     setTimeout(() => {
       this.setData({
-        scrollTop: 99999
+        scrollTop: 99999,
+        showNewMessageTip: false,
+        newMessageCount: 0,
+        isScrolledToBottom: true
       })
+      // 标记已读
+      this.markAsRead()
     }, 100)
+  },
+  
+  // 点击新消息提示气泡
+  onNewMessageTipTap() {
+    this.scrollToBottom()
   },
 
   // 滚动事件（检测是否滚动到底部）
   onScroll(e) {
     const scrollTop = e.detail.scrollTop
     const scrollHeight = e.detail.scrollHeight
-    const clientHeight = e.detail.scrollHeight
+    const clientHeight = this.data.scrollViewHeight
     
+    if (!clientHeight) return
+
     // 判断是否滚动到底部（距离底部50px内）
     if (scrollHeight - scrollTop - clientHeight < 50) {
       if (!this.data.isScrolledToBottom) {
-        this.setData({ isScrolledToBottom: true })
+        this.setData({ 
+          isScrolledToBottom: true,
+          showNewMessageTip: false,
+          newMessageCount: 0
+        })
         this.markAsRead()
       }
     } else {
@@ -337,16 +391,33 @@ Page({
     try {
       this.setData({ isPolling: true })
       
+      // 如果当前在底部，尝试标记已读
+      if (this.data.isScrolledToBottom) {
+        this.markAsRead()
+      }
+      
       const newMessages = await this.loadNewMessages()
       
       if (newMessages && newMessages.length > 0) {
         // 获取现有消息的ID集合，用于去重
         const existingIds = new Set(this.data.messageList.map(msg => msg.id))
         
-        // 过滤出新消息（不存在的消息）
-        const uniqueNewMessages = newMessages.filter(msg => !existingIds.has(msg.id))
-        
-        if (uniqueNewMessages.length > 0) {
+      // 过滤出新消息（不存在的消息）
+      const uniqueNewMessages = newMessages.filter(msg => !existingIds.has(msg.id))
+      
+      // 更新已有消息的状态（如已读状态）
+      if (newMessages.length > 0) {
+        this.data.messageList.forEach((msg, index) => {
+          const newMsg = newMessages.find(m => m.id === msg.id)
+          if (newMsg && newMsg.isRead !== msg.isRead) {
+            this.setData({
+              [`messageList[${index}].isRead`]: newMsg.isRead
+            })
+          }
+        })
+      }
+      
+      if (uniqueNewMessages.length > 0) {
           // 添加新消息到列表末尾
           this.setData({
             messageList: [...this.data.messageList, ...uniqueNewMessages]
@@ -363,6 +434,18 @@ Page({
             this.scrollToBottom()
             // 标记已读
             this.markAsRead()
+            // 隐藏新消息提示
+            this.setData({
+              showNewMessageTip: false,
+              newMessageCount: 0
+            })
+          } else {
+            // 如果不在底部，显示新消息提示气泡
+            const newCount = (this.data.newMessageCount || 0) + uniqueNewMessages.length
+            this.setData({
+              showNewMessageTip: true,
+              newMessageCount: newCount
+            })
           }
         }
       }

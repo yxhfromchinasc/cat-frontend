@@ -67,6 +67,43 @@ page {
   color: white;
 }
 
+/* 消息入口 */
+.message-entry {
+  position: relative;
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 20rpx;
+  margin-bottom: 30rpx; /* 上移与应用名对齐 */
+}
+
+.message-icon {
+  width: 50rpx;
+  height: 50rpx;
+}
+
+.message-badge {
+  position: absolute;
+  top: -6rpx;
+  right: -10rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  background-color: #ff4757;
+  color: white;
+  font-size: 20rpx;
+  font-weight: bold;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6rpx;
+  box-sizing: border-box;
+  z-index: 10;
+  border: 2rpx solid #fff;
+}
+
 .app-name {
   font-size: 48rpx;
   font-weight: bold;

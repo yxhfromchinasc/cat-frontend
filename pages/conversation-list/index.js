@@ -4,7 +4,9 @@ const { api } = require('../../utils/util.js')
 Page({
   data: {
     conversationList: [],
-    loading: false
+    loading: false,
+    pollTimer: null,
+    pollInterval: 3000
   },
 
   onLoad() {
@@ -12,14 +14,25 @@ Page({
   },
 
   onShow() {
-    // 页面显示时刷新会话列表
+    // 页面显示时刷新会话列表并开始轮询
     this.loadConversationList()
+    this.startPolling()
+  },
+
+  onHide() {
+    this.stopPolling()
+  },
+
+  onUnload() {
+    this.stopPolling()
   },
 
   // 加载会话列表
-  async loadConversationList() {
+  async loadConversationList(silent = false) {
     try {
-      this.setData({ loading: true })
+      if (!silent) {
+        this.setData({ loading: true })
+      }
       
       const res = await api.getConversationList()
       
@@ -39,12 +52,35 @@ Page({
         })
       } else {
         this.setData({ loading: false })
-        wx.showToast({ title: res.message || '加载失败', icon: 'none' })
+        if (!silent) {
+          wx.showToast({ title: res.message || '加载失败', icon: 'none' })
+        }
       }
     } catch (e) {
       console.error('加载会话列表失败:', e)
       this.setData({ loading: false })
-      wx.showToast({ title: '加载失败', icon: 'none' })
+      if (!silent) {
+        wx.showToast({ title: '加载失败', icon: 'none' })
+      }
+    }
+  },
+
+  // 开始轮询
+  startPolling() {
+    if (this.data.pollTimer) return
+    
+    const timer = setInterval(() => {
+      this.loadConversationList(true)
+    }, this.data.pollInterval)
+    
+    this.setData({ pollTimer: timer })
+  },
+
+  // 停止轮询
+  stopPolling() {
+    if (this.data.pollTimer) {
+      clearInterval(this.data.pollTimer)
+      this.setData({ pollTimer: null })
     }
   },
 

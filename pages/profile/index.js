@@ -11,7 +11,10 @@ Page({
     couponCount: 0, // 卡券数量
     addressCount: 0, // 地址数量
     avatarSrc: '/assets/tabbar/profile.png', // 头像地址
-    addressIcon: '' // 地址图标 SVG data URI
+    addressIcon: '', // 地址图标 SVG data URI
+    unreadMessageCount: 0, // 未读消息数量
+    pollTimer: null, // 轮询定时器
+    pollInterval: 3000 // 轮询间隔（毫秒）
   },
 
   onLoad() {
@@ -38,6 +41,8 @@ Page({
       // 刷新用户信息和统计数据
       this.loadUserInfo()
       this.loadStats() // 加载统计数据（余额、卡券、地址）
+      // 开始轮询未读消息
+      this.startPollingUnread()
     } else {
       // 未登录时重置为0
       this.setData({
@@ -46,8 +51,56 @@ Page({
         balanceStr: '0.00',
         couponCount: 0,
         addressCount: 0,
+        unreadMessageCount: 0,
         avatarSrc: '/assets/tabbar/profile.png' // 重置头像为默认
       })
+      this.stopPollingUnread()
+    }
+  },
+
+  onHide() {
+    this.stopPollingUnread()
+  },
+
+  onUnload() {
+    this.stopPollingUnread()
+  },
+
+  // 启动轮询未读消息
+  startPollingUnread() {
+    if (this.data.pollTimer) return
+    
+    // 立即执行一次
+    this.loadUnreadMessageCount()
+    
+    const timer = setInterval(() => {
+      this.loadUnreadMessageCount()
+    }, this.data.pollInterval)
+    
+    this.setData({ pollTimer: timer })
+  },
+
+  // 停止轮询未读消息
+  stopPollingUnread() {
+    if (this.data.pollTimer) {
+      clearInterval(this.data.pollTimer)
+      this.setData({ pollTimer: null })
+    }
+  },
+
+  // 加载未读消息数量
+  async loadUnreadMessageCount() {
+    if (!this.data.isLogin) return
+    
+    try {
+      const res = await api.getUnreadMessageCount()
+      if (res && res.success) {
+        this.setData({ 
+          unreadMessageCount: res.data || 0 
+        })
+      }
+    } catch (e) {
+      console.error('加载未读消息数量失败:', e)
     }
   },
 

@@ -17,7 +17,7 @@
       <!-- 内容区域 -->
       <view class="content">
         <view class="header">
-          <text class="name">{{item.otherUser.nickname || '未知用户'}}</text>
+          <text class="name">{{item.otherUser.nickname || '未知用户'}}{{item.orderNo ? ' ' + item.orderNo : ''}}</text>
           <text class="time">{{item.lastMessageTimeFormatted}}</text>
         </view>
         <view class="footer">

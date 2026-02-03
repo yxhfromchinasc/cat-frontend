@@ -1,5 +1,19 @@
 <!-- pages/chat/index.wxml -->
 <view class="page">
+  <!-- 悬浮订单信息气泡：类型、预约时间、地址，点击跳转订单详情（用户端不展示手机尾号） -->
+  <view class="order-bubble-bar" wx:if="{{conversation && conversation.orderNo}}" bindtap="goToOrderDetail">
+    <view class="order-bubble">
+      <view class="order-bubble-content">
+        <view class="order-bubble-main">
+          <text class="order-bubble-type">{{conversation.orderServiceType === 3 ? '回收' : '快递'}}</text>
+          <text class="order-bubble-time" wx:if="{{conversation.orderAppointmentTime}}">{{conversation.orderAppointmentTime}}</text>
+        </view>
+        <view class="order-bubble-addr" wx:if="{{conversation.orderAddressBrief}}">{{conversation.orderAddressBrief}}</view>
+      </view>
+      <text class="order-bubble-arrow">›</text>
+    </view>
+  </view>
+
   <!-- 消息列表 -->
   <scroll-view 
     id="message-list"
@@ -48,8 +62,8 @@
             </view>
           </view>
           <!-- 消息时间 -->
-          <view class="message-time" wx:if="{{msg.timeFormatted}}">
-            <text>{{msg.timeFormatted}}</text>
+          <view class="message-time-wrapper" wx:if="{{msg.timeFormatted}}">
+            <text class="message-time">{{msg.timeFormatted}}</text>
           </view>
         </view>
       </view>
@@ -84,9 +98,10 @@
               </view>
             </view>
           </view>
-          <!-- 消息时间 -->
-          <view class="message-time" wx:if="{{msg.timeFormatted}}">
-            <text>{{msg.timeFormatted}}</text>
+          <!-- 消息时间和已读状态 -->
+          <view class="message-time-wrapper" wx:if="{{msg.timeFormatted}}">
+            <text class="message-time">{{msg.timeFormatted}}</text>
+            <text class="read-status" wx:if="{{msg.isMine}}">{{msg.isRead ? '已读' : '未读'}}</text>
           </view>
         </view>
         
@@ -159,6 +174,14 @@
   <!-- 会话已关闭提示 -->
   <view class="closed-tip" wx:if="{{conversation && conversation.isClosed === 1}}">
     <text>订单已结束，无法发送消息</text>
+  </view>
+  
+  <!-- 新消息提示气泡 -->
+  <view 
+    class="new-message-tip {{showNewMessageTip ? 'show' : ''}}" 
+    wx:if="{{showNewMessageTip && newMessageCount > 0}}"
+    bindtap="onNewMessageTipTap">
+    <text class="new-message-text">新消息 {{newMessageCount}}</text>
   </view>
   
   <!-- 图片预览确认弹窗 -->

@@ -6,6 +6,56 @@
   background-color: #f7f8fa;
 }
 
+/* 悬浮订单气泡：类型、预约时间、地址 */
+.order-bubble-bar {
+  flex-shrink: 0;
+  padding: 16rpx 24rpx;
+  background: #f7f8fa;
+  border-bottom: 1rpx solid #ebedf0;
+}
+.order-bubble {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  gap: 16rpx;
+}
+.order-bubble-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+.order-bubble-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16rpx;
+}
+.order-bubble-type {
+  font-size: 26rpx;
+  color: #323233;
+  font-weight: 500;
+}
+.order-bubble-time {
+  font-size: 24rpx;
+  color: #1989fa;
+}
+.order-bubble-addr {
+  font-size: 24rpx;
+  color: #646566;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.order-bubble-arrow {
+  font-size: 28rpx;
+  color: #c8c9cc;
+}
+
 .message-list {
   flex: 1;
   padding: 24rpx;
@@ -92,24 +142,37 @@
   min-width: 120rpx;
 }
 
-/* 消息时间 */
-.message-time {
+/* 消息时间和已读状态 */
+.message-time-wrapper {
   margin-top: 8rpx;
   padding: 0 4rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
 }
 
-.message-time text {
+.message-time {
   font-size: 20rpx;
   color: #999999;
   line-height: 1.2;
 }
 
-.message-bubble.mine .message-time {
-  align-self: flex-end;
+.read-status {
+  font-size: 20rpx;
+  color: #999999;
+  line-height: 1.2;
+  flex-shrink: 0;
 }
 
-.message-bubble.other .message-time {
+.message-bubble.mine .content-wrapper .message-time-wrapper {
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+
+.message-bubble.other .content-wrapper .message-time-wrapper {
   align-self: flex-start;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* 文本消息 */
@@ -404,6 +467,42 @@
   font-size: 26rpx;
   border-top: 1rpx solid #e5e6eb;
   line-height: 1.5;
+}
+
+/* 新消息提示气泡 */
+.new-message-tip {
+  position: fixed;
+  right: 24rpx;
+  bottom: calc(160rpx + env(safe-area-inset-bottom));
+  background-color: #ff4757;
+  color: #fff;
+  padding: 12rpx 24rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(255, 71, 87, 0.4);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(20rpx);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.new-message-tip.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.new-message-text {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.5;
+}
+
+.new-message-tip:active {
+  transform: translateY(0) scale(0.95);
+  opacity: 0.9;
 }
 
 /* 图片预览确认弹窗 */

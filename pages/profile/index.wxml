@@ -22,6 +22,8 @@
     <view class="menu-item" bindtap="goConversationList">
       <image class="menu-icon" src="/assets/tabbar/客服.png" mode="aspectFit"></image>
       <text class="menu-label">消息中心</text>
+      <!-- 未读消息红点 -->
+      <view class="badge" wx:if="{{unreadMessageCount > 0}}">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</view>
       <text class="menu-arrow">›</text>
     </view>
 

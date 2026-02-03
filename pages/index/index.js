@@ -5,6 +5,7 @@ Page({
   data: {
     userInfo: null,
     isLogin: false,
+    unreadMessageCount: 0, // 未读消息数量
     showLoginModal: false,
     // 活动入口配置
     activityConfig: {
@@ -19,7 +20,9 @@ Page({
     announcementData: null,
     hideTodayChecked: false,
     isRequestingNextAnnouncement: false, // 是否正在请求下一个公告，防止重复请求
-    isCloseBtnLoading: false // 关闭按钮是否正在加载
+    isCloseBtnLoading: false, // 关闭按钮是否正在加载
+    pollTimer: null, // 轮询定时器
+    pollInterval: 3000 // 轮询间隔（毫秒）
   },
 
   onLoad(options) {
@@ -51,6 +54,19 @@ Page({
         this.showAnnouncementAfterLogin()
       }
     }
+    
+    // 更新未读消息数量
+    if (this.data.isLogin) {
+      this.startPollingUnread()
+    }
+  },
+
+  onHide() {
+    this.stopPollingUnread()
+  },
+
+  onUnload() {
+    this.stopPollingUnread()
   },
 
   // 检查登录状态
@@ -60,6 +76,48 @@ Page({
     
     if (isLogin) {
       this.getUserInfo()
+      this.startPollingUnread()
+    } else {
+      this.setData({ unreadMessageCount: 0 })
+      this.stopPollingUnread()
+    }
+  },
+
+  // 启动轮询未读消息
+  startPollingUnread() {
+    if (this.data.pollTimer) return
+    
+    // 立即执行一次
+    this.loadUnreadMessageCount()
+    
+    const timer = setInterval(() => {
+      this.loadUnreadMessageCount()
+    }, this.data.pollInterval)
+    
+    this.setData({ pollTimer: timer })
+  },
+
+  // 停止轮询未读消息
+  stopPollingUnread() {
+    if (this.data.pollTimer) {
+      clearInterval(this.data.pollTimer)
+      this.setData({ pollTimer: null })
+    }
+  },
+
+  // 加载未读消息数量
+  async loadUnreadMessageCount() {
+    if (!this.data.isLogin) return
+    
+    try {
+      const res = await api.getUnreadMessageCount()
+      if (res && res.success) {
+        this.setData({ 
+          unreadMessageCount: res.data || 0 
+        })
+      }
+    } catch (e) {
+      console.error('加载未读消息数量失败:', e)
     }
   },
 
@@ -105,6 +163,7 @@ Page({
       isLogin: true
     })
     this.getUserInfo()
+    this.startPollingUnread()
   },
 
   // 登出
@@ -114,8 +173,10 @@ Page({
       api.clearToken()
       this.setData({
         userInfo: null,
-        isLogin: false
+        isLogin: false,
+        unreadMessageCount: 0
       })
+      this.stopPollingUnread()
       wx.showToast({
         title: '已退出登录',
         icon: 'success'
