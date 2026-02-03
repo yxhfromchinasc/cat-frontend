@@ -18,7 +18,7 @@
         </view>
         
         <!-- 消息入口 -->
-        <view class="message-entry" bindtap="goToProfile">
+        <view class="message-entry" bindtap="goToConversationList">
           <image class="message-icon" src="/assets/tabbar/会话框-白色.svg" mode="aspectFit"></image>
           <view class="message-badge" wx:if="{{unreadMessageCount > 0}}">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</view>
         </view>

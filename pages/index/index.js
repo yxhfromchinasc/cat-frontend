@@ -251,6 +251,17 @@ Page({
     })
   },
 
+  // 跳转到消息列表（会话列表）
+  goToConversationList() {
+    if (!this.data.isLogin) {
+      this.showLogin()
+      return
+    }
+    wx.navigateTo({
+      url: '/pages/conversation-list/index'
+    })
+  },
+
   // 小卡片点击事件
   onSmallCardTap(e) {
     const type = e.currentTarget.dataset.type
