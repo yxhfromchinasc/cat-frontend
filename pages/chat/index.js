@@ -50,6 +50,9 @@ Page({
     newMessageCount: 0,  // 新消息数量（当不在底部时）
     showNewMessageTip: false,  // 是否显示新消息提示气泡
     
+    // 标记已读防重复
+    markReadInFlight: false,
+    
     // 滚动区域高度
     scrollViewHeight: 0
   },
@@ -156,6 +159,8 @@ Page({
         this.setData({ conversation: res.data })
         this.setNavigationBarTitle()
         this.loadMessageList(true)
+        // 会话加载成功后启动轮询（onShow 时 conversationId 可能尚未 setData 完成，这里确保轮询一定启动）
+        this.startPolling()
       } else {
         wx.showToast({ title: res.message || '加载失败', icon: 'none' })
       }
@@ -286,10 +291,8 @@ Page({
     return `${month}-${day} ${hours}:${minutes}`
   },
 
-  // 滚动到底部
+  // 滚动到底部（不在此处调 markAsRead，由调用方在需要时单独调用，避免重复）
   scrollToBottom() {
-    // 使用一个很大的值来确保滚动到底部
-    // scroll-view 的 scroll-top 属性控制滚动位置
     setTimeout(() => {
       this.setData({
         scrollTop: 99999,
@@ -297,8 +300,6 @@ Page({
         newMessageCount: 0,
         isScrolledToBottom: true
       })
-      // 标记已读
-      this.markAsRead()
     }, 100)
   },
   
@@ -330,14 +331,18 @@ Page({
     }
   },
 
-  // 标记已读
+  // 标记已读（防重复：同一时间只允许一次请求在途）
   async markAsRead() {
     if (!this.data.conversationId) return
+    if (this.data.markReadInFlight) return
     
+    this.setData({ markReadInFlight: true })
     try {
       await api.markAsRead(this.data.conversationId)
     } catch (e) {
       console.error('标记已读失败:', e)
+    } finally {
+      this.setData({ markReadInFlight: false })
     }
   },
 
@@ -399,54 +404,39 @@ Page({
       const newMessages = await this.loadNewMessages()
       
       if (newMessages && newMessages.length > 0) {
-        // 获取现有消息的ID集合，用于去重
-        const existingIds = new Set(this.data.messageList.map(msg => msg.id))
-        
-      // 过滤出新消息（不存在的消息）
-      const uniqueNewMessages = newMessages.filter(msg => !existingIds.has(msg.id))
-      
-      // 更新已有消息的状态（如已读状态）
-      if (newMessages.length > 0) {
-        this.data.messageList.forEach((msg, index) => {
-          const newMsg = newMessages.find(m => m.id === msg.id)
+        const currentList = this.data.messageList || []
+        const existingIds = new Set(currentList.map(msg => msg.id))
+        const uniqueNewMessages = newMessages.filter(msg => !existingIds.has(msg.id))
+
+        // 用接口返回的最新已读状态合并到当前列表（轮询更新已读/未读）
+        const idToNewMsg = {}
+        newMessages.forEach(m => { idToNewMsg[m.id] = m })
+        const mergedList = currentList.map(msg => {
+          const newMsg = idToNewMsg[msg.id]
           if (newMsg && newMsg.isRead !== msg.isRead) {
-            this.setData({
-              [`messageList[${index}].isRead`]: newMsg.isRead
-            })
+            return { ...msg, isRead: newMsg.isRead }
           }
+          return msg
         })
-      }
-      
-      if (uniqueNewMessages.length > 0) {
-          // 添加新消息到列表末尾
-          this.setData({
-            messageList: [...this.data.messageList, ...uniqueNewMessages]
-          })
-          
-          // 更新最后一条消息ID
+
+        let finalList = mergedList
+        if (uniqueNewMessages.length > 0) {
+          finalList = [...mergedList, ...uniqueNewMessages]
           const lastMessage = uniqueNewMessages[uniqueNewMessages.length - 1]
-          if (lastMessage) {
-            this.setData({ lastMessageId: lastMessage.id })
-          }
-          
-          // 如果用户正在查看最新消息（滚动到底部），自动滚动到新消息位置
+          this.setData({
+            messageList: finalList,
+            lastMessageId: lastMessage ? lastMessage.id : this.data.lastMessageId
+          })
           if (this.data.isScrolledToBottom) {
             this.scrollToBottom()
-            // 标记已读
             this.markAsRead()
-            // 隐藏新消息提示
-            this.setData({
-              showNewMessageTip: false,
-              newMessageCount: 0
-            })
+            this.setData({ showNewMessageTip: false, newMessageCount: 0 })
           } else {
-            // 如果不在底部，显示新消息提示气泡
             const newCount = (this.data.newMessageCount || 0) + uniqueNewMessages.length
-            this.setData({
-              showNewMessageTip: true,
-              newMessageCount: newCount
-            })
+            this.setData({ showNewMessageTip: true, newMessageCount: newCount })
           }
+        } else if (mergedList.some((m, i) => currentList[i] && m.isRead !== currentList[i].isRead)) {
+          this.setData({ messageList: mergedList })
         }
       }
       
