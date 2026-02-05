@@ -17,8 +17,8 @@
           </view>
         </view>
         
-        <!-- 消息入口 -->
-        <view class="message-entry" bindtap="goToConversationList">
+        <!-- 消息入口：仅登录后显示，与个人中心行为一致 -->
+        <view class="message-entry" wx:if="{{isLogin}}" bindtap="goToConversationList">
           <image class="message-icon" src="/assets/tabbar/会话框-白色.svg" mode="aspectFit"></image>
           <view class="message-badge" wx:if="{{unreadMessageCount > 0}}">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</view>
         </view>
@@ -113,26 +113,6 @@
     
   </view>
 </scroll-view>
-
-<!-- 登录弹窗 -->
-<view class="login-modal" wx:if="{{showLoginModal}}" bindtap="closeLoginModal">
-  <view class="login-popup" catchtap="">
-    <view class="login-header">
-      <text class="login-title">登录</text>
-      <text class="close-btn" bindtap="closeLoginModal">×</text>
-    </view>
-    
-    <view class="login-content">
-      <button class="wechat-login-btn" hover-class="wechat-login-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="wechatLogin">
-        快捷登录
-      </button>
-      
-      <button class="phone-login-btn" hover-class="phone-login-btn-hover" hover-start-time="0" hover-stay-time="70" bindtap="goToPhoneLogin">
-        手机号登录
-      </button>
-    </view>
-  </view>
-</view>
 
 <!-- 公告弹窗 -->
 <view id="announcement-modal" class="announcement-modal" wx:if="{{showAnnouncementModal}}" bindtap="closeAnnouncementModal">

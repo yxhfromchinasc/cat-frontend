@@ -270,11 +270,12 @@ Page({
             hasMore,
             loading: false
           }, () => {
-            // 计算新增内容高度并调整 scrollTop，保持视觉位置不变
+            // setData 回调：数据渲染完成后，计算新高度并修正滚动位置，防止跳跃
             if (oldScrollHeight > 0) {
               wx.createSelectorQuery().in(this).select('#message-list').fields({ scrollHeight: true }, res => {
-                if (res && res.scrollHeight > oldScrollHeight) {
-                  const jump = res.scrollHeight - oldScrollHeight
+                const newScrollHeight = res ? res.scrollHeight : 0
+                const jump = newScrollHeight - oldScrollHeight
+                if (jump > 0) {
                   this.setData({ scrollTop: jump })
                 }
               }).exec()
@@ -445,58 +446,31 @@ Page({
         const existingIds = new Set(currentList.map(msg => msg.id))
         const uniqueNewMessages = newMessages.filter(msg => !existingIds.has(msg.id))
 
-        // 检查已读状态是否有变化（即使没有新消息，已读状态也可能变了）
-        let hasReadStatusChanged = false
-        const idToNewMsg = {}
-        newMessages.forEach(m => { idToNewMsg[m.id] = m })
-        
-        // 遍历当前列表中的消息，如果新拉取的消息中有此ID，且已读状态不同，则标记为变化
-        // 这里只检查最近 20 条（新拉取的那一页），之前的历史消息状态暂不更新，避免全量遍历
-        for (let i = currentList.length - 1; i >= 0; i--) {
-          const msg = currentList[i]
-          const newMsg = idToNewMsg[msg.id]
-          if (newMsg) {
-             // 仅检查自己发送的消息的已读状态变化
-             // 或者对方发送的消息，如果本地是未读，后端变成了已读（理论上不会发生，除非其他端读了）
-             if (msg.isMine && msg.isRead !== newMsg.isRead) {
-               hasReadStatusChanged = true
-               break
-             }
-          } else {
-            // currentList 是全量，newMessages 只有最新20条，
-            // 所以遍历到不在 newMessages 里的旧消息时，说明已经超出范围，可以停止检查
-            // 但考虑到乱序可能性（虽然id倒序），还是简单处理：
-            // 如果连续多条都没在 newMessages 里，说明已经到了历史消息区域，停止
-            if (currentList.length - i > 25) break 
-          }
-        }
-
-        if (uniqueNewMessages.length > 0 || hasReadStatusChanged) {
-          // 有新消息 或 已读状态有变化：合并列表并更新
+        if (uniqueNewMessages.length > 0) {
+          // 有新消息：合并列表并更新；仅此时更新 messageList，避免仅已读变更导致整表重绘和跳动
+          const idToNewMsg = {}
+          newMessages.forEach(m => { idToNewMsg[m.id] = m })
           const mergedList = currentList.map(msg => {
             const newMsg = idToNewMsg[msg.id]
             if (newMsg && newMsg.isRead !== msg.isRead) return { ...msg, isRead: newMsg.isRead }
             return msg
           })
           const finalList = [...mergedList, ...uniqueNewMessages]
-          const lastMessage = uniqueNewMessages.length > 0 ? uniqueNewMessages[uniqueNewMessages.length - 1] : (finalList.length > 0 ? finalList[finalList.length - 1] : null)
-          
+          const lastMessage = uniqueNewMessages[uniqueNewMessages.length - 1]
           this.setData({
             messageList: finalList,
             lastMessageId: lastMessage ? lastMessage.id : this.data.lastMessageId
           })
-          
-          if (uniqueNewMessages.length > 0) {
-             if (this.data.isScrolledToBottom) {
-               this.scrollToBottom()
-               this.markAsRead()
-               this.setData({ showNewMessageTip: false, newMessageCount: 0 })
-             } else {
-               const newCount = (this.data.newMessageCount || 0) + uniqueNewMessages.length
-               this.setData({ showNewMessageTip: true, newMessageCount: newCount })
-             }
+          if (this.data.isScrolledToBottom) {
+            this.scrollToBottom()
+            this.markAsRead()
+            this.setData({ showNewMessageTip: false, newMessageCount: 0 })
+          } else {
+            const newCount = (this.data.newMessageCount || 0) + uniqueNewMessages.length
+            this.setData({ showNewMessageTip: true, newMessageCount: newCount })
           }
         }
+        // 无新消息时不再根据已读状态整表 setData，避免列表重绘和滚动跳动
       }
       
       // 返回 Promise，确保调用者可以等待完成
@@ -870,14 +844,34 @@ Page({
     }
   },
 
-  // 加载更多历史消息（点击触发）
-  loadMoreHistory() {
-    if (this.data.loading || !this.data.hasMore) return
-    this.loadMessageList(false)
-  },
-
-  // 滑到顶部时不再自动加载
+  // 滑到顶部时加载更多历史消息（scrolltoupper = 内容顶部，即旧消息那一端）
   onReachTop() {
-    // 已废弃，改为手动点击加载
+    const now = Date.now()
+    const initDoneAt = this.data.initLoadDoneAt || 0
+    const ignoreMs = 1500
+    const inCooldown = initDoneAt > 0 && (now - initDoneAt) < ignoreMs
+    const { loading, hasMore, messageList, conversationId } = this.data
+    const firstMsgId = messageList.length ? messageList[0].id : null
+    console.log('[Chat] onReachTop 触发', {
+      inCooldown,
+      initDoneAt,
+      nowDiff: initDoneAt ? now - initDoneAt : null,
+      ignoreMs,
+      loading,
+      hasMore,
+      messageListLen: messageList.length,
+      firstMessageId: firstMsgId,
+      conversationId
+    })
+    if (inCooldown) {
+      console.log('[Chat] onReachTop 跳过: 冷却期内')
+      return
+    }
+    if (!loading && hasMore) {
+      console.log('[Chat] onReachTop 调用 loadMessageList(false)')
+      this.loadMessageList(false)
+    } else {
+      console.log('[Chat] onReachTop 未调用加载', { reason: loading ? 'loading=true' : 'hasMore=false' })
+    }
   }
 })

@@ -6,7 +6,6 @@ Page({
     userInfo: null,
     isLogin: false,
     unreadMessageCount: 0, // 未读消息数量
-    showLoginModal: false,
     // 活动入口配置
     activityConfig: {
       iconUrl: '/assets/tabbar/现金.png', // 默认图标
@@ -142,30 +141,6 @@ Page({
     }
   },
 
-  // 显示登录弹窗
-  showLogin() {
-    this.setData({
-      showLoginModal: true
-    })
-  },
-
-  // 关闭登录弹窗
-  closeLoginModal() {
-    this.setData({
-      showLoginModal: false
-    })
-  },
-
-  // 登录成功回调
-  onLoginSuccess() {
-    this.setData({
-      showLoginModal: false,
-      isLogin: true
-    })
-    this.getUserInfo()
-    this.startPollingUnread()
-  },
-
   // 登出
   async logout() {
     try {
@@ -186,29 +161,10 @@ Page({
     }
   },
 
-  // 跳转到日志页面
-  bindViewTap() {
-    if (!this.data.isLogin) {
-      this.showLogin()
-      return
-    }
-    wx.navigateTo({
-      url: '../logs/logs'
-    })
-  },
-
-  // 快捷登录
-  wechatLogin() {
-    // 实现快捷登录逻辑
-    console.log('快捷登录')
-    this.closeLoginModal()
-  },
-
-  // 跳转到手机号登录页面
+  // 跳转到登录页（头部「点击登录」等入口使用）
   goToPhoneLogin() {
-    this.closeLoginModal()
     wx.navigateTo({
-      url: '../login/login'
+      url: '/pages/login/login'
     })
   },
 
@@ -240,10 +196,10 @@ Page({
     })
   },
 
-  // 跳转到个人中心
+  // 跳转到个人中心（tab 切换一般走 tabBar，此处保留供若有入口调用）
   goToProfile() {
     if (!this.data.isLogin) {
-      this.showLogin()
+      wx.showToast({ title: '请先登录', icon: 'none' })
       return
     }
     wx.switchTab({
@@ -251,10 +207,10 @@ Page({
     })
   },
 
-  // 跳转到消息列表（会话列表）
+  // 跳转到消息列表（会话列表），与个人中心一致：未登录时 Toast 提示
   goToConversationList() {
     if (!this.data.isLogin) {
-      this.showLogin()
+      wx.showToast({ title: '请先登录', icon: 'none' })
       return
     }
     wx.navigateTo({

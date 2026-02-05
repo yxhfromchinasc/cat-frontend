@@ -175,8 +175,8 @@
             <text class="info-value price">¥{{event.data.actualAmount}}</text>
           </view>
           
-          <!-- CANCEL事件的数据 -->
-          <view class="info-item" wx:if="{{event.type === 'CANCEL' && event.data.reason}}">
+          <!-- CANCEL / ADMIN_CANCEL 事件的数据 -->
+          <view class="info-item" wx:if="{{(event.type === 'CANCEL' || event.type === 'ADMIN_CANCEL') && event.data.reason}}">
             <text class="info-label">取消原因：</text>
             <text class="info-value">{{event.data.reason}}</text>
           </view>
