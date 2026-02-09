@@ -35,9 +35,6 @@
 
   <!-- 底部按钮 -->
   <view class="bottom-actions">
-    <button class="action-btn secondary" bindtap="importWechatAddress">
-      <text class="btn-text">导入微信地址</text>
-    </button>
     <button class="action-btn primary" bindtap="addAddress">
       <text class="btn-text">新增地址</text>
     </button>
