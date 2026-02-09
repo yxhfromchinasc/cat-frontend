@@ -175,6 +175,85 @@
   color: #999;
 }
 
+/* 驿站选择器样式（参考地址选择样式，更明显的可点击提示） */
+.station-selector {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background: #fff;
+  border-radius: 0;
+  border: none;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.station-selector:active {
+  background: #f0f4ff;
+}
+
+.station-selector.disabled {
+  opacity: 0.6;
+  background: #f7f8fa;
+}
+
+.station-selector.disabled:active {
+  background: #f7f8fa;
+}
+
+.station-icon {
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 24rpx;
+}
+
+.station-icon-img {
+  width: 80rpx;
+  height: 80rpx;
+}
+
+.station-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.station-label {
+  font-size: 22rpx;
+  color: #999;
+  margin-bottom: 4rpx;
+  font-weight: 400;
+}
+
+.station-value {
+  font-size: 28rpx;
+  color: #111;
+  line-height: 1.4;
+}
+
+.station-name {
+  font-weight: 500;
+  color: #111;
+}
+
+.station-arrow {
+  font-size: 36rpx;
+  color: #09ccb5;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+  font-weight: 300;
+  transition: transform 0.3s;
+}
+
+.station-selector:active .station-arrow {
+  transform: translateX(4rpx);
+}
+
 .disabled-text {
   color: #999;
   text-decoration: line-through;

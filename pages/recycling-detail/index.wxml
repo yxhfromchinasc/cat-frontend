@@ -226,6 +226,20 @@
             <text class="info-value">{{event.data.paymentTime}}</text>
           </view>
           
+          <!-- TRANSFER事件的数据（转单） -->
+          <view class="info-item" wx:if="{{event.type === 'TRANSFER' && event.data.fromRecyclerNickname}}">
+            <text class="info-label">原回收员：</text>
+            <text class="info-value">{{event.data.fromRecyclerNickname}}</text>
+          </view>
+          <view class="info-item" wx:if="{{event.type === 'TRANSFER' && event.data.toRecyclerNickname}}">
+            <text class="info-label">新回收员：</text>
+            <text class="info-value">{{event.data.toRecyclerNickname}}</text>
+          </view>
+          <view class="info-item" wx:if="{{event.type === 'TRANSFER' && event.data.reason}}">
+            <text class="info-label">转单原因：</text>
+            <text class="info-value">{{event.data.reason}}</text>
+          </view>
+          
           <!-- CANCEL / ADMIN_CANCEL 事件的数据 -->
           <view class="info-item" wx:if="{{(event.type === 'CANCEL' || event.type === 'ADMIN_CANCEL') && event.data.reason}}">
             <text class="info-label">取消原因：</text>

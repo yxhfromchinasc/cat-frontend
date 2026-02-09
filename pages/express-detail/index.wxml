@@ -175,6 +175,20 @@
             <text class="info-value price">¥{{event.data.actualAmount}}</text>
           </view>
           
+          <!-- TRANSFER事件的数据（转单） -->
+          <view class="info-item" wx:if="{{event.type === 'TRANSFER' && event.data.fromCourierNickname}}">
+            <text class="info-label">原小哥：</text>
+            <text class="info-value">{{event.data.fromCourierNickname}}</text>
+          </view>
+          <view class="info-item" wx:if="{{event.type === 'TRANSFER' && event.data.toCourierNickname}}">
+            <text class="info-label">新小哥：</text>
+            <text class="info-value">{{event.data.toCourierNickname}}</text>
+          </view>
+          <view class="info-item" wx:if="{{event.type === 'TRANSFER' && event.data.reason}}">
+            <text class="info-label">转单原因：</text>
+            <text class="info-value">{{event.data.reason}}</text>
+          </view>
+          
           <!-- CANCEL / ADMIN_CANCEL 事件的数据 -->
           <view class="info-item" wx:if="{{(event.type === 'CANCEL' || event.type === 'ADMIN_CANCEL') && event.data.reason}}">
             <text class="info-label">取消原因：</text>
