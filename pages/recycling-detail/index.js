@@ -99,7 +99,7 @@ Page({
         }, 1500)
       }
     } catch (e) {
-      console.error('加载订单详情失败:', e)
+      console.error('加载订单详情失败')
       wx.showToast({ title: '加载失败', icon: 'none' })
       setTimeout(() => {
         wx.navigateBack()
@@ -296,11 +296,9 @@ Page({
     }
     wx.makePhoneCall({
       phoneNumber: phone,
-      success: () => {
-        console.log('拨打电话成功')
-      },
-      fail: (err) => {
-        console.error('拨打电话失败:', err)
+      success: () => {},
+      fail: () => {
+        console.error('拨打电话失败')
         wx.showToast({ title: '拨打电话失败', icon: 'none' })
       }
     })
@@ -339,14 +337,14 @@ Page({
               }
             } catch (e) {
               wx.hideLoading()
-              console.error('取消订单异常:', e)
+              console.error('取消订单异常')
               wx.showToast({ title: '取消失败', icon: 'none' })
             }
           }
         }
       })
     } catch (e) {
-      console.error('取消订单异常:', e)
+      console.error('取消订单异常')
     }
   },
 

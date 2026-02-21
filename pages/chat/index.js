@@ -105,12 +105,11 @@ Page({
         this.setData({ currentUserAvatar: res.data.avatarUrl })
       }
     } catch (e) {
-      console.error('加载用户信息失败:', e)
+      console.error('加载用户信息失败')
     }
   },
 
   onShow() {
-    console.log('[Chat] onShow', { conversationId: this.data.conversationId, initLoading: this.data.initLoading })
     if (this.data.conversationId && !this.data.initLoading) {
       this.startPolling()
     }
@@ -157,21 +156,18 @@ Page({
 
   // 加载会话详情
   async loadConversationDetail() {
-    console.log('[Chat] loadConversationDetail 开始', { conversationId: this.data.conversationId })
     try {
       const res = await api.getConversationDetail(this.data.conversationId)
       if (res.success && res.data) {
         this.setData({ conversation: res.data })
         this.setNavigationBarTitle()
-        console.log('[Chat] loadConversationDetail 会话详情已拉取，即将 loadMessageList(true)')
         await this.loadMessageList(true)
-        console.log('[Chat] loadConversationDetail 首屏消息已拉取，即将 startPolling')
         this.startPolling()
       } else {
         wx.showToast({ title: res.message || '加载失败', icon: 'none' })
       }
     } catch (e) {
-      console.error('加载会话详情失败:', e)
+      console.error('加载会话详情失败')
       wx.showToast({ title: '加载失败', icon: 'none' })
     } finally {
       this.setData({ initLoading: false })
@@ -204,17 +200,9 @@ Page({
 
   // 加载消息列表
   async loadMessageList(reset = false) {
-    console.log('[Chat] loadMessageList 入口', { reset, loading: this.data.loading, hasMore: this.data.hasMore, messageListLen: this.data.messageList.length })
-    if (this.data.loading) {
-      console.log('[Chat] loadMessageList 跳过: loading=true')
-      return
-    }
-    if (!this.data.hasMore && !reset) {
-      console.log('[Chat] loadMessageList 跳过: hasMore=false 且非 reset')
-      return
-    }
+    if (this.data.loading) return
+    if (!this.data.hasMore && !reset) return
     const beforeMessageId = !reset && this.data.messageList.length ? this.data.messageList[0].id : null
-    console.log('[Chat] loadMessageList 发起请求', { reset, beforeMessageId, conversationId: this.data.conversationId })
     this.setData({ loading: true }) // 立即加锁，防止 scrolltoupper 连续触发导致多次并发请求
     try {
       let oldScrollHeight = 0
@@ -232,9 +220,7 @@ Page({
         pageSize: this.data.pageSize
       }
       if (beforeMessageId) params.beforeMessageId = beforeMessageId
-      console.log('[Chat] loadMessageList 请求参数', params)
       const res = await api.getMessageList(params)
-      console.log('[Chat] loadMessageList 原始响应', { success: res.success, hasData: !!res.data, listLen: res.data?.list?.length, total: res.data?.total, hasMore: res.data?.hasMore })
 
       if (res.success && res.data) {
         const newMessages = res.data.list || []
@@ -243,7 +229,6 @@ Page({
         const hasMore = (res.data.hasMore === true || res.data.hasMore === false)
           ? res.data.hasMore
           : (reset && res.data.total != null ? res.data.total > this.data.pageSize : false)
-        console.log('[Chat] loadMessageList 请求返回', { reset, beforeMessageId, listLen: newMessages.length, total: res.data.total, hasMore })
         if (reset) {
           // 重置列表
           const reversedMessages = formattedMessages.reverse()
@@ -286,7 +271,7 @@ Page({
         this.setData({ loading: false })
       }
     } catch (e) {
-      console.error('加载消息列表失败:', e)
+      console.error('加载消息列表失败')
       this.setData({ loading: false })
     }
   },
@@ -380,7 +365,7 @@ Page({
     try {
       await api.markAsRead(this.data.conversationId)
     } catch (e) {
-      console.error('标记已读失败:', e)
+      console.error('标记已读失败')
     } finally {
       this.setData({ markReadInFlight: false })
     }
@@ -388,17 +373,12 @@ Page({
 
   // 开始轮询（首次延迟执行，避免与初始加载、滚动重叠导致列表跳动）
   startPolling() {
-    if (this.data.pollTimer) {
-      console.log('[Chat] startPolling 跳过: 已有 pollTimer')
-      return
-    }
+    if (this.data.pollTimer) return
     if (!this.data.conversationId) return
-    console.log('[Chat] startPolling 启动，首次 2s 后执行')
     const interval = this.data.pollInterval
     const firstDelay = 2000
     const firstTimer = setTimeout(() => {
       this.setData({ pollFirstTimer: null })
-      console.log('[Chat] startPolling 首次轮询执行')
       this.pollNewMessages()
       const timer = setInterval(() => {
         this.pollNewMessages()
@@ -425,15 +405,11 @@ Page({
 
   // 轮询获取新消息
   async pollNewMessages() {
-    if (this.data.isPolling || this.data.loading) {
-      console.log('[Chat] pollNewMessages 跳过', { isPolling: this.data.isPolling, loading: this.data.loading })
-      return Promise.resolve()
-    }
+    if (this.data.isPolling || this.data.loading) return Promise.resolve()
     if (!this.data.conversationId) {
       this.stopPolling()
       return Promise.resolve()
     }
-    console.log('[Chat] pollNewMessages 开始，将调用 loadNewMessages(pageNum=1)')
     try {
       this.setData({ isPolling: true })
       if (this.data.isScrolledToBottom) {
@@ -476,7 +452,7 @@ Page({
       // 返回 Promise，确保调用者可以等待完成
       return Promise.resolve()
     } catch (e) {
-      console.error('轮询新消息失败:', e)
+      console.error('轮询新消息失败')
       // 轮询失败时不中断轮询，继续下一次轮询
       return Promise.resolve()
     } finally {
@@ -486,7 +462,6 @@ Page({
 
   // 加载新消息（增量）
   async loadNewMessages() {
-    console.log('[Chat] loadNewMessages 发起请求 pageNum=1 (轮询用)')
     try {
       const res = await api.getMessageList({
         conversationId: this.data.conversationId,
@@ -494,7 +469,6 @@ Page({
         pageSize: 20
       })
       if (res.success && res.data) {
-        console.log('[Chat] loadNewMessages 返回', { listLen: (res.data.list || []).length })
         const newMessages = res.data.list || []
         const formattedMessages = newMessages.map(msg => this.formatMessage(msg))
         
@@ -504,7 +478,7 @@ Page({
       
       return []
     } catch (e) {
-      console.error('加载新消息失败:', e)
+      console.error('加载新消息失败')
       return []
     }
   },
@@ -793,8 +767,8 @@ Page({
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
       name: address || '位置',
-      fail: (err) => {
-        console.error('打开地图失败:', err)
+      fail: () => {
+        console.error('打开地图失败')
         wx.showToast({ title: '打开地图失败', icon: 'none' })
       }
     })
@@ -850,28 +824,10 @@ Page({
     const initDoneAt = this.data.initLoadDoneAt || 0
     const ignoreMs = 1500
     const inCooldown = initDoneAt > 0 && (now - initDoneAt) < ignoreMs
-    const { loading, hasMore, messageList, conversationId } = this.data
-    const firstMsgId = messageList.length ? messageList[0].id : null
-    console.log('[Chat] onReachTop 触发', {
-      inCooldown,
-      initDoneAt,
-      nowDiff: initDoneAt ? now - initDoneAt : null,
-      ignoreMs,
-      loading,
-      hasMore,
-      messageListLen: messageList.length,
-      firstMessageId: firstMsgId,
-      conversationId
-    })
-    if (inCooldown) {
-      console.log('[Chat] onReachTop 跳过: 冷却期内')
-      return
-    }
+    const { loading, hasMore } = this.data
+    if (inCooldown) return
     if (!loading && hasMore) {
-      console.log('[Chat] onReachTop 调用 loadMessageList(false)')
       this.loadMessageList(false)
-    } else {
-      console.log('[Chat] onReachTop 未调用加载', { reason: loading ? 'loading=true' : 'hasMore=false' })
     }
   }
 })

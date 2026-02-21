@@ -1,5 +1,7 @@
 // index.js
 const { api } = require('../../utils/util.js')
+const constants = require('../../utils/constants.js')
+const polling = require('../../utils/polling.js')
 
 Page({
   data: {
@@ -19,9 +21,7 @@ Page({
     announcementData: null,
     hideTodayChecked: false,
     isRequestingNextAnnouncement: false, // 是否正在请求下一个公告，防止重复请求
-    isCloseBtnLoading: false, // 关闭按钮是否正在加载
-    pollTimer: null, // 轮询定时器
-    pollInterval: 3000 // 轮询间隔（毫秒）
+    isCloseBtnLoading: false // 关闭按钮是否正在加载
   },
 
   onLoad(options) {
@@ -82,26 +82,15 @@ Page({
     }
   },
 
-  // 启动轮询未读消息
+  // 启动轮询未读消息（使用全局单例轮询管理器）
   startPollingUnread() {
-    if (this.data.pollTimer) return
-    
-    // 立即执行一次
-    this.loadUnreadMessageCount()
-    
-    const timer = setInterval(() => {
-      this.loadUnreadMessageCount()
-    }, this.data.pollInterval)
-    
-    this.setData({ pollTimer: timer })
+    const callback = () => this.loadUnreadMessageCount()
+    polling.start(callback, constants.POLL_INTERVAL_UNREAD_MESSAGES)
   },
 
   // 停止轮询未读消息
   stopPollingUnread() {
-    if (this.data.pollTimer) {
-      clearInterval(this.data.pollTimer)
-      this.setData({ pollTimer: null })
-    }
+    polling.stop()
   },
 
   // 加载未读消息数量
@@ -116,7 +105,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('加载未读消息数量失败:', e)
+      console.error('加载未读消息数量失败')
     }
   },
 
@@ -131,7 +120,7 @@ Page({
         })
       }
     } catch (error) {
-      console.error('获取用户信息失败:', error)
+      console.error('获取用户信息失败')
       // 如果获取用户信息失败，可能是token过期，清除登录状态
       api.clearToken()
       this.setData({
@@ -157,7 +146,7 @@ Page({
         icon: 'success'
       })
     } catch (error) {
-      console.error('登出失败:', error)
+      console.error('登出失败')
     }
   },
 
@@ -273,9 +262,7 @@ Page({
         if (iconResult.success && iconResult.data) {
           activityConfig.iconUrl = iconResult.data
         }
-      } catch (e) {
-        console.warn('获取活动图标配置失败:', e)
-      }
+      } catch (e) {}
       
       // 获取活动描述（JSON数组）
       try {
@@ -286,13 +273,9 @@ Page({
             if (Array.isArray(descList) && descList.length > 0) {
               activityConfig.descriptions = descList
             }
-          } catch (e) {
-            console.warn('解析活动描述失败:', e)
-          }
+          } catch (e) {}
         }
-      } catch (e) {
-        console.warn('获取活动描述配置失败:', e)
-      }
+      } catch (e) {}
       
       // 获取活动链接
       try {
@@ -300,9 +283,7 @@ Page({
         if (linkResult.success && linkResult.data) {
           activityConfig.linkUrl = linkResult.data
         }
-      } catch (e) {
-        console.warn('获取活动链接配置失败:', e)
-      }
+      } catch (e) {}
       
       // 获取活动标题
       try {
@@ -310,9 +291,7 @@ Page({
         if (titleResult.success && titleResult.data) {
           activityConfig.title = titleResult.data
         }
-      } catch (e) {
-        console.warn('获取活动标题配置失败:', e)
-      }
+      } catch (e) {}
       
       // 只有当配置了链接时才显示活动卡片
       this.setData({
@@ -320,7 +299,7 @@ Page({
         showActivityCard: !!activityConfig.linkUrl && activityConfig.linkUrl.trim() !== ''
       })
     } catch (error) {
-      console.error('加载活动配置失败:', error)
+      console.error('加载活动配置失败')
       // 如果配置加载失败，不显示活动卡片
       this.setData({
         showActivityCard: false
@@ -389,19 +368,7 @@ Page({
 
   // 分享给好友
   onShareAppMessage() {
-    const app = getApp()
-    const shareImageUrl = app.getShareImageUrl()
-    const sharePath = app.getSharePath()
-    const shareTitle = app.getShareTitle()
-    const shareConfig = {
-      title: shareTitle, // 使用配置的分享标题
-      path: sharePath // 使用配置的分享路径
-    }
-    // 只有在配置了有效的分享图片URL时才设置，否则不设置imageUrl（不使用默认截图）
-    if (shareImageUrl) {
-      shareConfig.imageUrl = shareImageUrl
-    }
-    return shareConfig
+    return require('../../utils/share.js').getShareConfig()
   },
 
   // ========== 公告相关方法 ==========
@@ -434,7 +401,7 @@ Page({
         })
       }
     } catch (error) {
-      console.error('检查公告失败:', error)
+      console.error('检查公告失败')
       // 静默失败，不影响其他功能
     }
   },
@@ -456,7 +423,7 @@ Page({
         })
       }
     } catch (error) {
-      console.error('登录后显示公告失败:', error)
+      console.error('登录后显示公告失败')
       // 静默失败，不影响其他功能
     }
   },
@@ -576,7 +543,7 @@ Page({
         }
       }
     } catch (error) {
-      console.error('获取下一个公告失败:', error)
+      console.error('获取下一个公告失败')
       // 即使失败也关闭弹窗
       this.setData({
         showAnnouncementModal: false,
@@ -610,8 +577,8 @@ Page({
       try {
         wx.navigateTo({
           url: jumpValue,
-          fail: (err) => {
-            console.error('页面跳转失败:', err)
+          fail: () => {
+            console.error('页面跳转失败')
             // 如果navigateTo失败，尝试switchTab
             wx.switchTab({
               url: jumpValue,
@@ -625,7 +592,7 @@ Page({
           }
         })
       } catch (e) {
-        console.error('跳转异常:', e)
+        console.error('跳转异常')
       }
     } else if (jumpType === 2 && jumpValue) {
       // 外部链接跳转

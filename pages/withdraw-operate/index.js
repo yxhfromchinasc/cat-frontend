@@ -108,7 +108,7 @@ Page({
         this.setData({ loading: false })
       }
     } catch (e) {
-      console.error('获取提现订单详情失败', e)
+      console.error('获取提现订单详情失败')
       wx.showToast({ title: '加载失败', icon: 'none' })
       this.setData({ loading: false })
     } finally {
@@ -138,7 +138,7 @@ Page({
         
         this.setData({ transferRemainSeconds: diff, transferRemainStr: remainStr })
       } catch (e) {
-        console.error('计算剩余时间失败', e)
+        console.error('计算剩余时间失败')
         this.clearTransferRemainCountdown()
       }
     }
@@ -203,7 +203,7 @@ Page({
           }
         })
       } catch (e) {
-        console.error('调起确认收款异常:', e)
+        console.error('调起确认收款异常')
         reject(e)
       }
     })
@@ -298,7 +298,7 @@ Page({
       }
     } catch (error) {
       api.hideLoadingToast()
-      console.error('发起提现失败:', error)
+      console.error('发起提现失败')
       const errorMessage = error.message || error.error || '发起提现失败，请稍后重试'
       wx.showToast({ 
         title: errorMessage, 
@@ -397,7 +397,7 @@ Page({
       }
     } catch (error) {
       api.hideLoadingToast()
-      console.error('继续提现失败:', error)
+      console.error('继续提现失败')
       const errorMessage = error.message || error.error || '继续提现失败，请稍后重试'
       wx.showToast({ 
         title: errorMessage, 
@@ -451,7 +451,7 @@ Page({
           }
         } catch (e) {
           wx.hideLoading()
-          console.error('取消当次提现失败', e)
+          console.error('取消当次提现失败')
           wx.showToast({ title: '取消失败', icon: 'none' })
         }
       }

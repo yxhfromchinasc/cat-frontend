@@ -74,7 +74,7 @@ function getToken() {
   try {
     return wx.getStorageSync('accessToken') || ''
   } catch (error) {
-    console.error('获取token失败:', error)
+    console.error('获取token失败')
     return ''
   }
 }
@@ -86,7 +86,7 @@ function setToken(token) {
   try {
     wx.setStorageSync('accessToken', token)
   } catch (error) {
-    console.error('保存token失败:', error)
+    console.error('保存token失败')
   }
 }
 
@@ -97,7 +97,7 @@ function clearToken() {
   try {
     wx.removeStorageSync('accessToken')
   } catch (error) {
-    console.error('清除token失败:', error)
+    console.error('清除token失败')
   }
 }
 
@@ -144,11 +144,8 @@ function hideLoadingToast() {
  * 处理响应数据
  */
 function handleResponse(response) {
-  console.log('API响应原始数据:', response.data)
-  console.log('HTTP状态码:', response.statusCode)
   const { success, code, message, data } = response.data || {}
-  console.log('解析后的数据:', { success, code, message, data })
-  
+
   // 根据规范文档处理不同的状态码
   switch (code) {
     case 200:
@@ -187,7 +184,6 @@ function handleResponse(response) {
       }
     case 3002:
       // 微信小程序登录需要手机号授权
-      console.log('处理3002错误码')
       return {
         success: false,
         code: 3002,
@@ -269,8 +265,7 @@ function request(options) {
 
         // 处理响应
         const result = handleResponse(res)
-        console.log('handleResponse返回的结果:', result)
-        
+
         if (result.success) {
           // 显示成功提示
           if (showSuccess) {
@@ -451,20 +446,6 @@ function phoneSmsLogin(phone, verificationCode, referralCode) {
 }
 
 /**
- * 手机号密码登录
- */
-function phonePasswordLogin(phone, password) {
-  return post('/login/phone-password', {}, {
-    url: `/login/phone-password?phone=${phone}&password=${password}`
-  }).then(result => {
-    if (result.success && result.data.accessToken) {
-      setToken(result.data.accessToken)
-    }
-    return result
-  })
-}
-
-/**
  * 发送短信验证码
  */
 function sendSmsCode(phone) {
@@ -532,10 +513,6 @@ function getNearestAddress(latitude, longitude) {
     return get('/config/public', {}, { showLoading: false, showError: false })
   }
 
-  function getCustomerServicePhone() {
-    return get('/config/customer-service-phone', {}, { showLoading: false, showError: false })
-  }
-
   // 获取提现金额配置列表
   function getWithdrawAmounts() {
     return get('/config/withdraw-amounts', {}, { showLoading: false, showError: false })
@@ -576,7 +553,6 @@ function getNearestAddress(latitude, longitude) {
  * 返回包含 orderNo、formData 的结构
  */
 function createRecharge(amount) {
-  console.log('创建充值订单，金额:', amount, '支付方式: 2 (微信小程序支付)')
   return post('/recharge/create', {
     amount: amount,
     paymentMethod: 2  // 微信小程序支付
@@ -584,14 +560,6 @@ function createRecharge(amount) {
     showSuccess: false,
     showError: true
   })
-}
-
-/**
- * 查询充值状态（已废弃，请使用 getPaymentProgress）
- * @deprecated 请使用 getPaymentProgress 替代
- */
-function getRechargeStatus(orderNo) {
-  return get(`/recharge/status`, { orderNo }, { showSuccess: false })
 }
 
 /**
@@ -630,13 +598,6 @@ function createPayment(orderNo, paymentMethod = 2, couponId = null) {
 }
 
 /**
- * 取消充值订单（可选）
- */
-function cancelRecharge(orderNo) {
-  return post(`/recharge/cancel`, {}, { url: `/recharge/cancel?orderNo=${orderNo}`, showSuccess: false })
-}
-
-/**
  * 取消第三方支付订单
  * 当用户从支付页面退出时调用，用于取消第三方支付订单并更新本地订单状态
  * @param {string} orderNo 订单号
@@ -659,7 +620,6 @@ function continuePayment(orderNo) {
  * 创建提现订单（仅创建本地订单，不扣除余额）
  */
 function createWithdraw(amount, withdrawMethod) {
-  console.log('创建提现订单，金额:', amount, '提现方式:', withdrawMethod)
   return post('/withdraw/create', {
     amount: amount,
     withdrawMethod: withdrawMethod || 1  // 默认微信零钱
@@ -790,13 +750,6 @@ function getAvailableCoupons(orderAmount) {
 }
 
 /**
- * 计算代金券优惠金额（根据模板ID和订单金额）
- */
-function calculateCouponDiscount(couponTemplateId, orderAmount) {
-  return get('/coupon/calculate', { couponTemplateId, orderAmount }, { showSuccess: false })
-}
-
-/**
  * 根据订单号和用户代金券ID计算优惠金额
  */
 function calculateCouponDiscountByOrder(orderNo, userCouponId) {
@@ -863,13 +816,6 @@ function getWalletTransactions(params = {}) {
     startTime,
     endTime
   }, { showSuccess: false })
-}
-
-/**
- * 获取支持的登录方式
- */
-function getLoginMethods() {
-  return get('/login/methods')
 }
 
 /**
@@ -1008,26 +954,15 @@ function compressImage(filePath) {
               filePath: res.tempFilePath,
               success: (compressedInfo) => {
                 const compressedSize = compressedInfo.size
-                const compressedSizeMB = (compressedSize / 1024 / 1024).toFixed(2)
-                const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(1)
-                
-                console.log('图片压缩完成:', {
-                  原始大小: `${originalSizeMB}MB (${originalSize} bytes)`,
-                  压缩后大小: `${compressedSizeMB}MB (${compressedSize} bytes)`,
-                  压缩率: `${compressionRatio}%`
-                })
-                
                 resolve(res.tempFilePath)
               },
               fail: () => {
                 // 获取压缩后大小失败，但压缩成功，仍然返回压缩后的路径
-                console.log('图片压缩完成，但无法获取压缩后大小')
                 resolve(res.tempFilePath)
               }
             })
           },
-          fail: (error) => {
-            console.warn('图片压缩失败，使用原图:', error)
+          fail: () => {
             // 压缩失败时使用原图
             resolve(filePath)
           }
@@ -1039,11 +974,9 @@ function compressImage(filePath) {
           src: filePath,
           quality: 80,
           success: (res) => {
-            console.log('图片压缩完成（无法获取原图大小）')
             resolve(res.tempFilePath)
           },
-          fail: (error) => {
-            console.warn('图片压缩失败，使用原图:', error)
+          fail: () => {
             resolve(filePath)
           }
         })
@@ -1121,9 +1054,8 @@ function uploadImage(filePath, category = 'express', enableCompress = true) {
     if (enableCompress) {
       compressImage(filePath).then(compressedPath => {
         processUpload(compressedPath)
-      }).catch(error => {
+      }).catch(() => {
         // 压缩失败时使用原图
-        console.warn('图片压缩失败，使用原图:', error)
         processUpload(filePath)
       })
     } else {
@@ -1174,11 +1106,9 @@ module.exports = {
   // 认证相关
   wechatLogin,
   phoneSmsLogin,
-  phonePasswordLogin,
   sendSmsCode,
   bindPhone,
   getUserInfo,
-  getLoginMethods,
   decryptPhoneNumber,
   logout,
   checkLogin,
@@ -1223,7 +1153,6 @@ module.exports = {
   // 意见反馈相关
   submitFeedback,
   getPublicConfigs,
-  getCustomerServicePhone,
   getWithdrawAmounts,
   getAllowFullWithdraw,
   getRechargeAmounts,
@@ -1234,11 +1163,9 @@ module.exports = {
   
   // 支付相关（充值）
   createRecharge,
-  getRechargeStatus,
   getRechargeOrderDetail,
   getPaymentProgress,
   refreshPaymentStatus,
-  cancelRecharge,
   cancelRechargeOrder,
   createPayment,
   cancelThirdPartyPayment,
@@ -1265,7 +1192,6 @@ module.exports = {
   receiveCoupon,
   getUserCoupons,
   getAvailableCoupons,
-  calculateCouponDiscount,
   calculateCouponDiscountByOrder,
   getUserCouponReceiveCount,
   getCouponDetail,

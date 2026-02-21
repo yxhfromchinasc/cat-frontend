@@ -117,7 +117,7 @@
         <text class="payment-icon">{{item.icon}}</text>
         <text class="payment-name">{{item.name}}</text>
       </view>
-      <view class="payment-balance" wx:if="{{item.code === 4}}">
+      <view class="payment-balance" wx:if="{{item.code === PAYMENT_METHOD_WALLET}}">
         <text>余额：¥{{userBalanceStr || '0.00'}}</text>
       </view>
       <view class="payment-check" wx:if="{{selectedPaymentMethod === item.code}}">

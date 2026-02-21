@@ -133,6 +133,16 @@
       </view>
     </view>
     
+    <!-- 提交按钮（放在表单内部，与其他表单信息同一层级） -->
+    <view class="card submit-card">
+      <!-- 未完成项提示 -->
+      <view class="submit-tip" wx:if="{{submitTip}}">{{submitTip}}</view>
+      <button class="submit-btn" bindtap="onSubmit" disabled="{{!canSubmitData || isSubmitting || showTimePickerModal}}">{{isSubmitting ? '提交中...' : '提交订单'}}</button>
+    </view>
+    
+    <!-- 底部安全空白区域 -->
+    <view class="safe-area-bottom"></view>
+    
     <!-- 时间选择器弹窗 -->
     <view class="time-picker-modal" wx:if="{{showTimePickerModal}}" catchtap="hideTimePicker">
       <view class="time-picker-content" catchtap="stopPropagation">
@@ -171,13 +181,5 @@
         </view>
       </view>
     </view>
-    
-    <!-- 底部空白区域，避免内容被底部按钮遮挡 -->
-    <view class="scroll-bottom-spacer"></view>
   </scroll-view>
-
-  <!-- 底部提交按钮 -->
-  <view class="bottom-bar">
-    <button class="submit-btn" bindtap="onSubmit" disabled="{{isSubmitting}}">{{isSubmitting ? '提交中...' : '提交订单'}}</button>
-  </view>
 </view>

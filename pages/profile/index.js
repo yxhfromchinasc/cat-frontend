@@ -1,6 +1,8 @@
 // pages/profile/index.js
 const { api } = require('../../utils/util.js')
 const amount = require('../../utils/amount.js')
+const constants = require('../../utils/constants.js')
+const polling = require('../../utils/polling.js')
 
 Page({
   data: {
@@ -12,9 +14,7 @@ Page({
     addressCount: 0, // 地址数量
     avatarSrc: '/assets/tabbar/profile.png', // 头像地址
     addressIcon: '', // 地址图标 SVG data URI
-    unreadMessageCount: 0, // 未读消息数量
-    pollTimer: null, // 轮询定时器
-    pollInterval: 3000 // 轮询间隔（毫秒）
+    unreadMessageCount: 0 // 未读消息数量
   },
 
   onLoad() {
@@ -66,26 +66,15 @@ Page({
     this.stopPollingUnread()
   },
 
-  // 启动轮询未读消息
+  // 启动轮询未读消息（使用全局单例轮询管理器）
   startPollingUnread() {
-    if (this.data.pollTimer) return
-    
-    // 立即执行一次
-    this.loadUnreadMessageCount()
-    
-    const timer = setInterval(() => {
-      this.loadUnreadMessageCount()
-    }, this.data.pollInterval)
-    
-    this.setData({ pollTimer: timer })
+    const callback = () => this.loadUnreadMessageCount()
+    polling.start(callback, constants.POLL_INTERVAL_UNREAD_MESSAGES)
   },
 
   // 停止轮询未读消息
   stopPollingUnread() {
-    if (this.data.pollTimer) {
-      clearInterval(this.data.pollTimer)
-      this.setData({ pollTimer: null })
-    }
+    polling.stop()
   },
 
   // 加载未读消息数量
@@ -100,7 +89,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('加载未读消息数量失败:', e)
+      console.error('加载未读消息数量失败')
     }
   },
 
@@ -126,7 +115,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('加载用户信息失败:', e)
+      console.error('加载用户信息失败')
       api.clearToken()
       this.setData({ 
         userInfo: null, 
@@ -165,7 +154,7 @@ Page({
       this.loadCouponCount(),
       this.loadAddressCount()
     ]).catch(e => {
-      console.error('加载统计数据失败:', e)
+      console.error('加载统计数据失败')
     })
   },
 
@@ -183,7 +172,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('加载余额失败:', e)
+      console.error('加载余额失败')
     }
   },
 
@@ -206,7 +195,7 @@ Page({
         this.setData({ couponCount: total })
       }
     } catch (e) {
-      console.error('加载卡券数量失败:', e)
+      console.error('加载卡券数量失败')
     }
   },
 
@@ -228,7 +217,7 @@ Page({
         this.setData({ addressCount: total })
       }
     } catch (e) {
-      console.error('加载地址数量失败:', e)
+      console.error('加载地址数量失败')
     }
   },
 
@@ -269,11 +258,9 @@ Page({
               if (modalRes.confirm) {
                 wx.makePhoneCall({
                   phoneNumber: phone,
-                  success: () => {
-                    console.log('拨打电话成功')
-                  },
+                  success: () => {},
                   fail: (err) => {
-                    console.error('拨打电话失败:', err)
+                    console.error('拨打电话失败')
                     if (err.errMsg && err.errMsg.includes('cancel')) {
                       return
                     }
@@ -290,7 +277,7 @@ Page({
         api.showError('获取客服信息失败')
       }
     } catch (e) {
-      console.error('获取客服信息失败:', e)
+      console.error('获取客服信息失败')
       api.showError('获取客服信息失败，请稍后重试')
     }
   },
@@ -343,9 +330,7 @@ Page({
       try {
         // 上传图片
         const uploadRes = await api.uploadImage(tempFilePath, 'avatar')
-        
-        console.log('上传结果:', uploadRes)
-        
+
         if (uploadRes.success && uploadRes.data) {
           // 获取图片URL（可能是 uploadRes.data.url 或 uploadRes.data）
           let avatarUrl = uploadRes.data.url || uploadRes.data
@@ -354,12 +339,9 @@ Page({
             wx.showToast({ title: '上传失败：未获取到图片地址', icon: 'none' })
             return
           }
-          
-          console.log('准备更新头像，URL:', avatarUrl)
-          
+
           // 更新头像
-          const updateRes = await api.updateAvatar(avatarUrl)
-          console.log('更新头像结果:', updateRes)
+          await api.updateAvatar(avatarUrl)
           
           // 立即更新本地数据，避免等待接口返回
           if (this.data.userInfo) {
@@ -379,7 +361,7 @@ Page({
           wx.showToast({ title: '上传失败，请重试', icon: 'none' })
         }
       } catch (e) {
-        console.error('上传头像失败:', e)
+        console.error('上传头像失败')
         wx.showToast({ title: e.error || '上传失败，请重试', icon: 'none' })
       } finally {
         wx.hideLoading()
@@ -389,26 +371,14 @@ Page({
         // 用户取消选择，不显示错误
         return
       }
-      console.error('选择图片失败:', e)
+      console.error('选择图片失败')
       wx.showToast({ title: '选择图片失败', icon: 'none' })
     }
   },
 
   // 分享给好友
   onShareAppMessage() {
-    const app = getApp()
-    const shareImageUrl = app.getShareImageUrl()
-    const sharePath = app.getSharePath()
-    const shareTitle = app.getShareTitle()
-    const shareConfig = {
-      title: shareTitle, // 使用配置的分享标题
-      path: sharePath // 使用配置的分享路径
-    }
-    // 只有在配置了有效的分享图片URL时才设置，否则不设置imageUrl（不使用默认截图）
-    if (shareImageUrl) {
-      shareConfig.imageUrl = shareImageUrl
-    }
-    return shareConfig
+    return require('../../utils/share.js').getShareConfig()
   },
 
 })

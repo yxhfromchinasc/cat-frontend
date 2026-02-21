@@ -82,7 +82,7 @@ Page({
         this.moveToLocation(this.data.latitude, this.data.longitude);
       }
     } catch (error) {
-      console.error('初始化页面失败:', error);
+      console.error('初始化页面失败');
       this.setData({ loading: false });
       wx.showToast({ title: '加载地址失败', icon: 'none' });
     }
@@ -98,7 +98,7 @@ Page({
         this.setData({ addressList: res.data.list });
       }
     } catch (error) {
-      console.error('加载完整地址列表失败:', error);
+      console.error('加载完整地址列表失败');
     }
   },
 
@@ -132,7 +132,7 @@ Page({
       await this.loadRecyclingPoints(lat, lon);
 
     } catch (error) {
-      console.error('更新地图失败:', error);
+      console.error('更新地图失败');
       wx.showToast({ title: error.message || '更新地图失败', icon: 'none' });
       this.setData({ loading: false });
     }
@@ -173,7 +173,7 @@ Page({
       });
       
     } catch (error) {
-      console.error('加载回收点失败:', error);
+      console.error('加载回收点失败');
       wx.showToast({ title: '加载回收点失败', icon: 'none' });
       this.setData({ markers: [], points: [], loading: false });
     }
@@ -207,7 +207,6 @@ Page({
         await this.updateMapWithAddress(selected);
       },
       fail(res) {
-        console.log(res.errMsg);
       }
     });
   },

@@ -53,7 +53,7 @@ Page({
       // 开始倒计时
       this.startCountdown()
     } catch (error) {
-      console.error('发送验证码失败:', error)
+      console.error('发送验证码失败')
     }
   },
 
@@ -110,7 +110,7 @@ Page({
         }, 1500)
       }
     } catch (error) {
-      console.error('绑定手机号失败:', error)
+      console.error('绑定手机号失败')
     }
   },
 

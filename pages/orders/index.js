@@ -97,7 +97,7 @@ Page({
         this.setData({ loading: false })
       }
     } catch (e) {
-      console.error('加载订单列表失败:', e)
+      console.error('加载订单列表失败')
       // 如果是401未登录错误，API工具已经显示了登录弹窗，不需要再显示"加载失败"
       if (e && e.code === 401) {
         // 401错误已经由API工具处理，只重置loading状态
@@ -211,26 +211,13 @@ Page({
       })
     } else {
       // 其他订单类型暂时不处理
-      console.log('订单类型:', serviceType, '订单号:', orderNo)
       wx.showToast({ title: '暂不支持该订单类型', icon: 'none' })
     }
   },
 
   // 分享给好友
   onShareAppMessage() {
-    const app = getApp()
-    const shareImageUrl = app.getShareImageUrl()
-    const sharePath = app.getSharePath()
-    const shareTitle = app.getShareTitle()
-    const shareConfig = {
-      title: shareTitle, // 使用配置的分享标题
-      path: sharePath // 使用配置的分享路径
-    }
-    // 只有在配置了有效的分享图片URL时才设置，否则不设置imageUrl（不使用默认截图）
-    if (shareImageUrl) {
-      shareConfig.imageUrl = shareImageUrl
-    }
-    return shareConfig
+    return require('../../utils/share.js').getShareConfig()
   },
 
 })

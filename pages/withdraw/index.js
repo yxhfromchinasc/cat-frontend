@@ -36,7 +36,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('加载余额失败:', e)
+      console.error('加载余额失败')
     } finally {
       this.setData({ loading: false })
     }
@@ -64,7 +64,7 @@ Page({
         this.setData({ allowFullWithdraw })
       }
     } catch (e) {
-      console.error('加载全部提现配置失败:', e)
+      console.error('加载全部提现配置失败')
     }
   },
 
@@ -152,7 +152,7 @@ Page({
       // 跳转到提现订单详情页
       wx.navigateTo({ url: `/pages/withdraw-detail/index?orderNo=${orderNo}` })
     } catch (error) {
-      console.error('创建提现订单失败:', error)
+      console.error('创建提现订单失败')
       // 检查是否是存在进行中订单的错误
       if (error && error.code === 2004 && error.data && error.data.orderNo) {
         const existingOrderNo = error.data.orderNo

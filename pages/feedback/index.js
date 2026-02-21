@@ -77,7 +77,7 @@ Page({
         this.setData({ submitting: false })
       }
     } catch (e) {
-      console.error('提交反馈失败:', e)
+      console.error('提交反馈失败')
       wx.showToast({ title: '提交失败，请稍后重试', icon: 'none' })
       this.setData({ submitting: false })
     }

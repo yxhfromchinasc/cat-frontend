@@ -13,10 +13,27 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* 滚动区域底部空白，避免内容被底部按钮遮挡 */
-.scroll-bottom-spacer {
-  height: 200rpx;
-  min-height: 200rpx;
+/* 提交按钮卡片（放在表单内部，与其他card样式一致） */
+.submit-card {
+  /* card类已经有margin和padding，这里只需要确保底部有足够间距 */
+  margin-bottom: 24rpx;
+}
+
+/* 提交按钮提示信息 */
+.submit-tip {
+  color: #ff4444;
+  font-size: 24rpx;
+  text-align: center;
+  margin-bottom: 16rpx;
+  line-height: 1.5;
+  padding: 0 20rpx;
+}
+
+/* 底部安全空白区域（适配iOS等设备的安全区域） */
+.safe-area-bottom {
+  height: calc(24rpx + env(safe-area-inset-bottom));
+  min-height: 24rpx;
+  flex-shrink: 0;
 }
 
 .card {
@@ -482,15 +499,7 @@
   color: #09ccb5;
 }
 
-/* 底部按钮 */
-.bottom-bar {
-  flex-shrink: 0;
-  background: #fff;
-  padding: 24rpx 32rpx;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-  box-shadow: 0 -4rpx 32rpx rgba(0, 0, 0, 0.08);
-}
-
+/* 提交按钮（放在表单内部card中） */
 .submit-btn {
   width: 100%;
   height: 88rpx;
@@ -503,6 +512,12 @@
   align-items: center;
   justify-content: center;
   border: none;
+}
+
+.submit-btn[disabled] {
+  background: #ccc;
+  color: #999;
+  opacity: 0.6;
 }
 
 .submit-btn::after {
@@ -659,6 +674,7 @@
   max-height: 80vh;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .time-picker-header {
@@ -689,6 +705,9 @@
   display: flex;
   height: 800rpx;
   overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  /* 确保时间选择器内容区域可以滚动，不会被底部按钮遮挡 */
 }
 
 .time-picker-left {

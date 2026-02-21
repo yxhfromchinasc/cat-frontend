@@ -168,7 +168,7 @@ Page({
               await this.requestPhoneAuth(userInfo)
             } else {
               // 其他错误
-              console.error('微信登录失败:', result)
+              console.error('微信登录失败')
             }
           }
         } catch (error) {
@@ -179,14 +179,14 @@ Page({
             const userInfo = this.buildUserInfo(res.userInfo)
             await this.requestPhoneAuth(userInfo)
           } else {
-            console.error('微信登录失败:', error)
+            console.error('微信登录失败')
             // 其他错误提示已在API工具中处理
           }
         }
       },
       fail: (error) => {
         this.setData({ loading: false })
-        console.error('获取用户信息失败:', error)
+        console.error('获取用户信息失败')
         wx.showToast({
           title: '获取用户信息失败',
           icon: 'none'
@@ -219,7 +219,7 @@ Page({
         }
       })
     } catch (error) {
-      console.error('手机号快捷登录失败:', error)
+      console.error('手机号快捷登录失败')
       wx.showToast({
         title: '手机号快捷登录失败',
         icon: 'none'
@@ -286,18 +286,18 @@ Page({
               phoneAuthData: null
             })
           } else {
-            console.error('重新登录失败:', result)
+            console.error('重新登录失败')
           }
         } else {
           this.setData({ loading: false })
-          console.error('手机号解密失败:', decryptResult)
+          console.error('手机号解密失败')
           wx.showToast({
             title: '手机号解密失败',
             icon: 'none'
           })
         }
       } else {
-        console.error('获取手机号失败:', e.detail)
+        console.error('获取手机号失败')
         // 检查是否是权限问题
         if (e.detail.errMsg && e.detail.errMsg.includes('no permission')) {
           wx.showModal({
@@ -315,7 +315,7 @@ Page({
       }
     } catch (error) {
       this.setData({ loading: false })
-      console.error('手机号快捷登录处理失败:', error)
+      console.error('手机号快捷登录处理失败')
       wx.showToast({
         title: '手机号快捷登录失败',
         icon: 'none'
@@ -472,7 +472,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('获取邀请人信息失败:', e)
+      console.error('获取邀请人信息失败')
       // 获取失败不影响登录流程，只隐藏邀请人信息
       this.setData({
         showReferrerInfo: false

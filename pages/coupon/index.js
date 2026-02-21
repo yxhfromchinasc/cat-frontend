@@ -69,7 +69,7 @@ Page({
         })
       }
     } catch (error) {
-      console.error('加载用户卡券失败:', error)
+      console.error('加载用户卡券失败')
       this.setData({ 
         userCoupons: [],
         loading: false 
@@ -96,7 +96,7 @@ Page({
             const decorated = this.decorateTemplate(template, userReceivedCount)
             decoratedTemplates.push(decorated)
           } catch (error) {
-            console.error('获取领取次数失败:', error)
+            console.error('获取领取次数失败')
             const decorated = this.decorateTemplate(template, 0)
             decoratedTemplates.push(decorated)
           }
@@ -113,7 +113,7 @@ Page({
         })
       }
     } catch (error) {
-      console.error('加载卡券模板失败:', error)
+      console.error('加载卡券模板失败')
       this.setData({ 
         couponTemplates: [],
         loading: false 
@@ -137,7 +137,7 @@ Page({
         this.loadCouponTemplates()
       }
     } catch (error) {
-      console.error('领取代金券失败:', error)
+      console.error('领取代金券失败')
       wx.showToast({
         title: error.message || '领取失败',
         icon: 'none',

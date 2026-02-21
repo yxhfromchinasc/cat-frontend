@@ -49,16 +49,7 @@ Page({
       
       if (res.success && res.data) {
         const detail = res.data
-        
-        // 调试：打印后端返回的时间数据
-        console.log('=== 订单详情数据 ===')
-        console.log('createdAt:', detail.createdAt)
-        console.log('bandingTime:', detail.bandingTime)
-        console.log('actPickTime:', detail.actPickTime)
-        console.log('sendSucTime:', detail.sendSucTime)
-        console.log('paidAt:', detail.paidAt)
-        console.log('完整数据:', JSON.stringify(detail, null, 2))
-        
+
         // 处理图片列表，确保是数组
         if (detail.pickPics && !Array.isArray(detail.pickPics)) {
           detail.pickPics = []
@@ -141,13 +132,7 @@ Page({
         const act = amount.parseBigDecimalLike(actSrc, 0)
         const disc = Math.max(0, amount.parseBigDecimalLike(discSrc, 0))
 
-        // 调试：打印联系按钮相关的数据
-        console.log('=== 联系按钮显示条件检查 ===')
-        console.log('courierId:', detail.courierId)
-        console.log('expressStatus:', detail.expressStatus)
-        console.log('orderStatus:', detail.orderStatus)
         const canShowContact = detail.courierId && detail.expressStatus >= 2 && detail.expressStatus <= 7 && detail.expressStatus !== 5 && detail.expressStatus !== 6
-        console.log('显示条件结果:', canShowContact)
         
         this.setData({
           orderDetail: detail,
@@ -168,7 +153,7 @@ Page({
         }, 1500)
       }
     } catch (e) {
-      console.error('加载订单详情失败:', e)
+      console.error('加载订单详情失败')
       wx.showToast({ title: '加载失败', icon: 'none' })
       setTimeout(() => {
         wx.navigateBack()
@@ -352,11 +337,7 @@ Page({
   },
 
   formatTime(timeStr) {
-    console.log('formatTime 被调用，输入:', timeStr, '类型:', typeof timeStr)
-    if (!timeStr) {
-      console.log('formatTime: timeStr为空')
-      return ''
-    }
+    if (!timeStr) return ''
     
     // 处理 "yyyy-MM-dd HH:mm:ss" 格式的时间字符串
     // 直接提取 MM-dd HH:mm 部分
@@ -365,9 +346,7 @@ Page({
       // 提取: "10-29 21:51"
       const match = timeStr.match(/^\d{4}-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/)
       if (match) {
-        const result = `${match[1]}-${match[2]} ${match[3]}:${match[4]}`
-        console.log('formatTime: 匹配成功，返回:', result)
-        return result
+        return `${match[1]}-${match[2]} ${match[3]}:${match[4]}`
       }
       // 如果格式不匹配，尝试其他格式
       const spaceIndex = timeStr.indexOf(' ')
@@ -377,16 +356,12 @@ Page({
         const dateMatch = datePart.match(/\d{4}-(\d{2})-(\d{2})/)
         const timeMatch = timePart.match(/(\d{2}):(\d{2})/)
         if (dateMatch && timeMatch) {
-          const result = `${dateMatch[1]}-${dateMatch[2]} ${timeMatch[1]}:${timeMatch[2]}`
-          console.log('formatTime: 备用匹配成功，返回:', result)
-          return result
+          return `${dateMatch[1]}-${dateMatch[2]} ${timeMatch[1]}:${timeMatch[2]}`
         }
       }
     }
     // 如果都解析失败，返回原字符串的一部分
-    const result = timeStr.length > 16 ? timeStr.substring(5, 16) : timeStr
-    console.log('formatTime: 解析失败，返回原字符串的一部分:', result)
-    return result
+    return timeStr.length > 16 ? timeStr.substring(5, 16) : timeStr
   },
 
   // 预览图片
@@ -408,11 +383,9 @@ Page({
     }
     wx.makePhoneCall({
       phoneNumber: phone,
-      success: () => {
-        console.log('拨打电话成功')
-      },
-      fail: (err) => {
-        console.error('拨打电话失败:', err)
+      success: () => {},
+      fail: () => {
+        console.error('拨打电话失败')
         wx.showToast({ title: '拨打电话失败', icon: 'none' })
       }
     })
@@ -483,14 +456,14 @@ Page({
               }
             } catch (e) {
               wx.hideLoading()
-              console.error('取消支付异常:', e)
+              console.error('取消支付异常')
               wx.showToast({ title: '取消支付失败', icon: 'none' })
             }
           }
         }
       })
     } catch (e) {
-      console.error('取消支付异常:', e)
+      console.error('取消支付异常')
     }
   },
 
@@ -519,14 +492,14 @@ Page({
               }
             } catch (e) {
               wx.hideLoading()
-              console.error('取消订单异常:', e)
+              console.error('取消订单异常')
               wx.showToast({ title: '取消失败', icon: 'none' })
             }
           }
         }
       })
     } catch (e) {
-      console.error('取消订单异常:', e)
+      console.error('取消订单异常')
     }
   },
 

@@ -63,7 +63,7 @@ Page({
       // 没有图片，显示空白状态
       this.setData({ imageUrl: '', loading: false })
     } catch (error) {
-      console.error('加载图片失败:', error)
+      console.error('加载图片失败')
       this.setData({ imageUrl: '', loading: false })
     }
   },
@@ -98,7 +98,7 @@ Page({
    * 图片加载错误
    */
   onImageError(e) {
-    console.error('图片加载失败:', e)
+    console.error('图片加载失败')
     this.setData({ imageUrl: '' })
   }
 })

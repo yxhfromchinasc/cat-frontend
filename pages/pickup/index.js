@@ -54,7 +54,13 @@ Page({
     isSubmitting: false,
     expressPricePerItem: null,
     expressPriceText: '',
-    expressPriceDesc: ''
+    expressPriceDesc: '',
+    
+    // 是否可以提交（用于按钮禁用状态）
+    canSubmitData: false,
+    
+    // 提交按钮提示信息
+    submitTip: ''
   },
 
   async onLoad(options) {
@@ -91,6 +97,9 @@ Page({
     if (this.data.selectedStationId) {
       this.checkIfInBusinessHours()
     }
+    
+    // 初始化提交状态（显示提示信息）
+    this.updateCanSubmit()
   },
 
   // 加载备注快捷选项
@@ -105,7 +114,7 @@ Page({
         this.setData({ quickOptions: ['轻拿轻放', '大件', '放门口别敲门', '易碎品', '需要当面验收'] })
       }
     } catch (e) {
-      console.error('加载备注快捷选项失败:', e)
+      console.error('加载备注快捷选项失败')
       // 如果获取失败，使用默认值
       this.setData({ quickOptions: ['轻拿轻放', '大件', '放门口别敲门', '易碎品', '需要当面验收'] })
     }
@@ -138,7 +147,7 @@ Page({
       }
       return false
     } catch (e) {
-      console.error('检查未支付订单失败:', e)
+      console.error('检查未支付订单失败')
       // 检查失败不影响正常流程，继续加载页面
       return false
     }
@@ -152,7 +161,7 @@ Page({
         this.setData({ currentAddress: res.data })
       }
     } catch (e) {
-      console.error('加载地址详情失败:', e)
+      console.error('加载地址详情失败')
     }
   },
 
@@ -161,10 +170,23 @@ Page({
     if (this.data.fromAddressSelect && this.data.defaultAddress) {
       // 清除标记
       this.setData({ fromAddressSelect: false })
+      
+      // 选择地址后，清空时间数据（因为不同地址对应的驿站不同，时间段选项也会不同）
+      this.setData({
+        selectedDateIndex: -1,
+        selectedTimeSlotIndex: -1,
+        'form.startTime': null,
+        'form.endTime': null,
+        'form.startTimeStr': ''
+      })
+      
       // 确保驿站已经加载（地址选择页面可能已经调用了，但为了保险起见，再次检查）
       if (this.data.selectedAddressId && (!this.data.selectedStationId || this.data.stationList.length === 0)) {
         // 如果驿站还没有加载或没有选中，重新加载
         this.loadStationsByAddress(this.data.selectedAddressId)
+      } else {
+        // 如果驿站已经加载，更新提交状态
+        this.updateCanSubmit()
       }
       return
     }
@@ -199,13 +221,17 @@ Page({
           selectedStationId: null,
           selectedStationIndex: -1
         })
+        // 更新提交状态
+        this.updateCanSubmit()
       }
     } catch (e) {
-      console.error('加载默认地址失败:', e)
+      console.error('加载默认地址失败')
       this.setData({
         defaultAddress: null,
         selectedAddressId: null
       })
+      // 更新提交状态
+      this.updateCanSubmit()
     }
   },
 
@@ -226,7 +252,7 @@ Page({
           this.loadStationsByAddress(preselectAddressId)
         }
       } catch (e) {
-        console.error('加载预选地址失败:', e)
+        console.error('加载预选地址失败')
       }
     }
   },
@@ -262,7 +288,7 @@ Page({
         appointmentTimeRange = res.data
       }
     } catch (e) {
-      console.error('获取可预约时间配置失败:', e)
+      console.error('获取可预约时间配置失败')
       }
     }
     
@@ -397,29 +423,9 @@ Page({
       this.setData({ isUrgentDisabled: true })
     }
     
-    // 默认选择第一个可用时间段
-    if (defaultTimeSlotOptions.length > 0) {
-      const firstAvailableSlot = defaultTimeSlotOptions.find(slot => slot.available && !slot.disabled)
-      if (firstAvailableSlot) {
-        const firstIndex = defaultTimeSlotOptions.indexOf(firstAvailableSlot)
-        const isToday = defaultDateIndex === 0
-        
-        // 计算开始时间和结束时间
-        const startTime = this.formatDateTime(firstAvailableSlot.startTime, !isToday)
-        const endTime = this.formatDateTime(firstAvailableSlot.endTime, !isToday)
-        
-        // 显示文本：今天 14:30 - 15:00
-        const dateLabel = defaultDateIndex === 0 ? '今天' : '明天'
-        const displayText = `${dateLabel} ${firstAvailableSlot.label}`
-        
-        this.setData({
-          selectedTimeSlotIndex: firstIndex,
-          'form.startTime': startTime,
-          'form.endTime': endTime,
-          'form.startTimeStr': displayText
-        })
-      }
-    }
+    // 更新提交状态（不自动选择时间段）
+    // 注意：initTimeSlots 不应该保留之前的时间数据，因为时间段选项可能已改变
+    this.updateCanSubmit()
   },
 
   // 检查所有时间段的可用性（使用后端批量接口）
@@ -427,7 +433,6 @@ Page({
     if (this.data.checkingAvailability) return
     // 如果没有选择驿站，不检查可用性
     if (!this.data.selectedStationId) {
-      console.log('未选择驿站，跳过时间段可用性检查')
       return
     }
     this.setData({ checkingAvailability: true })
@@ -485,7 +490,7 @@ Page({
       const currentTimeSlotOptions = currentDateIndex === 0 ? this.data.todayTimeSlots : this.data.tomorrowTimeSlots
       this.setData({ timeSlotOptions: currentTimeSlotOptions })
     } catch (e) {
-      console.error('获取时间段列表失败:', e)
+      console.error('获取时间段列表失败')
     } finally {
       this.setData({ checkingAvailability: false })
     }
@@ -537,6 +542,8 @@ Page({
           // 检查当前时间是否在营业时间内，更新立即上门开关状态
           this.checkIfInBusinessHours()
         }
+        // 更新提交状态
+        this.updateCanSubmit()
       } else {
         // 如果没有数据，设置为空数组
         this.setData({
@@ -546,9 +553,11 @@ Page({
           selectedStationName: '',
           selectedStationIndex: -1
         })
+        // 更新提交状态
+        this.updateCanSubmit()
       }
     } catch (e) {
-      console.error('加载驿站失败:', e)
+      console.error('加载驿站失败')
       wx.showToast({ title: '加载驿站失败', icon: 'none' })
       this.setData({
         stationList: [],
@@ -557,6 +566,8 @@ Page({
         selectedStationName: '',
         selectedStationIndex: -1
       })
+      // 更新提交状态
+      this.updateCanSubmit()
     } finally {
       wx.hideLoading()
     }
@@ -589,6 +600,17 @@ Page({
           'form.isUrgent': false
         })
       }
+      // 切换驿站后，时间段选项已改变，需要清空之前选择的时间
+      // 因为不同驿站的时间段选项不同，之前选择的时间在新驿站可能不可用
+      this.setData({
+        selectedDateIndex: -1,
+        selectedTimeSlotIndex: -1,
+        'form.startTime': null,
+        'form.endTime': null,
+        'form.startTimeStr': ''
+      })
+      // 更新提交状态
+      this.updateCanSubmit()
     }
   },
 
@@ -614,6 +636,8 @@ Page({
     this.setData({
       'form.phoneTail': e.detail.value.replace(/\D/g, '') // 只保留数字
     })
+    // 更新提交状态
+    this.updateCanSubmit()
   },
 
   // 输入取件码
@@ -634,9 +658,7 @@ Page({
 
   // 添加快捷选项到物品备注
   addQuickOption(e) {
-    console.log('addQuickOption called', e)
     const quickText = e.currentTarget.dataset.text
-    console.log('quickText:', quickText)
     const currentText = this.data.form.itemDescription || ''
     
     // 如果当前文本为空，直接添加
@@ -670,7 +692,7 @@ Page({
         this.setData({ urgentTipText: tipText })
       }
     } catch (e) {
-      console.error('加载立即上门提示文案失败:', e)
+      console.error('加载立即上门提示文案失败')
     }
   },
 
@@ -698,7 +720,6 @@ Page({
           }
         }
       } catch (e) {
-        console.warn('获取加急费用配置失败:', e)
       }
 
       if (pricePerItem) {
@@ -721,7 +742,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('加载快递单价配置失败:', e)
+      console.error('加载快递单价配置失败')
       this.setData({
         expressPricePerItem: null,
         expressPriceText: '',
@@ -797,29 +818,17 @@ Page({
         ? this.data.todayTimeSlots 
         : this.data.tomorrowTimeSlots
       
-      // 自动选择第一个可用时间段
-      const firstAvailableSlot = timeSlotOptions.find(slot => slot.available && !slot.disabled)
-      let selectedIndex = -1
-      let startTime = null
-      let endTime = null
-      let startTimeStr = ''
-      
-      if (firstAvailableSlot) {
-        selectedIndex = timeSlotOptions.indexOf(firstAvailableSlot)
-        const isToday = dateOption.isToday
-        startTime = this.formatDateTime(firstAvailableSlot.startTime, !isToday)
-        endTime = this.formatDateTime(firstAvailableSlot.endTime, !isToday)
-        startTimeStr = `${dateOption.label} ${firstAvailableSlot.label}`
-      }
-      
+      // 重置时间段选择（不自动选择）
       this.setData({
         selectedDateIndex: index,
         timeSlotOptions: timeSlotOptions,
-        selectedTimeSlotIndex: selectedIndex,
-        'form.startTime': startTime,
-        'form.endTime': endTime,
-        'form.startTimeStr': startTimeStr
+        selectedTimeSlotIndex: -1,
+        'form.startTime': null,
+        'form.endTime': null,
+        'form.startTimeStr': ''
       })
+      // 更新提交状态
+      this.updateCanSubmit()
     }
   },
 
@@ -840,6 +849,8 @@ Page({
         'form.endTime': null,
         'form.startTimeStr': ''
       })
+      // 更新提交状态
+      this.updateCanSubmit()
       return
     }
     
@@ -865,6 +876,8 @@ Page({
       'form.endTime': endTime,
       'form.startTimeStr': displayText
     })
+    // 更新提交状态
+    this.updateCanSubmit()
   },
 
   // 格式化时间为LocalDateTime格式（YYYY-MM-DDTHH:mm:ss）
@@ -887,6 +900,58 @@ Page({
     const seconds = String(date.getSeconds()).padStart(2, '0')
     
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
+  },
+
+  // 根据时间数据生成显示文本（如果没有时间数据则清空显示）
+  updateTimeDisplayFromData() {
+    // 如果没有时间数据，清空显示文本
+    if (!this.data.form.startTime || !this.data.form.endTime) {
+      this.setData({
+        'form.startTimeStr': ''
+      })
+      return
+    }
+    
+    // 解析时间字符串（格式：YYYY-MM-DDTHH:mm:ss）
+    const parseDateTime = (dateTimeStr) => {
+      const [datePart, timePart] = dateTimeStr.split('T')
+      const [year, month, day] = datePart.split('-').map(Number)
+      const [hours, minutes] = timePart.split(':').map(Number)
+      return new Date(year, month - 1, day, hours, minutes)
+    }
+    
+    const startTime = parseDateTime(this.data.form.startTime)
+    const endTime = parseDateTime(this.data.form.endTime)
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const startDate = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate())
+    
+    // 判断是今天还是明天
+    const isToday = startDate.getTime() === today.getTime()
+    const dateLabel = isToday ? '今天' : '明天'
+    
+    // 格式化显示时间（HH:mm）
+    const formatDisplayTime = (date) => {
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      return `${hours}:${minutes}`
+    }
+    
+    const startTimeStr = formatDisplayTime(startTime)
+    const endTimeStr = formatDisplayTime(endTime)
+    
+    // 判断是否是加急订单（立即上门）
+    if (this.data.form.isUrgent) {
+      const displayText = `立即上门（${startTimeStr} - ${endTimeStr}）`
+      this.setData({
+        'form.startTimeStr': displayText
+      })
+    } else {
+      const displayText = `${dateLabel} ${startTimeStr} - ${endTimeStr}`
+      this.setData({
+        'form.startTimeStr': displayText
+      })
+    }
   },
 
   // 上传取件照片
@@ -927,7 +992,7 @@ Page({
               wx.showToast({ title: '图片上传失败', icon: 'none' })
             }
           } catch (e) {
-            console.error('上传图片失败:', e)
+            console.error('上传图片失败')
             wx.showToast({ title: e.error || '上传失败', icon: 'none' })
           } finally {
             wx.hideLoading()
@@ -935,7 +1000,7 @@ Page({
         }
       })
     } catch (e) {
-      console.error('选择图片失败:', e)
+      console.error('选择图片失败')
     }
   },
 
@@ -976,15 +1041,22 @@ Page({
           if (modalRes.confirm) {
             // 用户确认，开启加急
             this.setData({
-              'form.isUrgent': true
+              'form.isUrgent': true,
+              // 重置时间选择器状态（加急订单不使用时间选择器）
+              selectedDateIndex: -1,
+              selectedTimeSlotIndex: -1
             })
             // 加急订单：自动设置当前时间到20分钟后
             this.setUrgentTime()
+            // 更新提交状态
+            this.updateCanSubmit()
           } else {
             // 用户取消，保持关闭状态
             this.setData({
               'form.isUrgent': false
             })
+            // 更新提交状态
+            this.updateCanSubmit()
           }
         }
       })
@@ -993,11 +1065,25 @@ Page({
       this.setData({
         'form.isUrgent': false
       })
+      
       // 非加急订单：恢复时间选择器
-      // 如果之前没有选择时间，初始化时间选择器
+      // 如果之前没有通过时间选择器选择时间（selectedDateIndex === -1 或 selectedTimeSlotIndex === -1），
+      // 说明时间数据是加急时设置的，应该清空时间数据
       if (this.data.selectedDateIndex === -1 || this.data.selectedTimeSlotIndex === -1) {
+        // 清空时间数据（因为加急时设置的时间不应该保留）
+        this.setData({
+          'form.startTime': null,
+          'form.endTime': null,
+          'form.startTimeStr': ''
+        })
+        // 初始化时间选择器
         this.initTimeSlots()
+      } else {
+        // 如果之前有通过时间选择器选择时间，根据时间数据更新显示文本
+        this.updateTimeDisplayFromData()
       }
+      // 更新提交状态
+      this.updateCanSubmit()
     }
   },
   
@@ -1017,13 +1103,51 @@ Page({
       return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
     }
     
+    // 格式化显示时间（HH:mm）
+    const formatDisplayTime = (date) => {
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      return `${hours}:${minutes}`
+    }
+    
     const startTime = formatDateTime(now)
     const endTimeStr = formatDateTime(endTime)
+    const displayText = `立即上门（${formatDisplayTime(now)} - ${formatDisplayTime(endTime)}）`
     
+    // 重置时间选择器索引（加急订单不使用时间选择器）
     this.setData({
       'form.startTime': startTime,
       'form.endTime': endTimeStr,
-      'form.startTimeStr': '请选择预约时间'
+      'form.startTimeStr': displayText,
+      selectedDateIndex: -1,
+      selectedTimeSlotIndex: -1
+    })
+    // 更新提交状态
+    this.updateCanSubmit()
+  },
+
+  // 更新是否可以提交状态
+  updateCanSubmit() {
+    const hasStation = !!this.data.selectedStationId
+    const hasAddress = !!this.data.selectedAddressId
+    const hasPhoneTail = this.data.form.phoneTail && this.data.form.phoneTail.length === 4
+    const hasTime = !!(this.data.form.startTime && this.data.form.endTime)
+    
+    // 如果是加急订单，不需要时间验证
+    const canSubmit = hasStation && hasAddress && hasPhoneTail && (this.data.form.isUrgent || hasTime)
+    
+    // 生成未完成项提示
+    const missingItems = []
+    if (!hasStation) missingItems.push('取件驿站')
+    if (!hasAddress) missingItems.push('收货地址')
+    if (!hasPhoneTail) missingItems.push('手机尾号')
+    if (!this.data.form.isUrgent && !hasTime) missingItems.push('预约时间')
+    
+    const submitTip = missingItems.length > 0 ? `请完成：${missingItems.join('、')}` : ''
+    
+    this.setData({ 
+      canSubmitData: canSubmit,
+      submitTip: submitTip
     })
   },
 
@@ -1087,23 +1211,15 @@ Page({
         wx.requestSubscribeMessage({
           tmplIds: templateIds,
           success: (res) => {
-            console.log('[订阅消息] 快递订单订阅结果:', JSON.stringify(res))
-            // 输出每个模板的订阅状态
-            templateIds.forEach(tmplId => {
-              const status = res[tmplId]
-              if (status) {
-                console.log(`[订阅消息] 模板 ${tmplId}: ${status}`)
-              }
-            })
             resolve(res)
           },
-          fail: (res) => {
-            console.error('[订阅消息] 调用失败:', res.errMsg)
+          fail: () => {
+            console.error('[订阅消息] 调用失败')
             resolve(res)
           }
         })
       } catch (e) {
-        console.error('[订阅消息] 异常:', e)
+        console.error('[订阅消息] 异常')
         resolve(null)
       }
     })
@@ -1112,21 +1228,15 @@ Page({
   // 提交订单
   async onSubmit() {
     // 防止重复提交
-    if (this.data.isSubmitting) {
-      console.log('订单正在提交中，请勿重复点击')
-      return
-    }
-    
-    console.log('开始提交订单，表单验证...')
-    if (!this.validateForm()) {
-      console.log('表单验证失败')
-      return
-    }
+    if (this.data.isSubmitting) return
+
+    // 如果时间选择器弹窗显示，不允许提交
+    if (this.data.showTimePickerModal) return
+
+    if (!this.validateForm()) return
     
     // 设置提交状态，禁用按钮
     this.setData({ isSubmitting: true })
-    
-    console.log('表单验证通过，检查时间段...')
     
     // 在下单前请求订阅消息
     // 注意：必须在用户点击的同步调用链中调用 wx.requestSubscribeMessage
@@ -1137,30 +1247,13 @@ Page({
     
     // 再次检查时间段是否已约满（防止用户通过其他方式选择了已约满的时间）
     if (!this.data.form.isUrgent) {
-      const selectedTimeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
-      if (selectedTimeSlot && (selectedTimeSlot.disabled || !selectedTimeSlot.available)) {
-        console.log('时间段已约满（从选项检查）')
-        wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
-        // 重置选择
-        this.setData({
-          selectedTimeSlotIndex: -1,
-          'form.startTime': null,
-          'form.endTime': null,
-          'form.startTimeStr': ''
-        })
-        return
-      }
-      
-      // 提交前再次检查时间段可用性（防止在用户选择后时间段被其他用户占用）
+      // 直接使用时间数据检查时间段可用性（不依赖选择器索引，因为切换驿站后索引可能已重置）
       if (this.data.form.startTime && this.data.form.endTime) {
         try {
-          console.log('提交前检查时间段可用性:', this.data.form.startTime, this.data.form.endTime)
           // 2=快递代取，需要传递stationId
           const checkRes = await api.checkTimeSlotAvailability(2, this.data.form.startTime, this.data.form.endTime, this.data.selectedStationId, null)
-          console.log('提交前检查时间段可用性结果:', checkRes)
           // 注意：checkRes.data 是 {available: true/false, message: "..."}
           if (!checkRes.success || !checkRes.data?.available) {
-            console.log('时间段检查失败，阻止提交')
             wx.showToast({ 
               title: checkRes.data?.message || checkRes.message || '该时间段已约满，请选择其他时间段', 
               icon: 'none' 
@@ -1174,16 +1267,14 @@ Page({
             })
             return
           }
-          console.log('时间段检查通过，继续提交')
         } catch (e) {
-          console.error('检查时间段可用性失败:', e)
+          console.error('检查时间段可用性失败')
           // 检查失败不影响提交，继续提交让后端验证
         }
       }
     }
     
     try {
-      console.log('开始提交订单到后端...')
       wx.showLoading({ title: '提交中...' })
       
       const orderData = {
@@ -1199,16 +1290,10 @@ Page({
         isUrgent: this.data.form.isUrgent
       }
       
-      console.log('提交订单数据:', orderData)
-      
       const res = await api.createExpressOrder(orderData)
-      
-      console.log('提交订单响应:', res)
-      
+
       if (res.success) {
-        console.log('订单提交成功')
         const orderNo = res.data?.orderNo || res.data?.order?.orderNo || res.orderNo
-        console.log('订单号:', orderNo)
         // createExpressOrder 已经设置了 showSuccess: true，会自动显示成功提示
         // 但为了确保用户体验，我们仍然显示一次
         wx.showToast({ title: '提交成功', icon: 'success' })
@@ -1225,7 +1310,6 @@ Page({
         }, 800)
         // 注意：跳转后不需要重置isSubmitting，因为页面会被销毁
       } else {
-        console.log('订单提交失败（success=false）:', res)
         // 如果 success 为 false，但进入了这里（不应该发生，因为会 reject），显示错误
         wx.showToast({ 
           title: res.message || res.error || '提交失败', 
@@ -1236,10 +1320,9 @@ Page({
         this.setData({ isSubmitting: false })
       }
     } catch (e) {
-      console.error('提交订单异常:', e)
+      console.error('提交订单异常')
       // 优先显示后端返回的错误消息
       const errorMsg = e.message || e.error || '提交失败'
-      console.log('显示错误消息:', errorMsg)
       wx.showToast({ 
         title: errorMsg, 
         icon: 'none',
@@ -1248,7 +1331,6 @@ Page({
       // 重置提交状态，允许重新提交
       this.setData({ isSubmitting: false })
     } finally {
-      console.log('提交流程结束，隐藏loading')
       wx.hideLoading()
     }
   },
@@ -1279,33 +1361,19 @@ Page({
         ? this.data.todayTimeSlots 
         : this.data.tomorrowTimeSlots
       
-      // 自动选择第一个可用时间段
-      const firstAvailableSlot = timeSlotOptions.find(slot => slot.available && !slot.disabled)
-      let selectedIndex = -1
-      let startTime = null
-      let endTime = null
-      let startTimeStr = ''
-      
-      if (firstAvailableSlot) {
-        selectedIndex = timeSlotOptions.indexOf(firstAvailableSlot)
-        const isToday = dateOption.isToday
-        startTime = this.formatDateTime(firstAvailableSlot.startTime, !isToday)
-        endTime = this.formatDateTime(firstAvailableSlot.endTime, !isToday)
-        startTimeStr = `${dateOption.label} ${firstAvailableSlot.label}`
-      }
-      
+      // 重置时间段选择（不自动选择，让用户手动选择）
       this.setData({
         selectedDateIndex: index,
         timeSlotOptions: timeSlotOptions,
-        selectedTimeSlotIndex: selectedIndex,
-        'form.startTime': startTime,
-        'form.endTime': endTime,
-        'form.startTimeStr': startTimeStr
+        selectedTimeSlotIndex: -1,
+        'form.startTime': null,
+        'form.endTime': null,
+        'form.startTimeStr': ''
       })
     }
   },
 
-  // 选择时间段（弹窗中）
+  // 选择时间段（弹窗中，仅更新选中状态，不更新时间数据）
   selectTimeSlot(e) {
     const index = parseInt(e.currentTarget.dataset.index)
     const timeSlot = this.data.timeSlotOptions[index]
@@ -1324,21 +1392,9 @@ Page({
       return
     }
     
-    const dateOption = this.data.dateOptions[this.data.selectedDateIndex]
-    const isToday = dateOption.isToday
-    
-    // 计算开始时间和结束时间
-    const startTime = this.formatDateTime(timeSlot.startTime, !isToday)
-    const endTime = this.formatDateTime(timeSlot.endTime, !isToday)
-    
-    // 显示文本：今天 14:30 - 15:00
-    const displayText = `${dateOption.label} ${timeSlot.label}`
-    
+    // 仅更新选中状态，不更新时间数据（时间数据在确认时更新）
     this.setData({
-      selectedTimeSlotIndex: index,
-      'form.startTime': startTime,
-      'form.endTime': endTime,
-      'form.startTimeStr': displayText
+      selectedTimeSlotIndex: index
     })
   },
 
@@ -1350,12 +1406,31 @@ Page({
     }
     
     const timeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
-    if (timeSlot && (timeSlot.disabled || !timeSlot.available)) {
+    if (!timeSlot || timeSlot.disabled || !timeSlot.available) {
       wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
       return
     }
     
-    this.setData({ showTimePickerModal: false })
+    // 计算开始时间和结束时间
+    const dateOption = this.data.dateOptions[this.data.selectedDateIndex]
+    const isToday = dateOption.isToday
+    
+    const startTime = this.formatDateTime(timeSlot.startTime, !isToday)
+    const endTime = this.formatDateTime(timeSlot.endTime, !isToday)
+    
+    // 显示文本：今天 14:30 - 15:00
+    const displayText = `${dateOption.label} ${timeSlot.label}`
+    
+    // 更新时间数据和显示文本
+    this.setData({
+      'form.startTime': startTime,
+      'form.endTime': endTime,
+      'form.startTimeStr': displayText,
+      showTimePickerModal: false
+    })
+    
+    // 更新提交状态
+    this.updateCanSubmit()
   },
 
   // 预览图片

@@ -119,7 +119,7 @@ function pollWithdrawProgress(orderNo, durationSeconds = 5, pageInstance = null)
         }
       } catch (error) {
         // 查询失败，记录日志但继续轮询
-        console.error(`第${pollCount + 1}次查询提现状态失败:`, error)
+        console.error('查询提现状态失败')
         
         // 增加查询次数
         pollCount++

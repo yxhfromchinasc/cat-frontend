@@ -54,7 +54,7 @@ Page({
       // 2) 跳转统一支付页
       wx.navigateTo({ url: `/pages/payment/index?orderNo=${orderNo}` })
     } catch (error) {
-      console.error('充值异常:', error)
+      console.error('充值异常')
       // 检查是否是存在进行中订单的错误
       if (error && error.code === 2003 && error.data && error.data.orderNo) {
         const existingOrderNo = error.data.orderNo

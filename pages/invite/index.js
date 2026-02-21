@@ -42,7 +42,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('获取邀请码失败:', e)
+      console.error('获取邀请码失败')
     }
   },
 
@@ -56,7 +56,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('获取邀请图片失败:', e)
+      console.error('获取邀请图片失败')
     }
   },
 
@@ -70,7 +70,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('获取奖励金额失败:', e)
+      console.error('获取奖励金额失败')
     }
   },
 
@@ -139,7 +139,7 @@ Page({
         this.setData({ loading: false })
       }
     } catch (e) {
-      console.error('加载邀请记录失败:', e)
+      console.error('加载邀请记录失败')
       this.setData({ loading: false })
     }
   },

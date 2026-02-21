@@ -26,7 +26,7 @@ Page({
         this.updateAvatarSrc(userInfo.avatarUrl)
       }
     } catch (e) {
-      console.error('加载用户信息失败:', e)
+      console.error('加载用户信息失败')
     }
   },
 
@@ -76,10 +76,9 @@ Page({
       const res = await api.updateProfile(this.data.nickname)
       if (res && res.success) {
         // 静默保存，不显示提示
-        console.log('昵称保存成功')
       }
     } catch (e) {
-      console.error('保存昵称失败:', e)
+      console.error('保存昵称失败')
     }
   },
 
@@ -133,7 +132,7 @@ Page({
           wx.showToast({ title: '上传失败，请重试', icon: 'none' })
         }
       } catch (e) {
-        console.error('上传头像失败:', e)
+        console.error('上传头像失败')
         wx.showToast({ title: e.error || '上传失败，请重试', icon: 'none' })
       } finally {
         wx.hideLoading()
@@ -143,7 +142,7 @@ Page({
         // 用户取消选择，不显示错误
         return
       }
-      console.error('选择图片失败:', e)
+      console.error('选择图片失败')
       wx.showToast({ title: '选择图片失败', icon: 'none' })
     }
   },

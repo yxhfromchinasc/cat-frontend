@@ -44,7 +44,6 @@ Page({
         })
       }
     } catch (error) {
-      console.warn('加载活动标题配置失败，使用默认标题:', error)
     }
   },
 

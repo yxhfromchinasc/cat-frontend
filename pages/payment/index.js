@@ -2,6 +2,7 @@
 const { api } = require('../../utils/util.js')
 const payUtils = require('../../utils/pay.js')
 const amount = require('../../utils/amount.js')
+const constants = require('../../utils/constants.js')
 
 Page({
   data: {
@@ -26,7 +27,8 @@ Page({
     
     // 支付方式
     paymentMethods: [], // 支持的支付方式列表（从后端获取）
-    selectedPaymentMethod: 2, // 默认微信支付
+    selectedPaymentMethod: constants.PAYMENT_METHOD_WECHAT, // 默认微信支付
+    PAYMENT_METHOD_WALLET: constants.PAYMENT_METHOD_WALLET, // 供 wxml 使用
     
     // 用户余额
     userBalance: 0, // 用户余额（数字类型，用于计算）
@@ -88,8 +90,8 @@ Page({
         // 构建支付方式列表（根据后端返回的 supportedPaymentMethods）
         // PaymentMethod: 1=WECHAT_NATIVE, 2=WECHAT_MINIPROGRAM, 4=WALLET
         const paymentMethodsMap = {
-          2: { code: 2, name: '微信支付', icon: '💳' },
-          4: { code: 4, name: '钱包余额', icon: '💰' } // PaymentMethod.WALLET = 4
+          [constants.PAYMENT_METHOD_WECHAT]: { code: constants.PAYMENT_METHOD_WECHAT, name: '微信支付', icon: '💳' },
+          [constants.PAYMENT_METHOD_WALLET]: { code: constants.PAYMENT_METHOD_WALLET, name: '钱包余额', icon: '💰' }
         }
         let paymentMethods = (detail.supportedPaymentMethods || []).map(code => paymentMethodsMap[code] || { code, name: '未知', icon: '💳' })
 
@@ -129,9 +131,9 @@ Page({
           hasDiscount,
           discountAmountStr,
           couponAllowed: detail.couponAllowed !== false,
-          paymentMethods: paymentMethods.length > 0 ? paymentMethods : [{ code: 2, name: '微信支付', icon: '💳' }],
+          paymentMethods: paymentMethods.length > 0 ? paymentMethods : [{ code: constants.PAYMENT_METHOD_WECHAT, name: '微信支付', icon: '💳' }],
           // 默认选择第一个（继续支付模式下即为固定方式）
-          selectedPaymentMethod: paymentMethods.length > 0 ? paymentMethods[0].code : 2,
+          selectedPaymentMethod: paymentMethods.length > 0 ? paymentMethods[0].code : constants.PAYMENT_METHOD_WECHAT,
           readOnlyPayment,
           allowedActions: operateActions, // 支付页面只显示操作相关的按钮
           hasCancelButton: hasCancelButton, // 是否有取消按钮
@@ -152,9 +154,7 @@ Page({
                 selectedCoupon: decorated
               })
             }
-          } catch (e) {
-            console.warn('加载只读优惠券失败（支付中展示用）:', e)
-          }
+          } catch (e) {}
         }
       } else {
         wx.hideLoading()
@@ -165,7 +165,7 @@ Page({
       }
     } catch (e) {
       wx.hideLoading()
-      console.error('加载支付详情失败:', e)
+      console.error('加载支付详情失败')
       wx.showToast({ title: '加载失败', icon: 'none' })
       setTimeout(() => {
         wx.navigateBack()
@@ -231,7 +231,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('加载余额失败:', e)
+      console.error('加载余额失败')
       // 加载失败时设置为0
       this.setData({
         userBalance: 0,
@@ -265,7 +265,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('加载优惠券失败:', e)
+      console.error('加载优惠券失败')
       this.setData({
         availableCoupons: []
       })
@@ -321,9 +321,7 @@ Page({
         } else {
           expiredAtText = '已过期'
         }
-      } catch (e) {
-        console.error('解析过期时间失败:', e)
-      }
+      } catch (e) {}
     }
     
     return {
@@ -389,9 +387,9 @@ Page({
         }
         // 若为0元，限定仅钱包支付
         if (finalAmount === 0) {
-          const walletOnly = [{ code: 4, name: '钱包余额', icon: '💰' }]
+          const walletOnly = [{ code: constants.PAYMENT_METHOD_WALLET, name: '钱包余额', icon: '💰' }]
           updates.paymentMethods = walletOnly
-          updates.selectedPaymentMethod = 4
+          updates.selectedPaymentMethod = constants.PAYMENT_METHOD_WALLET
         }
         this.setData(updates)
       } else {
@@ -399,7 +397,7 @@ Page({
       }
     } catch (e) {
       wx.hideLoading()
-      console.error('计算优惠金额失败:', e)
+      console.error('计算优惠金额失败')
       wx.showToast({ title: e?.message || '计算失败', icon: 'none' })
     }
   },
@@ -416,10 +414,10 @@ Page({
     // 恢复默认支付方式（微信+钱包），当金额>0时
     if (fa > 0) {
       updates.paymentMethods = [
-        { code: 2, name: '微信支付', icon: '💳' },
-        { code: 4, name: '钱包余额', icon: '💰' }
+        { code: constants.PAYMENT_METHOD_WECHAT, name: '微信支付', icon: '💳' },
+        { code: constants.PAYMENT_METHOD_WALLET, name: '钱包余额', icon: '💰' }
       ]
-      updates.selectedPaymentMethod = 2
+      updates.selectedPaymentMethod = constants.PAYMENT_METHOD_WECHAT
     }
     this.setData(updates)
   },
@@ -452,7 +450,7 @@ Page({
       // 仅走钱包支付，同步成功，不拉起三方
       try {
         const couponId = selectedCoupon ? selectedCoupon.id : null
-        const res = await api.createPayment(orderNo, 4, couponId)
+        const res = await api.createPayment(orderNo, constants.PAYMENT_METHOD_WALLET, couponId)
         if (res && res.success) {
           wx.showToast({ title: '支付成功', icon: 'success' })
           setTimeout(() => wx.navigateBack(), 1200)
@@ -466,7 +464,7 @@ Page({
     }
     
     // 如果是钱包支付，检查余额是否充足
-    if (selectedPaymentMethod === 4) {
+    if (selectedPaymentMethod === constants.PAYMENT_METHOD_WALLET) {
       const { userBalance } = this.data
       if (userBalance < finalAmount) {
         wx.showToast({ title: '余额不足，请选择其他支付方式', icon: 'none' })
@@ -526,7 +524,7 @@ Page({
       
       if (res && res.success) {
         // 余额支付：不唤起支付组件，直接进入5秒等待期（跟三方支付逻辑一样）
-        if (selectedPaymentMethod === 4) {
+        if (selectedPaymentMethod === constants.PAYMENT_METHOD_WALLET) {
           // 快速确认：先触发一次直查回补，再查进度；若已得出结论则不进入倒计时
           try {
             try { await api.refreshPaymentStatus(orderNo) } catch (_) {}
@@ -613,7 +611,7 @@ Page({
       }
     } catch (e) {
       wx.hideLoading()
-      console.error('支付异常:', e)
+      console.error('支付异常')
       wx.showToast({ 
         title: e?.message || '支付失败，请重试', 
         icon: 'none' 

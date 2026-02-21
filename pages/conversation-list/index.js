@@ -1,5 +1,6 @@
 // pages/conversation-list/index.js
 const { api } = require('../../utils/util.js')
+const constants = require('../../utils/constants.js')
 
 const ORDER_STATUS = { IN_PROGRESS: 1, COMPLETED: 2 }
 
@@ -9,7 +10,7 @@ Page({
     conversationList: [],
     loading: false,
     pollTimer: null,
-    pollInterval: 3000
+    pollInterval: constants.POLL_INTERVAL_UNREAD_MESSAGES
   },
 
   onLoad() {
@@ -71,7 +72,7 @@ Page({
         }
       }
     } catch (e) {
-      console.error('加载会话列表失败:', e)
+      console.error('加载会话列表失败')
       this.setData({ loading: false })
       if (!silent) {
         wx.showToast({ title: '加载失败', icon: 'none' })

@@ -55,7 +55,7 @@ Page({
         })
       }
     } catch (e) {
-      console.error('获取充值订单详情失败', e)
+      console.error('获取充值订单详情失败')
       this.setData({ isFirstLoad: false }) // 即使失败也标记为已加载
     }
   },
@@ -94,7 +94,7 @@ Page({
               }
             } catch (e) {
               wx.hideLoading()
-              console.error('取消充值订单失败', e)
+              console.error('取消充值订单失败')
               wx.showToast({ title: '取消失败', icon: 'none' })
             }
           }

@@ -70,7 +70,7 @@ Page({
               wx.navigateBack()
             }, 2000)
           } catch (e) {
-            console.error('退出登录失败:', e)
+            console.error('退出登录失败')
             wx.showToast({ title: '退出失败', icon: 'none' })
           }
         }
@@ -80,13 +80,11 @@ Page({
 
   // 打开消息设置
   openMessageSetting() {
-    console.log('[设置] 用户点击消息设置')
     wx.openSetting({
       success: (res) => {
-        console.log('[设置] 打开设置页面成功', res)
       },
       fail: (err) => {
-        console.error('[设置] 打开设置页面失败', err)
+        console.error('[设置] 打开设置页面失败')
         wx.showToast({
           title: '打开设置失败',
           icon: 'none'
@@ -119,7 +117,7 @@ Page({
         })
       }
     } catch (error) {
-      console.error('获取公告失败:', error)
+      console.error('获取公告失败')
       wx.showToast({
         title: '获取公告失败',
         icon: 'none'
@@ -197,7 +195,7 @@ Page({
         })
       }
     } catch (error) {
-      console.error('获取下一个公告失败:', error)
+      console.error('获取下一个公告失败')
       // 即使失败也关闭弹窗
       this.setData({
         showAnnouncementModal: false,
@@ -235,7 +233,7 @@ Page({
         wx.navigateTo({
           url: jumpValue,
           fail: (err) => {
-            console.error('页面跳转失败:', err)
+            console.error('页面跳转失败')
             wx.switchTab({
               url: jumpValue,
               fail: () => {
@@ -248,7 +246,7 @@ Page({
           }
         })
       } catch (e) {
-        console.error('跳转异常:', e)
+        console.error('跳转异常')
       }
     } else if (jumpType === 2 && jumpValue) {
       // 外部链接跳转

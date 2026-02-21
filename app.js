@@ -56,7 +56,7 @@ App({
         this.globalData.shareImageUrl = ''
       }
     } catch (e) {
-      console.error('加载分享图片配置失败:', e)
+      console.error('加载分享图片配置失败')
       this.globalData.shareImageUrl = ''
     }
   },
@@ -76,7 +76,7 @@ App({
         this.globalData.sharePath = '/pages/index/index'
       }
     } catch (e) {
-      console.error('加载分享路径配置失败:', e)
+      console.error('加载分享路径配置失败')
       this.globalData.sharePath = '/pages/index/index'
     }
   },
@@ -102,7 +102,7 @@ App({
         this.globalData.shareTitle = '喵上门 - 便捷的生活服务小程序'
       }
     } catch (e) {
-      console.error('加载分享标题配置失败:', e)
+      console.error('加载分享标题配置失败')
       this.globalData.shareTitle = '喵上门 - 便捷的生活服务小程序'
     }
   },

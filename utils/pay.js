@@ -152,7 +152,7 @@ function pollPaymentProgress(orderNo, durationSeconds = 5, pageInstance = null) 
         }
       } catch (error) {
         // 查询失败，记录日志但继续轮询
-        console.error(`第${pollCount + 1}次查询支付状态失败:`, error)
+        console.error('查询支付状态失败')
         
         // 增加查询次数
         pollCount++
@@ -175,44 +175,6 @@ function pollPaymentProgress(orderNo, durationSeconds = 5, pageInstance = null) 
 
     // 然后每秒执行一次
     pollTimer = setInterval(executeQuery, pollInterval)
-  })
-}
-
-/**
- * 轮询查询订单支付进度（长轮询，直到最终状态或超时）
- * 最终状态：success（支付成功）, failed（支付失败）
- * 中间状态（继续轮询）：pending（待支付）, paying（支付中）
- * 
- * @deprecated 建议使用 pollPaymentProgress 进行5秒缓冲轮询
- */
-function pollStatus(orderNo, expireTimeIso) {
-  const deadline = new Date(expireTimeIso || Date.now() + 15*60*1000).getTime()
-  return new Promise((resolve) => {
-    const timer = setInterval(async () => {
-      const now = Date.now()
-      
-      if (now > deadline) {
-        clearInterval(timer)
-        resolve({ finished: true, paymentStatus: 'EXPIRED' })
-        return
-      }
-      try {
-        const res = await api.getPaymentProgress(orderNo)
-        const { success, data } = res || {}
-        if (success && data) {
-          const paymentStatus = data.paymentStatus
-          // 最终状态：success（支付成功）, failed（支付失败）
-          // 中间状态（继续轮询）：pending（待支付）, paying（支付中）
-          if (paymentStatus === 'success' || paymentStatus === 'failed') {
-            clearInterval(timer)
-            resolve({ finished: true, paymentStatus: paymentStatus, data })
-          }
-          // 状态为 pending 或 paying 时继续轮询
-        }
-      } catch (error) {
-        // 忽略瞬时错误，继续轮询
-      }
-    }, 2500)
   })
 }
 
@@ -251,12 +213,12 @@ function requestPayment(formData) {
         ...finalPayParams,
         success: () => resolve({ success: true }),
         fail: (err) => {
-          console.error('微信支付失败:', err)
+          console.error('微信支付失败')
           reject(err)
         }
       })
     } catch (e) {
-      console.error('支付参数解析失败:', e)
+      console.error('支付参数解析失败')
       reject(e)
     }
   })
@@ -299,8 +261,6 @@ async function pay(amount) {
       paymentResult = 'success'
     } catch (err) {
       // 支付组件回调失败
-      console.log('微信支付组件回调:', err)
-      
       // 检查是否是用户取消
       const isUserCancel = err && err.errMsg && err.errMsg.includes('cancel')
       
@@ -350,7 +310,7 @@ async function pay(amount) {
           }
         } catch (e) {
           // 查询失败，进入5秒缓冲轮询（兜底）
-          console.error('查询支付状态失败:', e)
+          console.error('查询支付状态失败')
           paymentResult = 'error'
         }
       } else {
@@ -394,7 +354,7 @@ async function pay(amount) {
       }
     }
   } catch (e) {
-    console.error('支付流程异常:', e)
+    console.error('支付流程异常')
     wx.showToast({ title: e?.message || '支付发起失败', icon: 'none' })
     return { success: false, message: e?.message }
   } finally {
@@ -406,7 +366,6 @@ async function pay(amount) {
 module.exports = {
   pay,
   createOrder,
-  pollStatus,
   pollPaymentProgress,
   requestPayment,
   isPaying,

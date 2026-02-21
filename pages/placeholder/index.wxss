@@ -1,5 +1,0 @@
-.page{min-height:100vh;background:#f7f8fa;display:flex;align-items:center;justify-content:center}
-.placeholder{text-align:center}
-.illu{width:360rpx;margin-bottom:16rpx}
-.title{font-size:32rpx;color:#111;font-weight:700}
-.subtitle{margin-top:6rpx;font-size:26rpx;color:#8a8a8e}

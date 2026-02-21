@@ -30,7 +30,7 @@ Page({
         this.setData({ balance: 0, balanceStr: '0.00' })
       }
     }catch(e){
-      console.error('加载余额失败:', e)
+      console.error('加载余额失败')
       this.setData({ balance: 0, balanceStr: '0.00' })
     }
   },
@@ -48,7 +48,7 @@ Page({
         this.setData({ pendingAmount: 0, pendingAmountStr: '0.00' })
       }
     }catch(e){
-      console.error('加载待入账金额失败:', e)
+      console.error('加载待入账金额失败')
       this.setData({ pendingAmount: 0, pendingAmountStr: '0.00' })
     }
   },
@@ -120,7 +120,7 @@ Page({
         this.setData({ loading: false })
       }
     } catch (e) {
-      console.error('加载交易记录失败:', e)
+      console.error('加载交易记录失败')
       this.setData({ loading: false })
     }
   },
