@@ -38,7 +38,7 @@ Page({
   },
 
   onShow() {
-    // 每次显示页面时检查登录状态
+    // 每次显示页面时检查登录状态（仅根据 token 刷新 isLogin，不在此处启动轮询）
     const wasLogin = this.data.isLogin
     this.checkLoginStatus()
     
@@ -54,9 +54,9 @@ Page({
       }
     }
     
-    // 更新未读消息数量
-    if (this.data.isLogin) {
-      this.startPollingUnread()
+    // 轮询仅在验证登录成功后再启动（见 getUserInfo 成功回调），此处不因 checkLogin 启动
+    if (!isLogin) {
+      this.stopPollingUnread()
     }
   },
 
@@ -68,14 +68,13 @@ Page({
     this.stopPollingUnread()
   },
 
-  // 检查登录状态
+  // 检查登录状态（有 token 时拉取用户信息，仅当接口成功后才启动轮询）
   checkLoginStatus() {
     const isLogin = api.checkLogin()
     this.setData({ isLogin })
     
     if (isLogin) {
       this.getUserInfo()
-      this.startPollingUnread()
     } else {
       this.setData({ unreadMessageCount: 0 })
       this.stopPollingUnread()
@@ -93,23 +92,22 @@ Page({
     polling.stop()
   },
 
-  // 加载未读消息数量
+  // 加载未读消息数量（401 时静默停止轮询并更新登录态，避免反复弹登录框）
   async loadUnreadMessageCount() {
     if (!this.data.isLogin) return
     
-    try {
-      const res = await api.getUnreadMessageCount()
-      if (res && res.success) {
-        this.setData({ 
-          unreadMessageCount: res.data || 0 
-        })
-      }
-    } catch (e) {
-      console.error('加载未读消息数量失败')
+    const res = await api.getUnreadMessageCount()
+    if (res && res.success) {
+      this.setData({ unreadMessageCount: res.data || 0 })
+      return
+    }
+    if (res && res.code === 401) {
+      this.stopPollingUnread()
+      this.setData({ isLogin: false, unreadMessageCount: 0 })
     }
   },
 
-  // 获取用户信息
+  // 获取用户信息（成功后才启动未读消息轮询，避免 token 过期或后端重启后反复弹登录框）
   async getUserInfo() {
     try {
       const result = await api.getUserInfo()
@@ -118,6 +116,7 @@ Page({
           userInfo: result.data,
           isLogin: true
         })
+        this.startPollingUnread()
       }
     } catch (error) {
       console.error('获取用户信息失败')

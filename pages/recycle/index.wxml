@@ -109,43 +109,17 @@
     <!-- 底部安全空白区域 -->
     <view class="safe-area-bottom"></view>
     
-    <!-- 时间选择器弹窗 -->
-    <view class="time-picker-modal" wx:if="{{showTimePickerModal}}" catchtap="hideTimePicker">
-      <view class="time-picker-content" catchtap="stopPropagation">
-        <view class="time-picker-header">
-          <text class="time-picker-cancel" catchtap="hideTimePicker">取消</text>
-          <text class="time-picker-title">选择时间段</text>
-          <text class="time-picker-confirm" catchtap="confirmTimeSelection">确认</text>
-        </view>
-        <view class="time-picker-body">
-          <view class="time-picker-left">
-            <view class="time-picker-date-item {{selectedDateIndex === index ? 'active' : ''}}" 
-                  wx:for="{{dateOptions}}" 
-                  wx:key="index"
-                  catchtap="selectDate" 
-                  data-index="{{index}}">
-              {{item.label}}
-            </view>
-          </view>
-          <view class="time-picker-right">
-            <block wx:if="{{timeSlotOptions.length === 0}}">
-              <view class="time-picker-empty">
-                <text>暂无可预约时间段</text>
-              </view>
-            </block>
-            <block wx:else>
-            <view class="time-picker-time-item {{selectedTimeSlotIndex === index ? 'active' : ''}} {{item.disabled ? 'disabled' : ''}}" 
-                  wx:for="{{timeSlotOptions}}" 
-                  wx:key="index"
-                    catchtap="selectTimeSlot" 
-                  data-index="{{index}}">
-              {{item.label}}
-            </view>
-              <view class="time-picker-bottom-spacer"></view>
-            </block>
-          </view>
-        </view>
-      </view>
-    </view>
+    <!-- 时间选择器弹窗（共用组件） -->
+    <time-picker-modal
+      visible="{{showTimePickerModal}}"
+      dateOptions="{{dateOptions}}"
+      timeSlotOptions="{{timeSlotOptions}}"
+      selectedDateIndex="{{selectedDateIndex}}"
+      selectedTimeSlotIndex="{{selectedTimeSlotIndex}}"
+      bind:close="hideTimePicker"
+      bind:selectdate="selectDate"
+      bind:selecttimeslot="selectTimeSlot"
+      bind:confirm="confirmTimeSelection"
+    />
   </scroll-view>
 </view>

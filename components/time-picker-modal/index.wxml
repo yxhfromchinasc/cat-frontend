@@ -1,0 +1,42 @@
+<view class="time-picker-modal" wx:if="{{visible}}" catchtap="onMaskTap">
+  <view class="time-picker-content" catchtap="onContentTap">
+    <view class="time-picker-header">
+      <text class="time-picker-cancel" catchtap="onCancelTap">取消</text>
+      <text class="time-picker-title">选择时间段</text>
+      <text class="time-picker-confirm" catchtap="onConfirmTap">确认</text>
+    </view>
+    <view class="time-picker-body">
+      <scroll-view class="time-picker-left" scroll-y>
+        <view
+          class="time-picker-date-item {{selectedDateIndex === index ? 'active' : ''}}"
+          wx:for="{{dateOptions}}"
+          wx:key="index"
+          data-index="{{index}}"
+          catchtap="onSelectDate"
+        >
+          {{item.label}}
+        </view>
+      </scroll-view>
+      <scroll-view class="time-picker-right" scroll-y>
+        <block wx:if="{{timeSlotOptions.length === 0}}">
+          <view class="time-picker-empty">
+            <text>暂无可预约时间段</text>
+          </view>
+        </block>
+        <block wx:else>
+          <view
+            class="time-picker-time-item {{selectedTimeSlotIndex === index ? 'active' : ''}} {{item.disabled ? 'disabled' : ''}}"
+            wx:for="{{timeSlotOptions}}"
+            wx:key="index"
+            data-index="{{index}}"
+            catchtap="onSelectTimeSlot"
+          >
+            {{item.label}}
+          </view>
+          <view class="time-picker-bottom-spacer"></view>
+        </block>
+      </scroll-view>
+    </view>
+  </view>
+</view>
+

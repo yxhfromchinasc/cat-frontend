@@ -5,8 +5,8 @@
 
 // 基础配置
 const API_CONFIG = {
-  // baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
-  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
+  baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
+  // baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
 
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
@@ -228,7 +228,8 @@ function request(options) {
       showLoading = true,
       showError = true,
       showSuccess = false,
-      successMessage = '操作成功'
+      successMessage = '操作成功',
+      silentAuthFailure = false  // 为 true 时 401 不弹登录框（用于轮询等，由调用方自行停止轮询并更新状态）
     } = options
 
     // 显示加载提示
@@ -277,9 +278,11 @@ function request(options) {
           }
           resolve(result)
         } else {
-          // 401 未登录弹窗引导
+          // 401 未登录：静默模式下不弹窗，由调用方处理（如停止轮询）；否则弹窗引导登录
           if (result.code === 401) {
-            goLoginWithRedirect()
+            if (!silentAuthFailure) {
+              goLoginWithRedirect()
+            }
           } else if (result.code === 403) {
             wx.showToast({ title: '无权限访问', icon: 'none' })
           } else if (showError && result.code !== 3002 && result.code !== 2003 && result.code !== 2004) {
@@ -1388,7 +1391,7 @@ module.exports = {
    */
   async getUnreadMessageCount() {
     try {
-      const res = await get('/message/unread/stats', {}, { showLoading: false, showError: false })
+      const res = await get('/message/unread/stats', {}, { showLoading: false, showError: false, silentAuthFailure: true })
       if (res && res.success && res.data) {
         return {
           success: true,
@@ -1397,7 +1400,7 @@ module.exports = {
       }
       return { success: false, data: 0 }
     } catch (e) {
-      return { success: false, data: 0 }
+      return { success: false, data: 0, code: e && e.code }
     }
   },
 

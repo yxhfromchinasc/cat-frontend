@@ -2,5 +2,8 @@
   "navigationBarTitleText": "快递代取",
   "navigationBarBackgroundColor": "#ffffff",
   "navigationBarTextStyle": "black",
-  "backgroundColor": "#f7f8fa"
+  "backgroundColor": "#f7f8fa",
+  "usingComponents": {
+    "time-picker-modal": "/components/time-picker-modal/index"
+  }
 }

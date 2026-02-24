@@ -34,17 +34,13 @@ Page({
   },
 
   onShow(){
-    // 每次进入页面都刷新数据
+    // 每次进入页面都刷新数据；轮询仅在 loadUserInfo 成功后再启动
     const isLogin = api.checkLogin()
     this.setData({ isLogin })
     if (isLogin) {
-      // 刷新用户信息和统计数据
       this.loadUserInfo()
-      this.loadStats() // 加载统计数据（余额、卡券、地址）
-      // 开始轮询未读消息
-      this.startPollingUnread()
+      this.loadStats()
     } else {
-      // 未登录时重置为0
       this.setData({
         userInfo: null,
         balance: 0,
@@ -52,7 +48,7 @@ Page({
         couponCount: 0,
         addressCount: 0,
         unreadMessageCount: 0,
-        avatarSrc: '/assets/tabbar/profile.png' // 重置头像为默认
+        avatarSrc: '/assets/tabbar/profile.png'
       })
       this.stopPollingUnread()
     }
@@ -77,19 +73,18 @@ Page({
     polling.stop()
   },
 
-  // 加载未读消息数量
+  // 加载未读消息数量（401 时静默停止轮询并更新登录态，避免反复弹登录框）
   async loadUnreadMessageCount() {
     if (!this.data.isLogin) return
     
-    try {
-      const res = await api.getUnreadMessageCount()
-      if (res && res.success) {
-        this.setData({ 
-          unreadMessageCount: res.data || 0 
-        })
-      }
-    } catch (e) {
-      console.error('加载未读消息数量失败')
+    const res = await api.getUnreadMessageCount()
+    if (res && res.success) {
+      this.setData({ unreadMessageCount: res.data || 0 })
+      return
+    }
+    if (res && res.code === 401) {
+      this.stopPollingUnread()
+      this.setData({ isLogin: false, unreadMessageCount: 0 })
     }
   },
 
@@ -101,8 +96,8 @@ Page({
           userInfo: res.data, 
           isLogin: true 
         })
-        // 更新头像显示
         this.updateAvatarSrc()
+        this.startPollingUnread()
       } else {
         // 如果接口返回失败，清除登录状态
         this.setData({ 

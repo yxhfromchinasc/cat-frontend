@@ -803,9 +803,9 @@ Page({
     // 空函数，用于阻止事件冒泡
   },
 
-  // 选择日期（弹窗中）
+  // 选择日期（弹窗中，来自时间选择组件）
   selectDate(e) {
-    const index = parseInt(e.currentTarget.dataset.index)
+    const index = parseInt(e.detail.index)
     const isToday = index === 0
     
     // 根据选择的日期更新时间段选项
@@ -824,9 +824,9 @@ Page({
     this.updateCanSubmit()
   },
 
-  // 选择时间段（弹窗中，仅更新选中状态，不更新时间数据）
+  // 选择时间段（弹窗中，仅更新选中状态，不更新时间数据，来自时间选择组件）
   selectTimeSlot(e) {
-    const index = parseInt(e.currentTarget.dataset.index)
+    const index = parseInt(e.detail.index)
     const timeSlot = this.data.timeSlotOptions[index]
     if (!timeSlot) return
     
