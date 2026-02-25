@@ -124,6 +124,117 @@
   max-height: 160rpx;
 }
 
+/* 计价说明卡片，沿用回收/快递风格 */
+.price-card {
+  margin-top: 20rpx;
+  padding-top: 32rpx;
+  padding-bottom: 32rpx;
+}
+
+.price-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.price-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #09ccb5;
+  margin-right: 12rpx;
+}
+
+.price-label {
+  font-size: 30rpx;
+  color: #111;
+  font-weight: 600;
+}
+
+.price-main {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 8rpx;
+}
+
+.price-title {
+  font-size: 32rpx;
+  color: #111;
+  font-weight: 500;
+}
+
+.price-desc {
+  font-size: 26rpx;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* 流程图示 */
+.price-flow {
+  margin-top: 20rpx;
+  padding: 16rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.flow-badge {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  background: #09ccb5;
+  color: #fff;
+  font-size: 26rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22rpx;
+}
+
+.flow-text {
+  font-size: 24rpx;
+  color: #333;
+  text-align: center;
+}
+
+.flow-arrow {
+  font-size: 32rpx;
+  color: #c0c4cc;
+  padding: 0 8rpx;
+}
+
+
+/* 快捷选项 */
+.quick-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.quick-option-item {
+  padding: 12rpx 24rpx;
+  background: #f0f4ff;
+  border: 1rpx solid #09ccb5;
+  border-radius: 20rpx;
+  font-size: 26rpx;
+  color: #09ccb5;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.quick-option-item-hover {
+  background: #09ccb5;
+  color: #fff;
+}
+
 /* 清运类型：按钮选择 */
 .category-btns {
   display: flex;

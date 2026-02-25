@@ -20,6 +20,7 @@ Page({
       // 加急统一由后端按配置计算，前端不再提供开关
       isUrgent: false
     },
+    quickOptions: [],
     canSubmitData: false,
     submitTip: '',
     isSubmitting: false,
@@ -55,6 +56,7 @@ Page({
   },
 
   async onLoad(options) {
+    await this.loadRemarkOptions()
     // 先检查是否有未支付的需要支付订单（快递代取 + 大件清运）
     const hasPendingOrder = await this.checkUnpaidPayableOrder()
     if (hasPendingOrder) {
@@ -64,6 +66,34 @@ Page({
     await this.loadDefaultAddress(addressId)
     this.initTimeSlots()
     this.updateCanSubmit()
+  },
+
+  async loadRemarkOptions() {
+    const fallback = ['有电梯', '无电梯', '需要拆卸', '玻璃制品', '需清理垃圾']
+    try {
+      const res = await api.getRemovalRemarkOptions()
+      if (res && res.success && res.data !== undefined && res.data !== null) {
+        let options = res.data
+        if (typeof options === 'string') {
+          try {
+            options = JSON.parse(options)
+          } catch (e) {
+            console.error('解析大件清运备注快捷选项失败', e)
+          }
+        }
+        if (!Array.isArray(options)) {
+          options = []
+        }
+        this.setData({
+          quickOptions: options.length ? options : fallback
+        })
+      } else {
+        this.setData({ quickOptions: fallback })
+      }
+    } catch (e) {
+      console.error('加载大件清运备注快捷选项失败', e)
+      this.setData({ quickOptions: fallback })
+    }
   },
 
   // 检查是否有未支付的需要支付订单（快递代取 + 大件清运）
@@ -221,6 +251,28 @@ Page({
   onRemarkInput(e) {
     this.setData({
       'form.remark': e.detail.value
+    })
+  },
+
+  addQuickOption(e) {
+    const quickText = e.currentTarget.dataset.text
+    const currentText = this.data.form.remark || ''
+    if (!quickText) {
+      return
+    }
+    if (!currentText.trim()) {
+      this.setData({
+        'form.remark': quickText
+      })
+      return
+    }
+    if (currentText.includes(quickText)) {
+      wx.showToast({ title: '已添加该选项', icon: 'none', duration: 1000 })
+      return
+    }
+    const newText = `${currentText.trim()} ${quickText}`
+    this.setData({
+      'form.remark': newText
     })
   },
 

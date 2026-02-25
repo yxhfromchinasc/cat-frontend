@@ -43,6 +43,31 @@
       </view>
     </view>
 
+    <!-- 计价说明（图文流程 + 示例） -->
+    <view class="card price-card">
+      <view class="price-header">
+        <view class="price-dot"></view>
+        <text class="price-label">收费说明</text>
+      </view>
+      <!-- 流程图示：上传照片 -> 小哥来电报价 -> 您确认后上门 -->
+      <view class="price-flow">
+        <view class="flow-step">
+          <view class="flow-badge">1</view>
+          <text class="flow-text">上传照片下单</text>
+        </view>
+        <text class="flow-arrow">→</text>
+        <view class="flow-step">
+          <view class="flow-badge">2</view>
+          <text class="flow-text">小哥来电聊价格</text>
+        </view>
+        <text class="flow-arrow">→</text>
+        <view class="flow-step">
+          <view class="flow-badge">3</view>
+          <text class="flow-text">您同意后再上门</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 清运信息 -->
     <view class="card">
       <view class="card-title">清运信息</view>
@@ -84,6 +109,20 @@
       <view class="form-item">
         <view class="label">备注（选填）</view>
         <textarea class="textarea item-remark-textarea" placeholder="请填写大件物品描述、楼层等" value="{{form.remark}}" bindinput="onRemarkInput" maxlength="500"></textarea>
+        <view class="quick-options" wx:if="{{quickOptions && quickOptions.length}}">
+          <view
+            class="quick-option-item"
+            hover-class="quick-option-item-hover"
+            hover-start-time="0"
+            hover-stay-time="70"
+            wx:for="{{quickOptions}}"
+            wx:key="index"
+            bindtap="addQuickOption"
+            data-text="{{item}}"
+          >
+            <text>{{item}}</text>
+          </view>
+        </view>
       </view>
     </view>
 

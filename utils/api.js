@@ -1297,6 +1297,11 @@ module.exports = {
     return get('/config/recycling-remark-options', {}, { showLoading: false, showError: false })
   },
 
+  // 获取大件清运订单备注快捷选项
+  getRemovalRemarkOptions() {
+    return get('/config/removal-remark-options', {}, { showLoading: false, showError: false })
+  },
+
   // ========== 公告相关 ==========
   /**
    * 获取当前用户应显示的公告（优先级最高的一个）
