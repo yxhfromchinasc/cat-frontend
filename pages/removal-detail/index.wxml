@@ -110,6 +110,19 @@
                 <image class="info-image" wx:for="{{event.data.images}}" wx:key="*this" src="{{item}}" mode="aspectFill" bindtap="previewImage" data-url="{{item}}" data-urls="{{event.data.images}}"></image>
               </view>
             </view>
+            <!-- TRANSFER 转单 -->
+            <view class="info-item" wx:if="{{event.type === 'TRANSFER' && event.data.fromCourierNickname}}">
+              <text class="info-label">原小哥：</text>
+              <text class="info-value">{{event.data.fromCourierNickname}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.type === 'TRANSFER' && event.data.toCourierNickname}}">
+              <text class="info-label">新小哥：</text>
+              <text class="info-value">{{event.data.toCourierNickname}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.type === 'TRANSFER' && event.data.reason}}">
+              <text class="info-label">转单原因：</text>
+              <text class="info-value">{{event.data.reason}}</text>
+            </view>
             <!-- START_PAY / ABORT_PAY -->
             <view class="info-item" wx:if="{{(event.displayType === 'START_PAY' || event.displayType === 'ABORT_PAY') && event.data.desc}}">
               <text class="info-value">{{event.data.desc}}</text>

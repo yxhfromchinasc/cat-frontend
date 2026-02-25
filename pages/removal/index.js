@@ -17,6 +17,7 @@ Page({
       serviceCategory: null, // 1-报废清除，2-屋内搬运；默认不选中
       images: [],
       remark: '',
+      // 加急统一由后端按配置计算，前端不再提供开关
       isUrgent: false
     },
     canSubmitData: false,
@@ -364,13 +365,9 @@ Page({
     return `${year}-${month}-${day} ${timeStr}:00`
   },
 
-  // 是否加急
-  onUrgentChange(e) {
-    const isUrgent = !!e.detail.value
-    this.setData({
-      'form.isUrgent': isUrgent
-    })
-    this.updateCanSubmit()
+  // 是否加急（大件清运前端不再提供加急开关，保留空实现以兼容旧wxml）
+  onUrgentChange() {
+    // 前端纯屏蔽，加急逻辑由后端统一处理
   },
 
   async chooseImages() {
@@ -485,7 +482,8 @@ Page({
         serviceCategory: this.data.form.serviceCategory,
         images: this.data.form.images,
         remark: this.data.form.remark,
-        isUrgent: this.data.form.isUrgent
+        // 加急标记由后端根据配置和场景决定，这里固定为false
+        isUrgent: false
       }
       const res = await api.request({
         url: '/removal/create',
