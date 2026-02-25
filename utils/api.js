@@ -854,11 +854,11 @@ function getNearbyStations(latitude, longitude, radius = 3) {
 }
 
 /**
- * 查询未支付的快递订单
- * @returns {Promise} 返回未支付的订单号，如果没有则返回null
+ * 查询未支付的需要支付订单（快递代取 + 大件清运）
+ * @returns {Promise} 返回 { orderNo, serviceType }，如果没有则返回 { orderNo: null, serviceType: null }
  */
 function getPendingExpressOrder() {
-  return get('/express/pending-order', {}, { showSuccess: false })
+  return get('/order/pending-payable-order', {}, { showSuccess: false })
 }
 
 /**

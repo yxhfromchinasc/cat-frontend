@@ -120,12 +120,12 @@ Page({
     }
   },
 
-  // 检查是否有未支付的快递订单
+  // 检查是否有未支付的需要支付订单（快递代取 + 大件清运）
   async checkUnpaidExpressOrder() {
     try {
       const res = await api.getPendingExpressOrder()
       if (res.success && res.data && res.data.orderNo) {
-        const orderNo = res.data.orderNo
+        const { orderNo, serviceType } = res.data
         wx.showModal({
           title: '提示',
           content: '当前有订单未支付，请前往详情页支付',
@@ -133,10 +133,16 @@ Page({
           cancelText: '取消',
           success: (modalRes) => {
             if (modalRes.confirm) {
-              // 跳转到快递订单详情页
-              wx.redirectTo({
-                url: `/pages/express-detail/index?orderNo=${orderNo}`
-              })
+              // 根据服务类型跳转到对应订单详情页
+              let url = ''
+              if (serviceType === 2) {
+                url = `/pages/express-detail/index?orderNo=${orderNo}`
+              } else if (serviceType === 5) {
+                url = `/pages/removal-detail/index?orderNo=${orderNo}`
+              }
+              if (url) {
+                wx.redirectTo({ url })
+              }
             } else {
               // 用户取消，返回上一页
               wx.navigateBack()

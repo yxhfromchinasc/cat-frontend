@@ -56,7 +56,7 @@
                 <view class="biz-removal-btn">预约清运</view>
               </view>
               <view class="biz-card-right">
-                <image class="biz-card-image" src="/assets/tabbar/大件垃圾处理.png" mode="aspectFit"></image>
+                <image class="biz-card-image" src="/assets/tabbar/大件物品搬运.png" mode="aspectFit"></image>
               </view>
             </view>
           </view>

@@ -54,10 +54,51 @@ Page({
   },
 
   async onLoad(options) {
+    // 先检查是否有未支付的需要支付订单（快递代取 + 大件清运）
+    const hasPendingOrder = await this.checkUnpaidPayableOrder()
+    if (hasPendingOrder) {
+      return
+    }
     const addressId = options.addressId ? parseInt(options.addressId) : null
     await this.loadDefaultAddress(addressId)
     this.initTimeSlots()
     this.updateCanSubmit()
+  },
+
+  // 检查是否有未支付的需要支付订单（快递代取 + 大件清运）
+  async checkUnpaidPayableOrder() {
+    try {
+      const res = await api.getPendingExpressOrder()
+      if (res.success && res.data && res.data.orderNo) {
+        const { orderNo, serviceType } = res.data
+        wx.showModal({
+          title: '提示',
+          content: '当前有订单未支付，请前往详情页支付',
+          confirmText: '前往支付',
+          cancelText: '取消',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              let url = ''
+              if (serviceType === 2) {
+                url = `/pages/express-detail/index?orderNo=${orderNo}`
+              } else if (serviceType === 5) {
+                url = `/pages/removal-detail/index?orderNo=${orderNo}`
+              }
+              if (url) {
+                wx.redirectTo({ url })
+              }
+            } else {
+              wx.navigateBack()
+            }
+          }
+        })
+        return true
+      }
+      return false
+    } catch (e) {
+      console.error('检查未支付订单失败', e)
+      return false
+    }
   },
 
   async loadDefaultAddress(preselectAddressId) {
