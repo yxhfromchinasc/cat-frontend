@@ -209,6 +209,11 @@ Page({
       wx.navigateTo({
         url: `/pages/withdraw-detail/index?orderNo=${orderNo}`
       })
+    } else if (serviceType === 5) {
+      // 大件清运订单跳转到大件清运订单详情页
+      wx.navigateTo({
+        url: `/pages/removal-detail/index?orderNo=${orderNo}`
+      })
     } else {
       // 其他订单类型暂时不处理
       wx.showToast({ title: '暂不支持该订单类型', icon: 'none' })

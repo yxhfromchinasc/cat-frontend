@@ -150,6 +150,41 @@
           </view>
         </view>
 
+        <!-- 大件清运订单 -->
+        <view wx:if="{{item.serviceType === 5}}" class="order-type-removal">
+          <view class="order-type-title">大件清运</view>
+          <view class="order-info">
+            <view class="order-info-item" wx:if="{{item.recyclingAddressDetail}}">
+              <text class="label">服务地址：</text>
+              <text class="value">{{item.recyclingAddressDetail}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.removalPointName}}">
+              <text class="label">清运点：</text>
+              <text class="value">{{item.removalPointName}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.itemDescription}}">
+              <text class="label">物品描述：</text>
+              <text class="value">{{item.itemDescription}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.startTimeStr}}">
+              <text class="label">预约时间：</text>
+              <text class="value">{{item.startTimeStr}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.removalStatusDesc}}">
+              <text class="label">清运状态：</text>
+              <text class="value">{{item.removalStatusDesc}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.estimatedPrice != null}}">
+              <text class="label">预估价：</text>
+              <text class="value price">￥{{item.estimatedPrice}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.actualPrice != null}}">
+              <text class="label">实际价格：</text>
+              <text class="value price">￥{{item.actualPrice}}</text>
+            </view>
+          </view>
+        </view>
+
         <!-- 提现订单 -->
         <view wx:if="{{item.serviceType === 4}}" class="order-type-withdraw">
           <view class="order-type-title">余额提现</view>

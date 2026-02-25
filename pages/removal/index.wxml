@@ -1,0 +1,14 @@
+<view class="container">
+  <!-- 地址选择 -->
+  <view class="section">选择地址</view>
+  <!-- 时间选择 -->
+  <view class="section">预约时间</view>
+  <!-- 类型选择 -->
+  <view class="section">清运类型 (清理/搬运)</view>
+  <!-- 照片上传 -->
+  <view class="section">拍照上传</view>
+  <!-- 备注 -->
+  <view class="section">备注</view>
+  
+  <button bindtap="submitOrder">提交订单</button>
+</view>

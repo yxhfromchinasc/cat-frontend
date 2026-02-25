@@ -5,8 +5,8 @@
 
 // 基础配置
 const API_CONFIG = {
-  baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
-  // baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
+  // baseURL: 'https://bd-miaow.tech/api/user', // 后端对外统一前缀
+  baseURL: 'http://localhost:8080/api/user', // 后端对外统一前缀
 
   timeout: 10000, // 请求超时时间
   retryCount: 3, // 重试次数
@@ -883,6 +883,27 @@ function getRecyclingPointsByAddress(addressId) {
 }
 
 /**
+ * 根据地址ID获取清运点列表
+ */
+function getRemovalPointsByAddress(addressId) {
+  return get('/removal-point/points-by-address', { addressId }, { showSuccess: false })
+}
+
+/**
+ * 获取大件清运订单详情
+ */
+function getRemovalOrderDetail(orderNo) {
+  return get('/removal/detail', { orderNo }, { showSuccess: false })
+}
+
+/**
+ * 取消大件清运订单
+ */
+function cancelRemovalOrder(orderNo, reason) {
+  return post('/removal/cancel', { orderNo, reason: reason || '用户取消' }, { showSuccess: true, successMessage: '已取消' })
+}
+
+/**
  * 根据经纬度获取附近的回收点
  * @param {Number} latitude 纬度
  * @param {Number} longitude 经度
@@ -1142,6 +1163,10 @@ module.exports = {
   createRecyclingOrder,
   cancelRecyclingOrder,
   getRecyclingOrderDetail,
+  // 大件清运相关
+  getRemovalPointsByAddress,
+  getRemovalOrderDetail,
+  cancelRemovalOrder,
   
   // 地址管理
   getAddressList,

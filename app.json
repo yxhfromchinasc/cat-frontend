@@ -3,6 +3,8 @@
     "pages/index/index",
     "pages/pickup/index",
     "pages/recycle/index",
+    "pages/removal/index",
+    "pages/removal-detail/index",
     "pages/orders/index",
     "pages/express-detail/index",
     "pages/recycling-detail/index",

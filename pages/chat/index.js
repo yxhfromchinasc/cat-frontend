@@ -179,9 +179,9 @@ Page({
     const conv = this.data.conversation
     if (!conv || !conv.orderNo) return
     const serviceType = conv.orderServiceType
-    const path = serviceType === 3
-      ? `/pages/recycling-detail/index?orderNo=${conv.orderNo}`
-      : `/pages/express-detail/index?orderNo=${conv.orderNo}`
+    let path = `/pages/express-detail/index?orderNo=${conv.orderNo}`
+    if (serviceType === 3) path = `/pages/recycling-detail/index?orderNo=${conv.orderNo}`
+    else if (serviceType === 5) path = `/pages/removal-detail/index?orderNo=${conv.orderNo}`
     wx.navigateTo({ url: path })
   },
 
