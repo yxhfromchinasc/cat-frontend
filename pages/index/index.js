@@ -177,6 +177,13 @@ Page({
     })
   },
 
+  // 进入大件清运页面
+  goToRemoval() {
+    wx.navigateTo({
+      url: '/pages/removal/index'
+    })
+  },
+
   // 跳转到卡券
   goToCoupon() {
     wx.navigateTo({

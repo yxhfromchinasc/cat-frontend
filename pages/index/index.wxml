@@ -47,11 +47,18 @@
           </view>
         </view>
         
-        <!-- 第二行：服务介绍 + 快递代取 -->
-        <view class="biz-row">
-          <view class="small-card small-card-service" bindtap="onSmallCardTap" data-type="service">
-            <image class="small-card-image" src="/assets/tabbar/介绍.png" mode="aspectFit"></image>
-            <view class="small-card-title">服务介绍</view>
+        <!-- 第二行：大件清运 + 快递代取（一行两卡，等宽） -->
+        <view class="biz-row biz-row-double">
+          <view class="biz-card biz-card-removal" bindtap="goToRemoval">
+            <view class="biz-card-content">
+              <view class="biz-card-left">
+                <view class="biz-title">大件清运</view>
+                <view class="biz-removal-btn">预约清运</view>
+              </view>
+              <view class="biz-card-right">
+                <image class="biz-card-image" src="/assets/tabbar/大件垃圾处理.png" mode="aspectFit"></image>
+              </view>
+            </view>
           </view>
           <view class="biz-card biz-card-pickup" bindtap="goToPickup">
             <view class="biz-card-content">

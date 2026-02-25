@@ -13,7 +13,7 @@
     <view class="order-bubble">
       <view class="order-bubble-content">
         <view class="order-bubble-main">
-          <text class="order-bubble-type">{{conversation.orderServiceType === 3 ? '回收' : '快递'}}</text>
+          <text class="order-bubble-type">{{conversation.orderServiceType === 5 ? '大件清运' : (conversation.orderServiceType === 3 ? '回收' : '快递')}}</text>
           <text class="order-bubble-time" wx:if="{{conversation.orderAppointmentTime}}">{{conversation.orderAppointmentTime}}</text>
         </view>
         <view class="order-bubble-addr" wx:if="{{conversation.orderAddressBrief}}">{{conversation.orderAddressBrief}}</view>

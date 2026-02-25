@@ -1252,34 +1252,28 @@ module.exports = {
   // 配置
   API_CONFIG,
   
-  // 时间段可用性检查（单个时间段）
-  checkTimeSlotAvailability(serviceType, startTime, endTime, stationId, recyclingPointId) {
+  // 时间段可用性检查（单个时间段）。快递传 stationId，回收传 recyclingPointId，大件清运传 removalPointId
+  checkTimeSlotAvailability(serviceType, startTime, endTime, stationId, recyclingPointId, removalPointId) {
     const params = {
       serviceType,
       startTime,
       endTime
     }
-    if (stationId) {
-      params.stationId = stationId
-    }
-    if (recyclingPointId) {
-      params.recyclingPointId = recyclingPointId
-    }
+    if (stationId) params.stationId = stationId
+    if (recyclingPointId) params.recyclingPointId = recyclingPointId
+    if (removalPointId) params.removalPointId = removalPointId
     return get('/schedule/check-availability', params, { showLoading: false, showError: false })
   },
 
-  // 批量获取时间段列表（包含可用性信息）
-  getTimeSlotList(serviceType, date, stationId, recyclingPointId) {
+  // 批量获取时间段列表（按驿站/回收点/清运点营业时间与小哥排期）。快递传 stationId，回收传 recyclingPointId，大件清运传 removalPointId
+  getTimeSlotList(serviceType, date, stationId, recyclingPointId, removalPointId) {
     const params = {
       serviceType,
       date // 格式：yyyy-MM-dd
     }
-    if (stationId) {
-      params.stationId = stationId
-    }
-    if (recyclingPointId) {
-      params.recyclingPointId = recyclingPointId
-    }
+    if (stationId) params.stationId = stationId
+    if (recyclingPointId) params.recyclingPointId = recyclingPointId
+    if (removalPointId) params.removalPointId = removalPointId
     return get('/schedule/time-slots', params, { showLoading: false, showError: false })
   },
 

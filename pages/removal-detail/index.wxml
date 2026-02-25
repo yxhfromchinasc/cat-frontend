@@ -20,51 +20,21 @@
     </view>
   </view>
 
-  <!-- 小哥信息 -->
-  <view class="courier-section" wx:if="{{orderDetail.courierNickname}}">
-    <view class="courier-info">
-      <image class="courier-avatar" src="{{orderDetail.courierAvatarUrl || '/assets/tabbar/profile.png'}}" mode="aspectFill"></image>
-      <view class="courier-text">
-        <text class="courier-name">{{orderDetail.courierNickname}}</text>
-        <text class="courier-desc">清运小哥</text>
-      </view>
-    </view>
-    <view class="courier-actions" wx:if="{{orderDetail.courierPhone || orderDetail.courierId}}">
-      <view class="phone-btn" wx:if="{{orderDetail.courierPhone}}" bindtap="callCourier" data-phone="{{orderDetail.courierPhone}}">
-        <image class="phone-icon" src="/assets/tabbar/call.png" mode="aspectFit" />
-      </view>
-      <view class="contact-btn-small" wx:if="{{orderDetail.courierId}}" bindtap="onContactTap">
-        <image class="contact-icon-small" src="/assets/tabbar/会话.svg" mode="aspectFit" />
-      </view>
-    </view>
-  </view>
+  <!-- 小哥信息（共用组件，订单完成后不显示会话按钮） -->
+  <courier-card
+    name="{{orderDetail.courierNickname}}"
+    avatarUrl="{{orderDetail.courierAvatarUrl}}"
+    roleDesc="清运小哥"
+    phone="{{orderDetail.courierPhone}}"
+    courierId="{{orderDetail.courierId}}"
+    showContact="{{orderDetail.showCourierContact}}"
+    ratingArray="{{orderDetail.courierRatingArray}}"
+    bind:call="callCourier"
+    bind:contact="onContactTap"
+  />
 
-  <!-- 订单信息 -->
-  <view class="info-section">
-    <view class="info-row">
-      <text class="info-label">订单号</text>
-      <text class="info-value">{{orderDetail.orderNo}}</text>
-    </view>
-    <view class="info-row">
-      <text class="info-label">状态</text>
-      <text class="info-value">{{orderDetail.removalStatusDesc}}</text>
-    </view>
-    <view class="info-row" wx:if="{{orderDetail.addressDetail}}">
-      <text class="info-label">地址</text>
-      <text class="info-value">{{orderDetail.addressDetail}}</text>
-    </view>
-    <view class="info-row" wx:if="{{orderDetail.startTime && orderDetail.endTime}}">
-      <text class="info-label">预约时间</text>
-      <text class="info-value">{{orderDetail.startTime}} - {{orderDetail.endTime}}</text>
-    </view>
-    <view class="info-row" wx:if="{{orderDetail.actualPrice != null && (orderDetail.removalStatus === 4 || orderDetail.removalStatus === 5)}}">
-      <text class="info-label">实际费用</text>
-      <text class="info-value price">¥{{orderDetail.actualPriceStr}}</text>
-    </view>
-  </view>
-
-  <!-- 时间线（对齐快递详情粒度） -->
-  <scroll-view class="timeline-scroll" scroll-y wx:if="{{orderDetail.timeline && orderDetail.timeline.length > 0}}">
+  <!-- 时间线（与快递/回收详情一致：仅展示时间线，订单内容在时间线节点内） -->
+  <scroll-view class="timeline-scroll" scroll-y>
     <view class="timeline-section">
       <view class="timeline-item {{event.status === 'cancelled' ? 'cancelled' : ''}}" wx:for="{{orderDetail.timeline}}" wx:key="type" wx:for-index="idx" wx:for-item="event">
         <view class="timeline-node">
@@ -97,9 +67,23 @@
               <text class="info-label">预约时间：</text>
               <text class="info-value">{{event.data.timeRangeFormatted || (event.data.startTime + ' - ' + event.data.endTime)}}</text>
             </view>
+            <view class="info-item" wx:if="{{event.displayType === 'CREATED' && event.data.serviceCategoryName}}">
+              <text class="info-label">服务类型：</text>
+              <text class="info-value">{{event.data.serviceCategoryName}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'CREATED' && event.data.remark}}">
+              <text class="info-label">备注：</text>
+              <text class="info-value">{{event.data.remark}}</text>
+            </view>
             <view class="info-item" wx:if="{{event.displayType === 'CREATED' && event.data.itemDescription}}">
               <text class="info-label">物品描述：</text>
               <text class="info-value">{{event.data.itemDescription}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'CREATED' && event.data.images && event.data.images.length > 0}}">
+              <text class="info-label">现场照片：</text>
+              <view class="image-list">
+                <image class="info-image" wx:for="{{event.data.images}}" wx:key="*this" src="{{item}}" mode="aspectFill" bindtap="previewImage" data-url="{{item}}" data-urls="{{event.data.images}}"></image>
+              </view>
             </view>
             <!-- BANDING 小哥接单 -->
             <view class="info-item" wx:if="{{event.displayType === 'BANDING' && event.data.courierNickname}}">
@@ -153,11 +137,11 @@
     </view>
   </scroll-view>
 
-  <!-- 操作按钮 -->
+  <!-- 操作按钮（与快递/回收详情一致：主色支付、描边取消、安全区） -->
   <view class="actions-bar" wx:if="{{orderDetail.allowedActionLabels && orderDetail.allowedActionLabels.length > 0}}">
     <button wx:for="{{orderDetail.allowedActionLabels}}"
             wx:key="code"
-            class="action-btn {{item.code === 'CANCEL' || item.code === 'CANCEL_PAYMENT' ? 'cancel-btn' : 'primary-btn'}}"
+            class="action-btn {{item.code === 'PAY' || item.code === 'CONTINUE_PAY' ? 'pay-btn' : item.code === 'CANCEL_PAYMENT' ? 'cancel-payment-btn' : 'cancel-btn'}}"
             bindtap="handleAction"
             data-action="{{item.code}}">{{item.label}}</button>
   </view>

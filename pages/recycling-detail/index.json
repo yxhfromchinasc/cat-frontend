@@ -1,4 +1,6 @@
 {
-  "navigationBarTitleText": "回收订单详情"
+  "navigationBarTitleText": "回收订单详情",
+  "usingComponents": {
+    "courier-card": "/components/courier-card/index"
+  }
 }
-

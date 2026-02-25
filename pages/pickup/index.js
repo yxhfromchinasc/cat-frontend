@@ -455,8 +455,8 @@ Page({
       
       // 并行获取今天和明天的时间段列表
       const [todayRes, tomorrowRes] = await Promise.all([
-        api.getTimeSlotList(2, todayStr, this.data.selectedStationId, null),
-        api.getTimeSlotList(2, tomorrowStr, this.data.selectedStationId, null)
+        api.getTimeSlotList(2, todayStr, this.data.selectedStationId, null, null),
+        api.getTimeSlotList(2, tomorrowStr, this.data.selectedStationId, null, null)
       ])
       
       // 更新今天的时间段
@@ -1251,7 +1251,7 @@ Page({
       if (this.data.form.startTime && this.data.form.endTime) {
         try {
           // 2=快递代取，需要传递stationId
-          const checkRes = await api.checkTimeSlotAvailability(2, this.data.form.startTime, this.data.form.endTime, this.data.selectedStationId, null)
+          const checkRes = await api.checkTimeSlotAvailability(2, this.data.form.startTime, this.data.form.endTime, this.data.selectedStationId, null, null)
           // 注意：checkRes.data 是 {available: true/false, message: "..."}
           if (!checkRes.success || !checkRes.data?.available) {
             wx.showToast({ 

@@ -53,6 +53,10 @@ Page({
               d.itemDescription = detail.itemDescription
               d.isUrgent = detail.isUrgent
               d.removalPointName = detail.removalPointName
+              d.serviceCategory = detail.serviceCategory
+              d.serviceCategoryName = (detail.serviceCategory === 1 ? '报废清除' : detail.serviceCategory === 2 ? '屋内搬运' : '') || ''
+              d.images = detail.images && Array.isArray(detail.images) ? detail.images : []
+              d.remark = detail.remark || ''
             } else if (title.indexOf('小哥接单') !== -1) {
               event.displayType = 'BANDING'
               d.courierNickname = detail.courierNickname
@@ -82,8 +86,11 @@ Page({
         const amountVal = detail.actualAmount != null ? detail.actualAmount : detail.totalAmount
         detail.amount = amount.parseBigDecimalLike(amountVal, 0)
         detail.actualPriceStr = amount.formatAmount(detail.amount)
-        const actionLabels = { CANCEL: '取消订单', PAY: '立即支付', CONTINUE_PAY: '继续支付', CANCEL_PAYMENT: '取消本次支付', CONTACT_COURIER: '联系小哥' }
+        const actionLabels = { CANCEL: '取消订单', PAY: '立即支付', CONTINUE_PAY: '继续支付', CANCEL_PAYMENT: '取消本次支付', CANCEL_WITH_REDIRECT: '取消订单', CONTACT_COURIER: '联系小哥' }
         detail.allowedActionLabels = (detail.allowedActions || []).map(a => ({ code: a, label: actionLabels[a] || a }))
+        detail.showCourierContact = (detail.allowedActions || []).includes('CONTACT_COURIER')
+        // 小哥星级展示（与快递/回收一致，默认 5 星）
+        detail.courierRatingArray = detail.courierRatingArray || [1, 2, 3, 4, 5]
         this.setData({
           orderDetail: detail,
           loading: false,
@@ -139,7 +146,7 @@ Page({
   },
 
   callCourier(e) {
-    const phone = e.currentTarget.dataset.phone
+    const phone = e.detail && e.detail.phone
     if (!phone) {
       wx.showToast({ title: '电话号码不存在', icon: 'none' })
       return
@@ -159,6 +166,18 @@ Page({
       this.payOrder()
     } else if (action === 'CANCEL_PAYMENT') {
       await this.handleCancelPayment()
+    } else if (action === 'CANCEL_WITH_REDIRECT') {
+      // 支付中时在详情页点击「取消订单」：提示跳转支付页操作（与快递一致）
+      wx.showModal({
+        title: '提示',
+        content: '当前有支付中订单，请前往支付详情页操作',
+        confirmText: '前往支付',
+        success: (res) => {
+          if (res.confirm) {
+            wx.navigateTo({ url: `/pages/payment/index?orderNo=${this.data.orderNo}` })
+          }
+        }
+      })
     } else if (action === 'CONTACT_COURIER') {
       this.onContactTap()
     }

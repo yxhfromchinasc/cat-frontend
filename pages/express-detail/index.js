@@ -374,9 +374,9 @@ Page({
     })
   },
 
-  // 拨打业务员电话
+  // 拨打业务员电话（由 courier-card 组件触发，e.detail.phone）
   callCourier(e) {
-    const phone = e.currentTarget.dataset.phone
+    const phone = e.detail && e.detail.phone
     if (!phone) {
       wx.showToast({ title: '电话号码不存在', icon: 'none' })
       return

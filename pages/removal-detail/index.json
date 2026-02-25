@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "订单详情",
+  "navigationBarTitleText": "大件清运订单详情",
   "usingComponents": {
     "courier-card": "/components/courier-card/index"
   }
