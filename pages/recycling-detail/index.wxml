@@ -104,8 +104,38 @@
             <text class="info-value price">￥{{event.data.price}}</text>
           </view>
           
-          <!-- 价格组成信息（RECYCLING事件） -->
-          <view class="price-breakdown" wx:if="{{event.type === 'RECYCLING' && event.data.recyclingPricePerKg}}">
+          <!-- 回收计费明细（RECYCLING事件，有 items 时展示） -->
+          <view class="items-breakdown" wx:if="{{event.type === 'RECYCLING' && event.data.items && event.data.items.length > 0}}">
+            <view class="breakdown-title">回收计费明细</view>
+            <view class="items-table">
+              <view class="items-row items-header">
+                <text class="items-cell category">类别</text>
+                <text class="items-cell price">单价(元/kg)</text>
+                <text class="items-cell weight">重量(kg)</text>
+                <text class="items-cell amount">小计(元)</text>
+              </view>
+              <view class="items-row" wx:for="{{event.data.items}}" wx:key="index" wx:for-item="row">
+                <text class="items-cell category">{{row.category}}</text>
+                <text class="items-cell price">￥{{row.unitPrice}}</text>
+                <text class="items-cell weight">{{row.weight}}</text>
+                <text class="items-cell amount">￥{{row.amount}}</text>
+              </view>
+            </view>
+            <view class="breakdown-item" wx:if="{{event.data.baseAmount}}" style="margin-top: 16rpx;">
+              <text class="breakdown-label">项目小计：</text>
+              <text class="breakdown-value">￥{{event.data.baseAmount}}</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{event.data.overtimeCompensation > 0}}">
+              <text class="breakdown-label">超时补偿：</text>
+              <text class="breakdown-value positive">+￥{{event.data.overtimeCompensation}}</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{event.data.price}}">
+              <text class="breakdown-label">合计：</text>
+              <text class="breakdown-value price">￥{{event.data.price}}</text>
+            </view>
+          </view>
+          <!-- 价格组成信息（RECYCLING事件，无 items 时沿用原展示） -->
+          <view class="price-breakdown" wx:if="{{event.type === 'RECYCLING' && !(event.data.items && event.data.items.length > 0) && event.data.recyclingPricePerKg}}">
             <view class="breakdown-title">价格组成</view>
             <view class="breakdown-item">
               <text class="breakdown-label">回收价：</text>
@@ -153,8 +183,38 @@
             <text class="info-value price">￥{{event.data.price}}</text>
           </view>
           
-          <!-- 价格组成信息（OFFLINE_SETTLEMENT事件） -->
-          <view class="price-breakdown" wx:if="{{event.type === 'OFFLINE_SETTLEMENT' && event.data.recyclingPricePerKg}}">
+          <!-- 回收计费明细（OFFLINE_SETTLEMENT事件，有 items 时展示） -->
+          <view class="items-breakdown" wx:if="{{event.type === 'OFFLINE_SETTLEMENT' && event.data.items && event.data.items.length > 0}}">
+            <view class="breakdown-title">回收计费明细</view>
+            <view class="items-table">
+              <view class="items-row items-header">
+                <text class="items-cell category">类别</text>
+                <text class="items-cell price">单价(元/kg)</text>
+                <text class="items-cell weight">重量(kg)</text>
+                <text class="items-cell amount">小计(元)</text>
+              </view>
+              <view class="items-row" wx:for="{{event.data.items}}" wx:key="index" wx:for-item="row">
+                <text class="items-cell category">{{row.category}}</text>
+                <text class="items-cell price">￥{{row.unitPrice}}</text>
+                <text class="items-cell weight">{{row.weight}}</text>
+                <text class="items-cell amount">￥{{row.amount}}</text>
+              </view>
+            </view>
+            <view class="breakdown-item" wx:if="{{event.data.baseAmount}}" style="margin-top: 16rpx;">
+              <text class="breakdown-label">项目小计：</text>
+              <text class="breakdown-value">￥{{event.data.baseAmount}}</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{event.data.overtimeCompensation > 0}}">
+              <text class="breakdown-label">超时补偿：</text>
+              <text class="breakdown-value positive">+￥{{event.data.overtimeCompensation}}</text>
+            </view>
+            <view class="breakdown-item" wx:if="{{event.data.price}}">
+              <text class="breakdown-label">结算金额：</text>
+              <text class="breakdown-value price">￥{{event.data.price}}</text>
+            </view>
+          </view>
+          <!-- 价格组成信息（OFFLINE_SETTLEMENT事件，无 items 时沿用原展示） -->
+          <view class="price-breakdown" wx:if="{{event.type === 'OFFLINE_SETTLEMENT' && !(event.data.items && event.data.items.length > 0) && event.data.recyclingPricePerKg}}">
             <view class="breakdown-title">价格组成</view>
             <view class="breakdown-item">
               <text class="breakdown-label">回收价：</text>

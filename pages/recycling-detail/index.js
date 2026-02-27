@@ -68,10 +68,22 @@ Page({
               event.timeFormatted = this.formatTime(event.time)
             }
             // 格式化预约时间段（CREATED事件）
-            if (event.type === 'CREATED' && event.data.startTime && event.data.endTime) {
-              // 格式化开始时间和结束时间
+            if (event.type === 'CREATED' && event.data && event.data.startTime && event.data.endTime) {
               const formatted = this.formatTimeRange(event.data.startTime, event.data.endTime)
               event.data.timeRangeFormatted = formatted
+            }
+            // 回收计费明细（RECYCLING / OFFLINE_SETTLEMENT 的 event.data.items）格式化金额用于展示
+            if (event.data && event.data.items && Array.isArray(event.data.items)) {
+              event.data.items.forEach(item => {
+                if (!item) return
+                const price = Number(item.unitPrice)
+                const weight = Number(item.weight)
+                if (!isNaN(price) && !isNaN(weight)) {
+                  item.unitPrice = price.toFixed(2)
+                  item.weight = weight.toFixed(2)
+                  item.amount = (item.amount != null ? Number(item.amount) : price * weight).toFixed(2)
+                }
+              })
             }
           })
         } else {

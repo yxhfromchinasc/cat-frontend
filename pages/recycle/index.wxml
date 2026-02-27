@@ -61,7 +61,10 @@
         <text class="price-unit">元/公斤</text>
       </view>
       <view class="price-desc">
-        塑料瓶，易拉罐，其他金属类，单一品类超过10公斤，可以找小哥议价
+        塑料瓶、易拉罐、金属等，单类超10公斤可找小哥议价
+      </view>
+      <view class="price-notice">
+        <text class="price-notice-text">未整理成捆的装修废料按 <text class="price-notice-highlight">0.3 元/公斤</text> 结算</text>
       </view>
     </view>
 
