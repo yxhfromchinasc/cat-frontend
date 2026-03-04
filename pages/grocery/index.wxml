@@ -1,0 +1,107 @@
+<!-- 杂货铺选货页：三层布局，参考美团外卖 -->
+<view class="grocery-page">
+  <!-- 顶层：地址 + 杂货铺 -->
+  <view class="top-bar">
+    <view class="address-section" bindtap="selectAddress">
+      <view class="address-icon">
+        <image class="location-icon" src="/assets/tabbar/地址-start.png" mode="aspectFit"></image>
+      </view>
+      <view class="address-content">
+        <view class="address-line" wx:if="{{defaultAddress}}">
+          <text class="contact-name">{{defaultAddress.contactName}}</text>
+          <text class="contact-phone">{{defaultAddress.contactPhone}}</text>
+        </view>
+        <view class="address-detail" wx:if="{{defaultAddress}}">
+          {{defaultAddress.province}}{{defaultAddress.city}}{{defaultAddress.district}}{{defaultAddress.street}} {{defaultAddress.detailAddress}}
+        </view>
+        <view class="address-empty" wx:else>
+          <text class="empty-text">请选择配送地址</text>
+        </view>
+      </view>
+      <view class="address-arrow">›</view>
+    </view>
+    <view class="grocery-section" wx:if="{{groceryPoint}}">
+      <view class="grocery-name">{{groceryPoint.pointName}}</view>
+      <view class="grocery-addr" wx:if="{{groceryPoint.address}}">{{groceryPoint.address}}</view>
+    </view>
+    <view class="grocery-tip" wx:elif="{{selectedAddressId && !groceryPoint && !loadingGrocery}}">
+      <text class="tip-text error">该地址暂无服务杂货铺</text>
+    </view>
+  </view>
+
+  <!-- 中层：选货区域（左侧分类 + 右侧商品，参考美团） -->
+  <view class="middle-area">
+    <scroll-view class="category-scroll" scroll-y>
+      <view class="category-list">
+        <view class="category-item {{selectedCategoryId == null ? 'active' : ''}}" bindtap="selectCategory" data-id="all">全部</view>
+        <view class="category-item {{selectedCategoryId === item.id ? 'active' : ''}}" wx:for="{{categoryList}}" wx:key="id" bindtap="selectCategory" data-id="{{item.id}}">{{item.name}}</view>
+      </view>
+    </scroll-view>
+    <scroll-view class="product-scroll" scroll-y>
+    <view class="product-list" wx:if="{{productList.length > 0}}">
+      <view class="product-item" wx:for="{{productList}}" wx:key="productCode">
+        <image class="product-image" src="{{item.imageUrl || '/assets/tabbar/图片占位符.png'}}" mode="aspectFill"></image>
+        <view class="product-body">
+          <view class="product-row product-row-main">
+            <text class="product-name">{{item.name}}</text>
+            <text class="product-price">￥{{item.price}}</text>
+          </view>
+          <view class="product-row product-row-desc" wx:if="{{item.description}}">
+            <text class="product-desc">{{item.description}}</text>
+          </view>
+          <view class="product-row product-row-footer">
+            <text class="product-stock">库存 {{item.stock != null ? item.stock : 0}}{{item.stock <= 0 ? ' 暂无' : ''}}</text>
+            <view class="product-stepper" wx:if="{{item.stock > 0}}">
+              <view class="stepper-btn stepper-minus {{cartMap[item.productCode] <= 0 ? 'disabled' : ''}}" bindtap="onMinus" data-code="{{item.productCode}}">-</view>
+              <text class="stepper-num">{{cartMap[item.productCode] || 0}}</text>
+              <view class="stepper-btn stepper-plus {{(cartMap[item.productCode] || 0) >= item.stock ? 'disabled' : ''}}" bindtap="onPlus" data-code="{{item.productCode}}" data-stock="{{item.stock}}">+</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="empty-products" wx:elif="{{!loadingProducts && groceryPoint}}">
+      <text>暂无商品</text>
+    </view>
+    <view class="empty-addr" wx:elif="{{!selectedAddressId}}">
+      <text>请先选择配送地址</text>
+    </view>
+  </scroll-view>
+  </view>
+
+  <!-- 底层：购物车 + 去下单 -->
+  <view class="bottom-bar">
+    <view class="cart-btn" bindtap="showCartModal">
+      <view class="cart-icon-wrap">
+        <image class="cart-icon" src="/assets/tabbar/订单管理.png" mode="aspectFit"></image>
+        <view class="cart-badge" wx:if="{{cartCount > 0}}">{{cartCount}}</view>
+      </view>
+      <text class="cart-label">购物车</text>
+    </view>
+    <view class="order-btn {{cartCount <= 0 ? 'disabled' : ''}}" bindtap="goToConfirm">
+      去下单
+    </view>
+  </view>
+</view>
+
+<!-- 购物车弹窗 -->
+<view class="cart-modal {{showCartModal ? 'show' : ''}}" bindtap="hideCartModal">
+  <view class="cart-popup" catchtap="">
+    <view class="cart-popup-title">购物车</view>
+    <scroll-view class="cart-list" scroll-y>
+      <view class="cart-item" wx:for="{{cartItems}}" wx:key="productCode">
+        <view class="cart-item-name">{{item.name}}</view>
+        <view class="cart-item-price">￥{{item.price}}</view>
+        <view class="cart-item-stepper">
+          <view class="stepper-minus {{item.quantity <= 0 ? 'disabled' : ''}}" bindtap="onCartMinus" data-code="{{item.productCode}}">-</view>
+          <view class="stepper-num">{{item.quantity}}</view>
+          <view class="stepper-plus {{item.quantity >= item.stock ? 'disabled' : ''}}" bindtap="onCartPlus" data-code="{{item.productCode}}" data-stock="{{item.stock}}">+</view>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="cart-popup-footer">
+      <view class="cart-total">共 {{cartCount}} 件</view>
+      <view class="cart-close" bindtap="hideCartModal">关闭</view>
+    </view>
+  </view>
+</view>

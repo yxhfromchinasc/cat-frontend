@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "courier-card": "/components/courier-card/index"
+  },
+  "navigationBarTitleText": "杂货订单详情"
+}

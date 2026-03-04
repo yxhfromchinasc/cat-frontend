@@ -890,6 +890,67 @@ function getRemovalPointsByAddress(addressId) {
 }
 
 /**
+ * 根据地址ID获取杂货铺列表
+ */
+function getGroceryPointsByAddress(addressId) {
+  return get('/grocery-point/points-by-address', { addressId }, { showSuccess: false })
+}
+
+/**
+ * 根据杂货铺ID获取分类列表
+ */
+function getGroceryCategories(groceryPointId) {
+  return get('/grocery-point/categories', { groceryPointId }, { showSuccess: false })
+}
+
+/**
+ * 根据杂货铺ID获取商品列表（支持按分类筛选）
+ */
+function getGroceryProducts(groceryPointId, categoryId) {
+  const params = { groceryPointId }
+  if (categoryId != null) params.categoryId = categoryId
+  return get('/grocery-point/products', params, { showSuccess: false })
+}
+
+/**
+ * 创建杂货铺订单
+ */
+function createGroceryOrder(payload) {
+  return post('/grocery/order', payload, { showSuccess: true, successMessage: '提交成功' })
+}
+
+/**
+ * 获取杂货铺订单详情
+ */
+function getGroceryOrderDetail(orderNo) {
+  return get('/grocery/order/detail', { orderNo }, { showSuccess: false })
+}
+
+/**
+ * 获取杂货铺订单列表
+ */
+function getGroceryOrderList(pageNum = 1, pageSize = 10, status = null) {
+  const params = { pageNum, pageSize }
+  if (status != null) params.status = status
+  return get('/grocery/orders', params, { showSuccess: false })
+}
+
+/**
+ * 取消杂货铺订单
+ */
+function cancelGroceryOrder(orderNo) {
+  return post('/grocery/order/cancel', {}, { url: `/grocery/order/cancel?orderNo=${orderNo}`, showSuccess: true, successMessage: '已取消' })
+}
+
+/**
+ * 申请杂货铺订单退款
+ * @param {Object} payload - { orderNo, refundAmount, reason? }
+ */
+function applyGroceryRefund(payload) {
+  return post('/grocery/order/refund', payload, { showSuccess: true, successMessage: '退款申请已提交' })
+}
+
+/**
  * 获取大件清运订单详情
  */
 function getRemovalOrderDetail(orderNo) {
@@ -1167,6 +1228,15 @@ module.exports = {
   getRemovalPointsByAddress,
   getRemovalOrderDetail,
   cancelRemovalOrder,
+  // 杂货铺相关
+  getGroceryPointsByAddress,
+  getGroceryCategories,
+  getGroceryProducts,
+  createGroceryOrder,
+  getGroceryOrderDetail,
+  getGroceryOrderList,
+  cancelGroceryOrder,
+  applyGroceryRefund,
   
   // 地址管理
   getAddressList,
@@ -1265,8 +1335,8 @@ module.exports = {
     return get('/schedule/check-availability', params, { showLoading: false, showError: false })
   },
 
-  // 批量获取时间段列表（按驿站/回收点/清运点营业时间与小哥排期）。快递传 stationId，回收传 recyclingPointId，大件清运传 removalPointId
-  getTimeSlotList(serviceType, date, stationId, recyclingPointId, removalPointId) {
+  // 批量获取时间段列表（按驿站/回收点/清运点/杂货铺营业时间与小哥排期）。快递传 stationId，回收传 recyclingPointId，大件清运传 removalPointId，杂货铺传 groceryPointId
+  getTimeSlotList(serviceType, date, stationId, recyclingPointId, removalPointId, groceryPointId) {
     const params = {
       serviceType,
       date // 格式：yyyy-MM-dd
@@ -1274,6 +1344,7 @@ module.exports = {
     if (stationId) params.stationId = stationId
     if (recyclingPointId) params.recyclingPointId = recyclingPointId
     if (removalPointId) params.removalPointId = removalPointId
+    if (groceryPointId) params.groceryPointId = groceryPointId
     return get('/schedule/time-slots', params, { showLoading: false, showError: false })
   },
 
@@ -1285,6 +1356,11 @@ module.exports = {
   // 获取上门回收可预约时间范围
   getRecyclingAppointmentTime() {
     return get('/config/appointment-time/recycling', {}, { showLoading: false, showError: false })
+  },
+
+  // 获取杂货铺可预约时间范围
+  getGroceryAppointmentTime() {
+    return get('/config/appointment-time/grocery', {}, { showLoading: false, showError: false })
   },
 
   // 获取快递订单备注快捷选项

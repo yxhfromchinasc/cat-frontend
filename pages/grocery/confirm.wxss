@@ -1,0 +1,180 @@
+.confirm-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f5f5f5;
+}
+
+/* scroll-view 需要固定高度才能滚动 */
+.confirm-scroll {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+}
+
+.card {
+  background: #fff;
+  margin: 24rpx;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.address-row .contact {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.addr-detail {
+  font-size: 26rpx;
+  color: #666;
+}
+
+/* 预约时间选择器（与快递/回收/清运一致） */
+.appointment-time-selector {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+}
+
+.time-icon {
+  margin-right: 16rpx;
+}
+
+.clock-icon {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.time-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.time-title {
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 4rpx;
+}
+
+.time-placeholder {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.time-arrow {
+  font-size: 32rpx;
+  color: #999;
+  margin-left: 12rpx;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.item-row:last-child {
+  border-bottom: none;
+}
+
+.item-image {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 8rpx;
+  flex-shrink: 0;
+  margin-right: 20rpx;
+  background: #f8f8f8;
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-name {
+  color: #333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-subtotal {
+  color: #ff6b35;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.point-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.point-addr {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 8rpx;
+}
+
+.safe-bottom {
+  height: 200rpx;
+}
+
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 1rpx solid #eee;
+}
+
+.total-wrap {
+  flex: 1;
+}
+
+.total-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.total-amount {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #ff6b35;
+  margin-left: 8rpx;
+}
+
+.submit-btn {
+  width: 240rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  background: #09ccb5;
+  color: #fff;
+  font-size: 30rpx;
+  border-radius: 36rpx;
+}
+
+.submit-btn[disabled] {
+  background: #ddd;
+  color: #999;
+}

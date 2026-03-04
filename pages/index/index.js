@@ -184,6 +184,13 @@ Page({
     })
   },
 
+  // 进入杂货铺页面
+  goToGrocery() {
+    wx.navigateTo({
+      url: '/pages/grocery/index'
+    })
+  },
+
   // 跳转到卡券
   goToCoupon() {
     wx.navigateTo({

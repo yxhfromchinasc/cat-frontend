@@ -1,0 +1,132 @@
+<view class="page" wx:if="{{!loading && orderDetail}}">
+  <!-- 进度条 -->
+  <view class="progress-section" wx:if="{{orderDetail.progressSteps && orderDetail.progressSteps.length > 0}}">
+    <view class="progress-wrapper">
+      <view class="progress-nodes">
+        <view class="progress-node {{step.status === 'completed' ? 'completed' : step.status === 'waiting' ? 'active' : 'pending'}}"
+              wx:for="{{orderDetail.progressSteps}}"
+              wx:key="key"
+              wx:for-item="step"
+              wx:for-index="stepIndex"
+              wx:if="{{step.show}}">
+          <view class="node-container">
+            <view class="node-line {{stepIndex > 0 && orderDetail.progressSteps[stepIndex - 1].status === 'completed' ? 'completed' : 'pending'}}" wx:if="{{stepIndex > 0}}"></view>
+            <view class="node-dot"></view>
+            <view class="node-line {{step.status === 'completed' ? 'completed' : 'pending'}}" wx:if="{{stepIndex < orderDetail.progressSteps.length - 1}}"></view>
+          </view>
+          <view class="node-label">{{step.title}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 商品明细 -->
+  <view class="goods-section" wx:if="{{orderDetail.orderItems && orderDetail.orderItems.length > 0}}">
+    <view class="goods-header">
+      <view class="goods-title">商品明细</view>
+      <view class="goods-toggle" wx:if="{{orderDetail.orderItems.length > 3}}" bindtap="toggleGoodsExpand">
+        <text class="goods-toggle-text">{{goodsExpanded ? '收起' : '展开'}}</text>
+        <text class="goods-toggle-icon">{{goodsExpanded ? '▲' : '▼'}}</text>
+      </view>
+    </view>
+    <view class="goods-list">
+      <view class="goods-item" wx:for="{{displayOrderItems}}" wx:key="productCode">
+        <image class="goods-image" src="{{item.productImageUrl || '/assets/tabbar/图片占位符.png'}}" mode="aspectFill"></image>
+        <view class="goods-info">
+          <text class="goods-name">{{item.productName || item.productCode}}</text>
+          <view class="goods-meta">
+            <text class="goods-qty">x{{item.quantity}}</text>
+            <text class="goods-amount">￥{{item.subtotalAmountStr || item.subtotalAmount}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 小哥信息 -->
+  <courier-card
+    wx:if="{{orderDetail.courierNickname}}"
+    name="{{orderDetail.courierNickname}}"
+    avatarUrl="{{orderDetail.courierAvatarUrl}}"
+    roleDesc="配送小哥"
+    phone="{{orderDetail.courierPhone}}"
+    courierId="{{orderDetail.courierId}}"
+    showContact="{{true}}"
+    ratingArray="{{orderDetail.courierRatingArray}}"
+    bind:call="callCourier"
+    bind:contact="onContactTap"
+  />
+
+  <!-- 时间线 -->
+  <scroll-view class="timeline-scroll" scroll-y>
+    <view class="timeline-section">
+      <view class="timeline-item {{event.status === 'cancelled' ? 'cancelled' : ''}}" wx:for="{{orderDetail.timeline}}" wx:key="type" wx:for-index="idx" wx:for-item="event">
+        <view class="timeline-node">
+          <view class="timeline-dot {{event.status === 'completed' ? 'completed' : event.status === 'waiting' ? 'waiting' : event.status === 'cancelled' ? 'cancelled' : 'disabled'}}"></view>
+          <view class="timeline-line" wx:if="{{idx < orderDetail.timeline.length - 1}}"></view>
+        </view>
+        <view class="timeline-content">
+          <view class="timeline-header">
+            <text class="timeline-title {{event.status === 'cancelled' ? 'cancelled' : ''}}">{{event.title}}</text>
+            <text class="timeline-time" wx:if="{{event.timeFormatted}}">{{event.timeFormatted}}</text>
+          </view>
+          <view class="timeline-info">
+            <view class="info-item" wx:if="{{event.displayType === 'CREATED' && event.data.orderNo}}">
+              <text class="info-label">订单号：</text>
+              <text class="info-value">{{event.data.orderNo}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'CREATED' && event.data.groceryPointName}}">
+              <text class="info-label">杂货铺：</text>
+              <text class="info-value">{{event.data.groceryPointName}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'CREATED' && event.data.addressDetail}}">
+              <text class="info-label">配送地址：</text>
+              <text class="info-value">{{event.data.addressDetail}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'CREATED' && (event.data.timeRangeFormatted || (event.data.startTime && event.data.endTime))}}">
+              <text class="info-label">预约时间：</text>
+              <text class="info-value">{{event.data.timeRangeFormatted || (event.data.startTime + ' - ' + event.data.endTime)}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'PAID' && event.data.paymentMethodDesc}}">
+              <text class="info-label">支付方式：</text>
+              <text class="info-value">{{event.data.paymentMethodDesc}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'PAID' && event.data.totalAmount}}">
+              <text class="info-label">订单金额：</text>
+              <text class="info-value price">¥{{event.data.totalAmount}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'PAID' && event.data.couponName}}">
+              <text class="info-label">使用优惠券：</text>
+              <text class="info-value">{{event.data.couponName}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'PAID' && event.data.discountAmount}}">
+              <text class="info-label">优惠金额：</text>
+              <text class="info-value discount">-¥{{event.data.discountAmount}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'PAID' && event.data.actualAmount}}">
+              <text class="info-label">实付金额：</text>
+              <text class="info-value price">¥{{event.data.actualAmount}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'APPLY_REFUND' && event.data.reason}}">
+              <text class="info-label">申请原因：</text>
+              <text class="info-value">{{event.data.reason}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 操作按钮 -->
+  <view class="actions-bar" wx:if="{{orderDetail.allowedActionLabels && orderDetail.allowedActionLabels.length > 0}}">
+    <button wx:for="{{orderDetail.allowedActionLabels}}"
+            wx:key="code"
+            class="action-btn {{item.code === 'PAY' || item.code === 'CONTINUE_PAY' ? 'pay-btn' : item.code === 'CANCEL_PAYMENT' ? 'cancel-payment-btn' : 'cancel-btn'}}"
+            bindtap="handleAction"
+            data-action="{{item.code}}">{{item.label}}</button>
+  </view>
+</view>
+
+<view class="loading" wx:if="{{loading}}">
+  <text>加载中...</text>
+</view>

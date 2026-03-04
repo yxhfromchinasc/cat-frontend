@@ -150,6 +150,29 @@
           </view>
         </view>
 
+        <!-- 杂货铺订单 -->
+        <view wx:if="{{item.serviceType === 6}}" class="order-type-grocery">
+          <view class="order-type-title">杂货配送</view>
+          <view class="order-info">
+            <view class="order-info-item" wx:if="{{item.groceryPointName}}">
+              <text class="label">杂货铺：</text>
+              <text class="value">{{item.groceryPointName}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.addressDetail}}">
+              <text class="label">配送地址：</text>
+              <text class="value">{{item.addressDetail}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.startTimeStr}}">
+              <text class="label">预约时间：</text>
+              <text class="value">{{item.startTimeStr}}</text>
+            </view>
+            <view class="order-info-item" wx:if="{{item.groceryStatusDesc}}">
+              <text class="label">订单状态：</text>
+              <text class="value">{{item.groceryStatusDesc}}</text>
+            </view>
+          </view>
+        </view>
+
         <!-- 大件清运订单 -->
         <view wx:if="{{item.serviceType === 5}}" class="order-type-removal">
           <view class="order-type-title">大件清运</view>

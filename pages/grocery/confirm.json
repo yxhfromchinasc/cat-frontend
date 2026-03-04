@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "确认订单",
+  "usingComponents": {
+    "time-picker-modal": "/components/time-picker-modal/index"
+  }
+}

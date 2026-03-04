@@ -50,7 +50,7 @@ Page({
         prevPage.setData({ currentAddress: address })
       }
       // 如果是订单发起页面（快递、回收、大件清运），更新其地址
-      else if (prevPage.route === 'pages/pickup/index' || prevPage.route === 'pages/recycle/index' || prevPage.route === 'pages/removal/index') {
+      else if (prevPage.route === 'pages/pickup/index' || prevPage.route === 'pages/recycle/index' || prevPage.route === 'pages/removal/index' || prevPage.route === 'pages/grocery/index') {
         prevPage.setData({
           defaultAddress: address,
           selectedAddressId: addressId,
@@ -62,6 +62,8 @@ Page({
           prevPage.loadRecyclingPointsByAddress(addressId)
         } else if (prevPage.route === 'pages/removal/index' && typeof prevPage.loadRemovalPointsByAddress === 'function') {
           prevPage.loadRemovalPointsByAddress(addressId)
+        } else if (prevPage.route === 'pages/grocery/index' && typeof prevPage.loadGroceryPointsByAddress === 'function') {
+          prevPage.loadGroceryPointsByAddress(addressId)
         }
       }
     }

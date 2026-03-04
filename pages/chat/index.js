@@ -174,14 +174,18 @@ Page({
     }
   },
 
-  // 跳转订单详情（用户端：根据订单类型跳转快递/回收详情）
+  // 跳转订单详情（用户端：根据订单类型跳转快递/回收/大件清运/杂货铺详情）
   goToOrderDetail() {
     const conv = this.data.conversation
     if (!conv || !conv.orderNo) return
     const serviceType = conv.orderServiceType
-    let path = `/pages/express-detail/index?orderNo=${conv.orderNo}`
-    if (serviceType === 3) path = `/pages/recycling-detail/index?orderNo=${conv.orderNo}`
-    else if (serviceType === 5) path = `/pages/removal-detail/index?orderNo=${conv.orderNo}`
+    const pathMap = {
+      2: `/pages/express-detail/index?orderNo=${conv.orderNo}`,
+      3: `/pages/recycling-detail/index?orderNo=${conv.orderNo}`,
+      5: `/pages/removal-detail/index?orderNo=${conv.orderNo}`,
+      6: `/pages/grocery-detail/index?orderNo=${conv.orderNo}`
+    }
+    const path = pathMap[serviceType] || `/pages/express-detail/index?orderNo=${conv.orderNo}`
     wx.navigateTo({ url: path })
   },
 
