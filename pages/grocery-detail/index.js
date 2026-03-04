@@ -190,8 +190,8 @@ Page({
     const refundAmount = orderDetail.actualAmount != null ? orderDetail.actualAmount : orderDetail.totalAmount
     const amountStr = orderDetail.actualPriceStr || (refundAmount != null ? amountUtil.formatAmount(refundAmount) : '')
     wx.showModal({
-      title: '申请退款',
-      content: `退款金额：¥${amountStr || '0.00'}`,
+      title: `申请退款（退款金额：¥${amountStr || '0.00'}）`,
+      content: '',
       editable: true,
       placeholderText: '请输入申请退款原因（必填）',
       confirmText: '确定',
