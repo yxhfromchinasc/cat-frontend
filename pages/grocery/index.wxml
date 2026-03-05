@@ -23,9 +23,10 @@
     <view class="grocery-section" wx:if="{{groceryPoint}}">
       <view class="grocery-name">{{groceryPoint.pointName}}</view>
       <view class="grocery-addr" wx:if="{{groceryPoint.address}}">{{groceryPoint.address}}</view>
+      <view class="grocery-hours" wx:if="{{groceryPoint.startTime && groceryPoint.endTime}}">营业时间 {{groceryPoint.startTime}}-{{groceryPoint.endTime}}</view>
     </view>
     <view class="grocery-tip" wx:elif="{{selectedAddressId && !groceryPoint && !loadingGrocery}}">
-      <text class="tip-text error">该地址暂无服务杂货铺</text>
+      <text class="tip-text error">该地址暂无杂货铺</text>
     </view>
   </view>
 

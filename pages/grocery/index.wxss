@@ -87,6 +87,12 @@
   white-space: nowrap;
 }
 
+.grocery-hours {
+  font-size: 22rpx;
+  color: #09ccb5;
+  margin-top: 6rpx;
+}
+
 .grocery-tip .tip-text.error {
   color: #ff4757;
   font-size: 24rpx;

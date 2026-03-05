@@ -192,7 +192,7 @@ Page({
       return
     }
     if (!this.data.groceryPoint) {
-      wx.showToast({ title: '该地址暂无服务杂货铺', icon: 'none' })
+      wx.showToast({ title: '该地址暂无杂货铺', icon: 'none' })
       return
     }
     // 若当前在分类视图，先加载全部商品以获取完整购物车（含库存）

@@ -323,7 +323,7 @@ page {
   margin-left: auto;
 }
 
-/* 第二行：大件清运 + 快递代取 与第一行左右边距对齐（50rpx），两卡等宽不溢出 */
+/* 第二行：快递代取 + 大件清运 与第一行左右边距对齐（50rpx），两卡等宽不溢出 */
 .biz-row-double {
   padding: 0 50rpx;
   align-items: stretch;
@@ -332,7 +332,6 @@ page {
   width: 100%;
   overflow: hidden;
 }
-.biz-row-double .biz-card-grocery,
 .biz-row-double .biz-card-removal,
 .biz-row-double .biz-card-pickup {
   flex: 1 1 0%;
@@ -347,7 +346,6 @@ page {
 }
 
 /* 第二行卡片内：标题放大，按钮与图标适中 */
-.biz-row-double .biz-card-grocery .biz-title,
 .biz-row-double .biz-card-removal .biz-title,
 .biz-row-double .biz-card-pickup .biz-title {
   font-size: 36rpx;
@@ -355,46 +353,62 @@ page {
   margin-bottom: 14rpx;
   line-height: 1.2;
 }
-.biz-row-double .biz-card-grocery .biz-grocery-btn,
 .biz-row-double .biz-card-removal .biz-removal-btn,
 .biz-row-double .biz-card-pickup .biz-pickup-btn {
   font-size: 22rpx;
   padding: 10rpx 22rpx;
   border-radius: 16rpx;
 }
-.biz-row-double .biz-card-grocery .biz-card-right,
 .biz-row-double .biz-card-removal .biz-card-right,
 .biz-row-double .biz-card-pickup .biz-card-right {
   width: 90rpx;
   height: 90rpx;
   margin-left: 12rpx;
 }
-.biz-row-double .biz-card-grocery .biz-card-left,
 .biz-row-double .biz-card-removal .biz-card-left,
 .biz-row-double .biz-card-pickup .biz-card-left {
   padding-top: 4rpx;
 }
 
+/* 第三行：杂货铺独占整行 */
+.biz-row-full {
+  padding: 0 50rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+.biz-card-full {
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 /* 大件清运 - 在双卡行内等分宽度，单独出现时同回收卡 */
-.biz-card-grocery,
 .biz-card-removal {
   width: calc((100% - 140rpx) * 0.667);
   margin-left: 50rpx;
 }
 
+/* 杂货铺 - 背景色与其他卡片一致（白色） */
 .biz-card-grocery {
-  background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
+  background: #ffffff;
 }
 
 .biz-grocery-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.35);
-  color: #fff;
-  font-size: 22rpx;
-  padding: 10rpx 22rpx;
-  border-radius: 16rpx;
+  background: #41d1b8;
+  color: #ffffff;
+  font-size: 26rpx;
+  font-weight: 600;
+  padding: 14rpx 32rpx;
+  border-radius: 20rpx;
+  width: fit-content;
+  margin-left: 0;
+  box-shadow: 0 2rpx 10rpx rgba(65, 209, 184, 0.3);
+  transition: all 0.3s ease;
+  letter-spacing: 0.5rpx;
+  line-height: 1;
 }
 
 /* 小卡片 - 正方形，高度与主卡片一致 */
