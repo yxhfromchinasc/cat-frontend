@@ -24,6 +24,12 @@
       </view>
     </view>
 
+    <!-- 备注 -->
+    <view class="card">
+      <view class="card-title">备注</view>
+      <textarea class="remark-input" placeholder="选填，如配送说明、特殊需求等" placeholder-class="remark-placeholder" value="{{remark}}" maxlength="200" show-confirm-bar="{{false}}" bindinput="onRemarkInput" />
+    </view>
+
     <!-- 商品明细 -->
     <view class="card">
       <view class="card-title">商品明细</view>

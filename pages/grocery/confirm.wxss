@@ -76,6 +76,18 @@
   margin-left: 12rpx;
 }
 
+.remark-input {
+  width: 100%;
+  min-height: 120rpx;
+  font-size: 28rpx;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.remark-placeholder {
+  color: #999;
+}
+
 .item-row {
   display: flex;
   align-items: center;

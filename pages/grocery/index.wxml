@@ -23,7 +23,7 @@
     <view class="grocery-section" wx:if="{{groceryPoint}}">
       <view class="grocery-name">{{groceryPoint.pointName}}</view>
       <view class="grocery-addr" wx:if="{{groceryPoint.address}}">{{groceryPoint.address}}</view>
-      <view class="grocery-hours" wx:if="{{groceryPoint.startTime && groceryPoint.endTime}}">营业时间 {{groceryPoint.startTime}}-{{groceryPoint.endTime}}</view>
+      <view class="grocery-hours" wx:if="{{groceryPoint.startTime && groceryPoint.endTime}}">次日达 {{groceryPoint.startTime}}-{{groceryPoint.endTime}}</view>
     </view>
     <view class="grocery-tip" wx:elif="{{selectedAddressId && !groceryPoint && !loadingGrocery}}">
       <text class="tip-text error">该地址暂无杂货铺</text>
@@ -45,7 +45,14 @@
         <view class="product-body">
           <view class="product-row product-row-main">
             <text class="product-name">{{item.name}}</text>
-            <text class="product-price">￥{{item.price}}</text>
+            <view class="product-price-wrap">
+              <text class="product-original-price" wx:if="{{item.originalPrice != null && item.originalPrice > 0 && (item.originalPrice > item.price)}}">￥{{item.originalPrice}}</text>
+              <view class="product-price-line" wx:if="{{item.originalPrice != null && item.originalPrice > 0 && (item.originalPrice > item.price)}}">
+                <text class="product-price product-price-promo">￥{{item.price}}</text>
+                <text class="product-promo-tag">促销</text>
+              </view>
+              <text class="product-price" wx:else>￥{{item.price}}</text>
+            </view>
           </view>
           <view class="product-row product-row-desc" wx:if="{{item.description}}">
             <text class="product-desc">{{item.description}}</text>

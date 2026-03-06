@@ -1,5 +1,23 @@
 const { api } = require('../../utils/util.js')
 
+// 允许选择的天：大件清运可选今天、明天
+const ALLOWED_DAYS_REMOVAL = ['今天', '明天']
+const DAY_OFFSET_MAP = { '今天': 0, '明天': 1, '后天': 2 }
+
+function getDateStrByDayOffset(dayOffset) {
+  const d = new Date()
+  d.setDate(d.getDate() + dayOffset)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function buildDateOptions(allowedDays) {
+  return allowedDays.map(label => ({
+    label,
+    isToday: label === '今天',
+    dayOffset: DAY_OFFSET_MAP[label] ?? 0
+  }))
+}
+
 Page({
   data: {
     defaultAddress: null,
@@ -26,10 +44,10 @@ Page({
     isSubmitting: false,
     showTimePickerModal: false,
     checkingAvailability: false,
+    allowedDays: ALLOWED_DAYS_REMOVAL,
     dateOptions: [],
     timeSlotOptions: [],
-    todayTimeSlots: [],
-    tomorrowTimeSlots: [],
+    timeSlotsByDay: [],
     selectedDateIndex: -1,
     selectedTimeSlotIndex: -1
   },
@@ -114,6 +132,8 @@ Page({
                 url = `/pages/express-detail/index?orderNo=${orderNo}`
               } else if (serviceType === 5) {
                 url = `/pages/removal-detail/index?orderNo=${orderNo}`
+              } else if (serviceType === 6) {
+                url = `/pages/grocery-detail/index?orderNo=${orderNo}`
               }
               if (url) {
                 wx.redirectTo({ url })
@@ -276,17 +296,14 @@ Page({
     })
   },
 
-  // 初始化时间选择器：有清运点时从后端拉取（清运点营业时间 + 小哥排期），无清运点时展示空
+  // 初始化时间选择器：有清运点时从后端拉取（清运点营业时间 + 小哥排期）。允许选择的天由 allowedDays 控制
   initTimeSlots() {
-    const dateOptions = [
-      { label: '今天', isToday: true },
-      { label: '明天', isToday: false }
-    ]
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
+    const dateOptions = buildDateOptions(allowedDays)
     if (!this.data.selectedRemovalPointId) {
       this.setData({
         dateOptions,
-        todayTimeSlots: [],
-        tomorrowTimeSlots: [],
+        timeSlotsByDay: [],
         timeSlotOptions: [],
         selectedDateIndex: 0,
         selectedTimeSlotIndex: -1
@@ -298,22 +315,18 @@ Page({
     this.checkAllTimeSlotsAvailability()
   },
 
-  // 按清运点营业时间与小哥排期拉取今天/明天时间段（与回收/快递代取一致）
+  // 按允许选择的天拉取时间段（仅请求 allowedDays 对应的日期）
   async checkAllTimeSlotsAvailability() {
     if (this.data.checkingAvailability || !this.data.selectedRemovalPointId) return
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
+    const dateOptions = this.data.dateOptions || buildDateOptions(allowedDays)
     this.setData({ checkingAvailability: true })
     try {
-      const today = new Date()
-      const tomorrow = new Date(today)
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      const formatDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-      const todayStr = formatDate(today)
-      const tomorrowStr = formatDate(tomorrow)
       const serviceTypeRemoval = 5
-      const [todayRes, tomorrowRes] = await Promise.all([
-        api.getTimeSlotList(serviceTypeRemoval, todayStr, null, null, this.data.selectedRemovalPointId),
-        api.getTimeSlotList(serviceTypeRemoval, tomorrowStr, null, null, this.data.selectedRemovalPointId)
-      ])
+      const dateStrs = dateOptions.map(opt => getDateStrByDayOffset(opt.dayOffset))
+      const results = await Promise.all(
+        dateStrs.map(dateStr => api.getTimeSlotList(serviceTypeRemoval, dateStr, null, null, this.data.selectedRemovalPointId))
+      )
       const mapSlots = (list) => (list || []).map(slot => ({
         startTime: slot.startTime,
         endTime: slot.endTime,
@@ -322,13 +335,20 @@ Page({
         disabled: !slot.available,
         label: slot.available ? `${slot.startTime} - ${slot.endTime}` : `${slot.startTime} - ${slot.endTime} (已约满)`
       }))
-      const todaySlots = todayRes.success && todayRes.data && todayRes.data.timeSlots ? mapSlots(todayRes.data.timeSlots) : []
-      const tomorrowSlots = tomorrowRes.success && tomorrowRes.data && tomorrowRes.data.timeSlots ? mapSlots(tomorrowRes.data.timeSlots) : []
-      const defaultOptions = todaySlots.length > 0 ? todaySlots : tomorrowSlots
-      const defaultDateIndex = todaySlots.length > 0 ? 0 : 1
+      const timeSlotsByDay = results.map((res, i) =>
+        (res.success && res.data && res.data.timeSlots) ? mapSlots(res.data.timeSlots) : []
+      )
+      let defaultOptions = timeSlotsByDay[0] || []
+      let defaultDateIndex = 0
+      for (let i = 0; i < timeSlotsByDay.length; i++) {
+        if (timeSlotsByDay[i] && timeSlotsByDay[i].length > 0) {
+          defaultOptions = timeSlotsByDay[i]
+          defaultDateIndex = i
+          break
+        }
+      }
       this.setData({
-        todayTimeSlots: todaySlots,
-        tomorrowTimeSlots: tomorrowSlots,
+        timeSlotsByDay,
         timeSlotOptions: defaultOptions,
         selectedDateIndex: defaultDateIndex,
         selectedTimeSlotIndex: -1
@@ -351,11 +371,11 @@ Page({
 
   selectDate(e) {
     const index = parseInt(e.detail.index, 10)
-    const isToday = index === 0
-    const timeSlotOptions = isToday ? this.data.todayTimeSlots : this.data.tomorrowTimeSlots
+    const timeSlotsByDay = this.data.timeSlotsByDay || []
+    const timeSlotOptions = timeSlotsByDay[index] || []
     this.setData({
       selectedDateIndex: index,
-      timeSlotOptions: timeSlotOptions || [],
+      timeSlotOptions,
       selectedTimeSlotIndex: -1,
       'form.startTime': null,
       'form.endTime': null,
@@ -372,10 +392,12 @@ Page({
       wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
       return
     }
-    const isToday = this.data.selectedDateIndex === 0
-    const startTime = this.formatDateTime(timeSlot.startTime, !isToday)
-    const endTime = this.formatDateTime(timeSlot.endTime, !isToday)
-    const dateLabel = isToday ? '今天' : '明天'
+    const dateOptions = this.data.dateOptions || []
+    const selectedDate = dateOptions[this.data.selectedDateIndex]
+    const dayOffset = selectedDate ? selectedDate.dayOffset : 0
+    const dateLabel = selectedDate ? selectedDate.label : '今天'
+    const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
+    const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     this.setData({
       selectedTimeSlotIndex: index,
       'form.startTime': startTime,
@@ -396,10 +418,12 @@ Page({
       wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
       return
     }
-    const isToday = this.data.selectedDateIndex === 0
-    const startTime = this.formatDateTime(timeSlot.startTime, !isToday)
-    const endTime = this.formatDateTime(timeSlot.endTime, !isToday)
-    const dateLabel = isToday ? '今天' : '明天'
+    const dateOptions = this.data.dateOptions || []
+    const selectedDate = dateOptions[this.data.selectedDateIndex]
+    const dayOffset = selectedDate ? selectedDate.dayOffset : 0
+    const dateLabel = selectedDate ? selectedDate.label : '今天'
+    const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
+    const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     this.setData({
       'form.startTime': startTime,
       'form.endTime': endTime,
@@ -409,12 +433,10 @@ Page({
     this.updateCanSubmit()
   },
 
-  formatDateTime(timeStr, isTomorrow) {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate() + (isTomorrow ? 1 : 0)).padStart(2, '0')
-    return `${year}-${month}-${day} ${timeStr}:00`
+  formatDateTimeByDayOffset(timeStr, dayOffset) {
+    const d = new Date()
+    d.setDate(d.getDate() + (dayOffset || 0))
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${timeStr}:00`
   },
 
   // 是否加急（大件清运前端不再提供加急开关，保留空实现以兼容旧wxml）

@@ -47,7 +47,21 @@
           </view>
         </view>
         
-        <!-- 第二行：快递代取 + 大件清运（一行两卡，等宽） -->
+        <!-- 第二行：酒水直达（独占整行） -->
+        <view class="biz-row biz-row-full">
+          <view class="biz-card biz-card-grocery biz-card-full" bindtap="goToGrocery">
+            <view class="biz-card-content">
+              <view class="biz-card-left">
+                <view class="biz-title">酒水直达 超级促销</view>
+                <view class="biz-grocery-btn">次日速达</view>
+              </view>
+              <view class="biz-card-right">
+                <image class="biz-card-image" src="/assets/tabbar/商店门店.png" mode="aspectFit"></image>
+              </view>
+            </view>
+          </view>
+        </view>
+        <!-- 第三行：快递代取 + 大件清运（一行两卡，等宽） -->
         <view class="biz-row biz-row-double">
           <view class="biz-card biz-card-pickup" bindtap="goToPickup">
             <view class="biz-card-content">
@@ -72,20 +86,6 @@
             </view>
           </view>
         </view>
-        <!-- 第三行：杂货铺（独占整行） -->
-        <view class="biz-row biz-row-full">
-          <view class="biz-card biz-card-grocery biz-card-full" bindtap="goToGrocery">
-            <view class="biz-card-content">
-              <view class="biz-card-left">
-                <view class="biz-title">杂货铺</view>
-                <view class="biz-grocery-btn">选货下单</view>
-              </view>
-              <view class="biz-card-right">
-                <image class="biz-card-image" src="/assets/tabbar/商店门店.png" mode="aspectFit"></image>
-              </view>
-            </view>
-          </view>
-        </view>
       </view>
     </view>
 
@@ -94,7 +94,19 @@
       <text>邀请好友得奖励>></text>
     </view>
 
-    <!-- 下方：竖版卡片区域 -->
+    <!-- 下方：商品促销卡片（两卡与之前竖版卡片样式大小一致，图片来自系统配置，点击跳转杂货铺选货页） -->
+    <view class="vertical-card-section">
+      <view class="vertical-card-row">
+        <view class="vertical-card vertical-card-promo" bindtap="goToGrocery">
+          <image class="vertical-card-promo-image" src="{{promoCard1ImageUrl || '/assets/tabbar/图片占位符.png'}}" mode="aspectFill"></image>
+        </view>
+        <view class="vertical-card vertical-card-promo" bindtap="goToGrocery">
+          <image class="vertical-card-promo-image" src="{{promoCard2ImageUrl || '/assets/tabbar/图片占位符.png'}}" mode="aspectFill"></image>
+        </view>
+      </view>
+    </view>
+
+    <!-- 原下方两个竖版卡片（已暂时注释，改为上方促销卡片）
     <view class="vertical-card-section">
       <view class="vertical-card-row">
         <view class="vertical-card" bindtap="goToRecycleGuide">
@@ -117,7 +129,6 @@
             </view>
           </view>
         </view>
-        <!-- 如果没有配置活动，显示原来的邀请奖励卡片 -->
         <view class="vertical-card" bindtap="goToInviteReward" wx:else>
           <view class="vertical-card-content">
             <image class="vertical-card-image" src="/assets/tabbar/现金.png" mode="aspectFit"></image>
@@ -130,6 +141,7 @@
         </view>
       </view>
     </view>
+    -->
 
     
   </view>

@@ -62,6 +62,20 @@ Page({
               d.discountAmount = d.discountAmount != null ? amountUtil.formatAmount(d.discountAmount) : d.discountAmount
             } else if (title.indexOf('退款申请管理员审核中') !== -1 || (event.type === 'APPLY_REFUND')) {
               event.displayType = 'APPLY_REFUND'
+            } else if (title.indexOf('送达完成') !== -1 || event.type === 'SEND_SUC') {
+              event.displayType = 'SEND_SUC'
+              if (d.sendSucPics != null && !Array.isArray(d.sendSucPics)) {
+                if (typeof d.sendSucPics === 'string') {
+                  try {
+                    d.sendSucPics = JSON.parse(d.sendSucPics)
+                  } catch (e) {
+                    d.sendSucPics = d.sendSucPics ? [d.sendSucPics] : []
+                  }
+                } else {
+                  d.sendSucPics = []
+                }
+              }
+              if (!d.sendSucPics) d.sendSucPics = []
             } else {
               event.displayType = 'EVENT'
             }
@@ -99,6 +113,12 @@ Page({
       wx.showToast({ title: '加载失败', icon: 'none' })
       this.setData({ loading: false })
     }
+  },
+
+  previewImage(e) {
+    const current = e.currentTarget.dataset.url
+    const urls = e.currentTarget.dataset.urls || []
+    wx.previewImage({ current, urls })
   },
 
   formatTime(timeStr) {

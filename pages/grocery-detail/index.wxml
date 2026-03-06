@@ -20,6 +20,12 @@
     </view>
   </view>
 
+  <!-- 订单备注（有则展示） -->
+  <view class="remark-section" wx:if="{{orderDetail.remark}}">
+    <view class="remark-label">订单备注</view>
+    <view class="remark-content">{{orderDetail.remark}}</view>
+  </view>
+
   <!-- 商品明细 -->
   <view class="goods-section" wx:if="{{orderDetail.orderItems && orderDetail.orderItems.length > 0}}">
     <view class="goods-header">
@@ -87,6 +93,10 @@
               <text class="info-label">预约时间：</text>
               <text class="info-value">{{event.data.timeRangeFormatted || (event.data.startTime + ' - ' + event.data.endTime)}}</text>
             </view>
+            <view class="info-item" wx:if="{{event.displayType === 'CREATED' && event.data.remark}}">
+              <text class="info-label">备注：</text>
+              <text class="info-value">{{event.data.remark}}</text>
+            </view>
             <view class="info-item" wx:if="{{event.displayType === 'PAID' && event.data.paymentMethodDesc}}">
               <text class="info-label">支付方式：</text>
               <text class="info-value">{{event.data.paymentMethodDesc}}</text>
@@ -110,6 +120,19 @@
             <view class="info-item" wx:if="{{event.displayType === 'APPLY_REFUND' && event.data.reason}}">
               <text class="info-label">申请原因：</text>
               <text class="info-value">{{event.data.reason}}</text>
+            </view>
+            <view class="info-item" wx:if="{{event.displayType === 'SEND_SUC' && event.data.sendSucPics && event.data.sendSucPics.length > 0}}">
+              <text class="info-label">送达照片：</text>
+              <view class="image-list">
+                <image class="info-image"
+                       wx:for="{{event.data.sendSucPics}}"
+                       wx:key="*this"
+                       src="{{item}}"
+                       mode="aspectFill"
+                       bindtap="previewImage"
+                       data-url="{{item}}"
+                       data-urls="{{event.data.sendSucPics}}"></image>
+              </view>
             </view>
           </view>
         </view>

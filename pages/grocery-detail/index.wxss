@@ -27,6 +27,26 @@
 .progress-node.completed .node-label { color: #111; font-weight: 500; }
 .progress-node.active .node-label { color: #111; font-weight: 500; }
 
+/* 订单备注 */
+.remark-section {
+  flex-shrink: 0;
+  background: #fff;
+  margin: 0 24rpx 24rpx;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+.remark-label {
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+.remark-content {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.5;
+}
+
 /* 商品明细 */
 .goods-section {
   flex-shrink: 0;
@@ -174,6 +194,19 @@
 .timeline-info .info-label { color: #999; min-width: 140rpx; flex-shrink: 0; }
 .timeline-info .info-value { color: #333; flex: 1; word-break: break-all; }
 .timeline-info .info-value.price { color: #ff6b00; font-weight: 500; }
+
+.timeline-info .image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 8rpx;
+}
+.timeline-info .info-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 8rpx;
+  background: #f0f0f0;
+}
 
 .actions-bar {
   flex-shrink: 0;

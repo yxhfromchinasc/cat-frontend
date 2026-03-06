@@ -190,11 +190,46 @@
   white-space: nowrap;
 }
 
-.product-price {
+/* 价格容器：支持原价+现价并排（促销时） */
+.product-price-wrap {
   flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 12rpx;
+}
+
+.product-original-price {
+  font-size: 24rpx;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.product-price {
   font-size: 34rpx;
   font-weight: 600;
   color: #ff6b35;
+}
+
+/* 促销价一行：现价 + 促销标签 */
+.product-price-line {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+/* 促销价：现价略放大、更醒目 */
+.product-price-promo {
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #ff4757;
+}
+
+.product-promo-tag {
+  font-size: 20rpx;
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.1);
+  padding: 2rpx 8rpx;
+  border-radius: 6rpx;
 }
 
 /* 第二行：备注 */

@@ -8,6 +8,9 @@ Page({
     userInfo: null,
     isLogin: false,
     unreadMessageCount: 0, // 未读消息数量
+    // 首页下方促销卡片图片（系统配置：home_promo_card_1_image, home_promo_card_2_image）
+    promoCard1ImageUrl: '',
+    promoCard2ImageUrl: '',
     // 活动入口配置
     activityConfig: {
       iconUrl: '/assets/tabbar/现金.png', // 默认图标
@@ -33,6 +36,7 @@ Page({
     
     this.checkLoginStatus()
     this.loadActivityConfig()
+    this.loadPromoCardConfig()
     // 检查是否需要显示公告（仅在首次进入小程序时）
     this.checkAndShowAnnouncement()
   },
@@ -259,6 +263,24 @@ Page({
     })
   },
 
+  // 加载首页下方促销卡片配置（两个系统配置：home_promo_card_1_image, home_promo_card_2_image）
+  async loadPromoCardConfig() {
+    try {
+      const [r1, r2] = await Promise.all([
+        api.getConfigValue('home_promo_card_1_image'),
+        api.getConfigValue('home_promo_card_2_image')
+      ])
+      const url1 = (r1 && r1.success && r1.data && String(r1.data).trim()) || ''
+      const url2 = (r2 && r2.success && r2.data && String(r2.data).trim()) || ''
+      this.setData({
+        promoCard1ImageUrl: url1,
+        promoCard2ImageUrl: url2
+      })
+    } catch (e) {
+      console.error('加载促销卡片配置失败', e)
+    }
+  },
+
   // 加载活动配置
   async loadActivityConfig() {
     try {
@@ -359,24 +381,19 @@ Page({
     })
   },
 
-  // 跳转到邀请奖励（保留作为备用）
+  // 跳转到邀请奖励（右下角卡片）：有配置活动链接则跳活动页，否则跳邀请好友页
   goToInviteReward() {
-    // 如果配置了活动链接，跳转到活动页面；否则跳转到原来的邀请奖励页面
     const { linkUrl } = this.data.activityConfig
     if (linkUrl) {
       this.goToActivity()
     } else {
-      wx.navigateTo({
-        url: '/pages/image-content/index?type=invite-reward'
-      })
+      wx.navigateTo({ url: '/pages/invite/index' })
     }
   },
 
-  // 跳转到邀请好友页面
+  // 跳转到邀请好友页面（首页「邀请好友得奖励>>」链接）
   goToInvite() {
-    wx.navigateTo({
-      url: '/pages/invite/index'
-    })
+    wx.navigateTo({ url: '/pages/invite/index' })
   },
 
   // 分享给好友

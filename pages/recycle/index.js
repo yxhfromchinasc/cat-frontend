@@ -1,6 +1,24 @@
 // pages/recycle/index.js
 const { api } = require('../../utils/util.js')
 
+// 允许选择的天：上门回收可选今天、明天
+const ALLOWED_DAYS_RECYCLE = ['今天', '明天']
+const DAY_OFFSET_MAP = { '今天': 0, '明天': 1, '后天': 2 }
+
+function getDateStrByDayOffset(dayOffset) {
+  const d = new Date()
+  d.setDate(d.getDate() + dayOffset)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function buildDateOptions(allowedDays) {
+  return allowedDays.map(label => ({
+    label,
+    isToday: label === '今天',
+    dayOffset: DAY_OFFSET_MAP[label] ?? 0
+  }))
+}
+
 Page({
   data: {
     // 地址相关（只显示默认地址）
@@ -35,10 +53,10 @@ Page({
     
     // 时间选择相关
     timeType: 'appointment', // 'immediate' 立即上门 或 'appointment' 预约时间
-    dateOptions: [], // 日期选项（今天、明天）
+    allowedDays: ALLOWED_DAYS_RECYCLE,
+    dateOptions: [], // 日期选项（由 allowedDays 生成）
     timeSlotOptions: [], // 时间段选项（14:30-15:00等）
-    todayTimeSlots: [], // 今天的时间段列表
-    tomorrowTimeSlots: [], // 明天的时间段列表
+    timeSlotsByDay: [], // 按允许的天分别存储时间段
     selectedDateIndex: -1, // 选中的日期索引
     selectedTimeSlotIndex: -1, // 选中的时间段索引
     checkingAvailability: false, // 是否正在检查可用性
@@ -497,16 +515,12 @@ Page({
     }
   },
 
-  // 初始化时间选择器（预约时间）
+  // 初始化时间选择器（预约时间）。允许选择的天由 allowedDays 控制
   async initTimeSlots() {
     const now = new Date()
-    
-    // 初始化日期选项（今天、明天）
-    const dateOptions = [
-      { label: '今天', isToday: true },
-      { label: '明天', isToday: false }
-    ]
-    
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_RECYCLE
+    const dateOptions = buildDateOptions(allowedDays)
+
     // 优先使用选中回收点的营业时间，如果没有选中回收点则使用系统配置
     let appointmentTimeRange = '09:00-18:00' // 默认值
     if (this.data.selectedRecyclingPointId && this.data.recyclingPointList && this.data.recyclingPointList.length > 0) {
@@ -639,14 +653,21 @@ Page({
       }
     }
     
-    // 设置默认选项
-    const defaultTimeSlotOptions = todaySlots.length > 0 ? todaySlots : tomorrowSlots
-    const defaultDateIndex = todaySlots.length > 0 ? 0 : 1
-    
+    // 按 allowedDays 顺序组装 timeSlotsByDay（仅包含允许的天）
+    const timeSlotsByDay = allowedDays.map(label => label === '今天' ? todaySlots : label === '明天' ? tomorrowSlots : [])
+    let defaultTimeSlotOptions = timeSlotsByDay[0] || []
+    let defaultDateIndex = 0
+    for (let i = 0; i < timeSlotsByDay.length; i++) {
+      if (timeSlotsByDay[i] && timeSlotsByDay[i].length > 0) {
+        defaultTimeSlotOptions = timeSlotsByDay[i]
+        defaultDateIndex = i
+        break
+      }
+    }
+
     this.setData({
       dateOptions,
-      todayTimeSlots: todaySlots,
-      tomorrowTimeSlots: tomorrowSlots,
+      timeSlotsByDay,
       timeSlotOptions: defaultTimeSlotOptions,
       selectedDateIndex: defaultDateIndex
     })
@@ -662,65 +683,48 @@ Page({
     this.updateCanSubmit()
   },
 
-  // 检查所有时间段的可用性（使用后端批量接口）
+  // 检查所有时间段的可用性（仅请求 allowedDays 对应的日期）
   async checkAllTimeSlotsAvailability() {
     if (this.data.checkingAvailability) return
-    // 如果没有选择回收点，不检查可用性
     if (!this.data.selectedRecyclingPointId) return
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_RECYCLE
+    const dateOptions = this.data.dateOptions.length ? this.data.dateOptions : buildDateOptions(allowedDays)
     this.setData({ checkingAvailability: true })
-    
+
     try {
-      const today = new Date()
-      const tomorrow = new Date(today)
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      
-      // 格式化日期为 yyyy-MM-dd
-      const formatDate = (date) => {
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        return `${year}-${month}-${day}`
+      const dateStrs = dateOptions.map(opt => getDateStrByDayOffset(opt.dayOffset))
+      const results = await Promise.all(
+        dateStrs.map(dateStr => api.getTimeSlotList(3, dateStr, null, this.data.selectedRecyclingPointId, null))
+      )
+      const mapSlots = (list, isToday) => (list || []).map(slot => ({
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        isToday: !!isToday,
+        available: !!slot.available,
+        disabled: !slot.available,
+        label: !slot.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : `${slot.startTime} - ${slot.endTime}`
+      }))
+      const timeSlotsByDay = results.map((res, i) =>
+        (res.success && res.data && res.data.timeSlots)
+          ? mapSlots(res.data.timeSlots, dateOptions[i].dayOffset === 0)
+          : []
+      )
+      let defaultTimeSlotOptions = timeSlotsByDay[0] || []
+      let defaultDateIndex = 0
+      for (let i = 0; i < timeSlotsByDay.length; i++) {
+        if (timeSlotsByDay[i] && timeSlotsByDay[i].length > 0) {
+          defaultTimeSlotOptions = timeSlotsByDay[i]
+          defaultDateIndex = i
+          break
+        }
       }
-      
-      const todayStr = formatDate(today)
-      const tomorrowStr = formatDate(tomorrow)
-      
-      // 并行获取今天和明天的时间段列表
-      const [todayRes, tomorrowRes] = await Promise.all([
-        api.getTimeSlotList(3, todayStr, null, this.data.selectedRecyclingPointId, null),
-        api.getTimeSlotList(3, tomorrowStr, null, this.data.selectedRecyclingPointId, null)
-      ])
-      
-      // 更新今天的时间段
-      if (todayRes.success && todayRes.data && todayRes.data.timeSlots) {
-        const updatedTodaySlots = todayRes.data.timeSlots.map(slot => ({
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-          isToday: true,
-          available: slot.available,
-          disabled: !slot.available,
-          label: !slot.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : `${slot.startTime} - ${slot.endTime}`
-        }))
-        this.setData({ todayTimeSlots: updatedTodaySlots })
-      }
-      
-      // 更新明天的时间段
-      if (tomorrowRes.success && tomorrowRes.data && tomorrowRes.data.timeSlots) {
-        const updatedTomorrowSlots = tomorrowRes.data.timeSlots.map(slot => ({
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-          isToday: false,
-          available: slot.available,
-          disabled: !slot.available,
-          label: !slot.available ? `${slot.startTime} - ${slot.endTime} (已约满)` : `${slot.startTime} - ${slot.endTime}`
-        }))
-        this.setData({ tomorrowTimeSlots: updatedTomorrowSlots })
-      }
-      
-      // 更新当前显示的时间段选项
-      const currentDateIndex = this.data.selectedDateIndex
-      const currentTimeSlotOptions = currentDateIndex === 0 ? this.data.todayTimeSlots : this.data.tomorrowTimeSlots
-      this.setData({ timeSlotOptions: currentTimeSlotOptions })
+      this.setData({
+        timeSlotsByDay,
+        timeSlotOptions: defaultTimeSlotOptions,
+        selectedDateIndex: defaultDateIndex,
+        selectedTimeSlotIndex: -1
+      })
+      this.updateCanSubmit()
     } catch (e) {
       console.error('获取时间段列表失败')
     } finally {
@@ -731,12 +735,8 @@ Page({
   // 日期选择变化
   onDateChange(e) {
     const index = parseInt(e.detail.value)
-    const isToday = index === 0
-    
-    // 根据选择的日期更新时间段选项
-    const timeSlotOptions = isToday ? this.data.todayTimeSlots : this.data.tomorrowTimeSlots
-    
-    // 重置时间段选择（不自动选择）
+    const timeSlotsByDay = this.data.timeSlotsByDay || []
+    const timeSlotOptions = timeSlotsByDay[index] || []
     this.setData({
       selectedDateIndex: index,
       timeSlotOptions,
@@ -745,8 +745,6 @@ Page({
       'form.endTime': null,
       'form.startTimeStr': ''
     })
-    
-    // 更新提交状态
     this.updateCanSubmit()
   },
 
@@ -770,11 +768,12 @@ Page({
       return
     }
     
-    const isToday = this.data.selectedDateIndex === 0
-    const startTime = this.formatDateTime(timeSlot.startTime, !isToday)
-    const endTime = this.formatDateTime(timeSlot.endTime, !isToday)
-    
-    const dateLabel = this.data.selectedDateIndex === 0 ? '今天' : '明天'
+    const dateOptions = this.data.dateOptions || []
+    const selectedDate = dateOptions[this.data.selectedDateIndex]
+    const dayOffset = selectedDate ? selectedDate.dayOffset : 0
+    const dateLabel = selectedDate ? selectedDate.label : '今天'
+    const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
+    const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     const displayText = `${dateLabel} ${timeSlot.label}`
     
     this.setData({
@@ -806,12 +805,8 @@ Page({
   // 选择日期（弹窗中，来自时间选择组件）
   selectDate(e) {
     const index = parseInt(e.detail.index)
-    const isToday = index === 0
-    
-    // 根据选择的日期更新时间段选项
-    const timeSlotOptions = isToday ? this.data.todayTimeSlots : this.data.tomorrowTimeSlots
-    
-    // 重置时间段选择
+    const timeSlotsByDay = this.data.timeSlotsByDay || []
+    const timeSlotOptions = timeSlotsByDay[index] || []
     this.setData({
       selectedDateIndex: index,
       timeSlotOptions,
@@ -820,7 +815,6 @@ Page({
       'form.endTime': null,
       'form.startTimeStr': ''
     })
-    // 更新提交状态
     this.updateCanSubmit()
   },
 
@@ -848,38 +842,30 @@ Page({
       wx.showToast({ title: '请选择日期和时间段', icon: 'none' })
       return
     }
-    
     const timeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
     if (!timeSlot || timeSlot.disabled || !timeSlot.available) {
       wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
       return
     }
-    
-    // 计算开始和结束时间
-    const isToday = this.data.selectedDateIndex === 0
-    const startTime = this.formatDateTime(timeSlot.startTime, !isToday)
-    const endTime = this.formatDateTime(timeSlot.endTime, !isToday)
-    const dateLabel = isToday ? '今天' : '明天'
-    const startTimeStr = `${dateLabel} ${timeSlot.label}`
-    
+    const dateOptions = this.data.dateOptions || []
+    const selectedDate = dateOptions[this.data.selectedDateIndex]
+    const dayOffset = selectedDate ? selectedDate.dayOffset : 0
+    const dateLabel = selectedDate ? selectedDate.label : '今天'
+    const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
+    const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     this.setData({
       'form.startTime': startTime,
       'form.endTime': endTime,
-      'form.startTimeStr': startTimeStr,
+      'form.startTimeStr': `${dateLabel} ${timeSlot.label}`,
       showTimePickerModal: false
     })
-    
-    // 更新提交状态
     this.updateCanSubmit()
   },
 
-  // 格式化日期时间（用于提交）
-  formatDateTime(timeStr, isTomorrow) {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate() + (isTomorrow ? 1 : 0)).padStart(2, '0')
-    return `${year}-${month}-${day}T${timeStr}:00`
+  formatDateTimeByDayOffset(timeStr, dayOffset) {
+    const d = new Date()
+    d.setDate(d.getDate() + (dayOffset || 0))
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${timeStr}:00`
   },
 
   // 选择图片
