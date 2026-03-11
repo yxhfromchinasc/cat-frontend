@@ -149,145 +149,209 @@
   display: flex;
   background: #fff;
   border-radius: 16rpx;
-  padding: 20rpx 24rpx;
-  margin-bottom: 16rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+}
+
+.product-image-wrap {
+  position: relative;
+  width: 160rpx;
+  height: 160rpx;
+  flex-shrink: 0;
 }
 
 .product-image {
-  width: 140rpx;
-  height: 140rpx;
+  width: 100%;
+  height: 100%;
   border-radius: 12rpx;
-  flex-shrink: 0;
   background: #f8f8f8;
+}
+
+.promo-badge {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  padding: 0 12rpx;
+  height: 36rpx;
+  background: #ff4757;
+  color: #fff;
+  font-size: 20rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18rpx 18rpx 0 18rpx;
+  border: 4rpx solid #fff;
+  box-shadow: 0 4rpx 8rpx rgba(255, 71, 87, 0.3);
 }
 
 .product-body {
   flex: 1;
-  margin-left: 20rpx;
+  margin-left: 24rpx;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
-/* 第一行：名称 + 价格 */
-.product-row-main {
+.product-row {
   display: flex;
   align-items: center;
+}
+
+/* Row 1: Title */
+.row-title {
   justify-content: space-between;
-  gap: 16rpx;
+  margin-bottom: 8rpx;
 }
 
 .product-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
   flex: 1;
   min-width: 0;
-  font-size: 30rpx;
-  font-weight: 500;
-  color: #333;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* 价格容器：支持原价+现价并排（促销时） */
-.product-price-wrap {
-  flex-shrink: 0;
-  display: flex;
-  align-items: baseline;
-  gap: 12rpx;
-}
-
-.product-original-price {
-  font-size: 24rpx;
-  color: #999;
-  text-decoration: line-through;
-}
-
-.product-price {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: #ff6b35;
-}
-
-/* 促销价一行：现价 + 促销标签 */
-.product-price-line {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-/* 促销价：现价略放大、更醒目 */
-.product-price-promo {
-  font-size: 38rpx;
-  font-weight: 700;
-  color: #ff4757;
-}
-
-.product-promo-tag {
+.promo-status {
   font-size: 20rpx;
+  font-weight: bold;
   color: #ff4757;
+  flex-shrink: 0;
+  margin-left: 12rpx;
   background: rgba(255, 71, 87, 0.1);
-  padding: 2rpx 8rpx;
-  border-radius: 6rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  border: 1rpx solid rgba(255, 71, 87, 0.3);
 }
 
-/* 第二行：备注 */
-.product-row-desc {
-  margin-top: 6rpx;
+/* Row 2: Desc & Stock */
+.row-desc {
+  justify-content: space-between;
+  margin-bottom: 16rpx;
 }
 
 .product-desc {
   font-size: 24rpx;
-  color: #999;
+  color: #999999;
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* 第三行：库存 + 加减器 */
-.product-row-footer {
+.stock-info {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 12rpx;
+  flex-shrink: 0;
+  margin-left: 16rpx;
 }
 
 .product-stock {
-  font-size: 22rpx;
-  color: #bbb;
+  font-size: 24rpx;
+  color: #999999;
 }
 
-.product-stepper {
+/* Divider */
+.product-divider {
+  height: 1rpx;
+  background: #f0f0f0;
+  margin-bottom: 16rpx;
+}
+
+/* Row 3 & 4: Price & Stepper */
+.row-bottom {
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: auto;
+}
+
+.price-section {
+  display: flex;
+  align-items: baseline;
+  flex-shrink: 0;
+}
+
+.current-price {
+  color: #E61C1C;
+  display: flex;
+  align-items: baseline;
+}
+
+.price-symbol {
+  font-size: 24rpx;
+  font-weight: bold;
+  margin-right: 4rpx;
+}
+
+.price-value {
+  font-size: 36rpx;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.original-price {
+  color: #999999;
+  margin-left: 12rpx;
+  display: flex;
+  align-items: baseline;
+}
+
+.price-symbol-old {
+  font-size: 20rpx;
+  text-decoration: line-through;
+  margin-right: 2rpx;
+}
+
+.price-value-old {
+  font-size: 24rpx;
+  text-decoration: line-through;
+}
+
+.stepper-section {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  background: #fff;
+  border-radius: 8rpx;
+  flex-shrink: 0;
 }
 
 .stepper-btn {
   width: 44rpx;
   height: 44rpx;
-  border-radius: 8rpx;
-  background: #09ccb5;
-  color: #fff;
-  font-size: 28rpx;
-  font-weight: 500;
+  border-radius: 50%;
+  background: transparent;
+  color: #40C0BF;
+  font-size: 32rpx;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
+  border: 2rpx solid #40C0BF;
+  box-sizing: border-box;
 }
 
 .stepper-btn.disabled {
-  background: #e8e8e8;
+  border-color: #e8e8e8;
   color: #bbb;
+  background: transparent;
 }
 
 .stepper-num {
-  font-size: 26rpx;
-  color: #333;
-  min-width: 36rpx;
+  font-size: 28rpx;
+  color: #333333;
+  width: 48rpx;
   text-align: center;
+}
+
+.out-of-stock {
+  font-size: 24rpx;
+  color: #bbb;
 }
 
 .empty-products,

@@ -224,6 +224,15 @@ Page({
     this.setData({ showCartModal: false })
   },
 
+  previewImage(e) {
+    const url = e.currentTarget.dataset.url
+    if (!url) return
+    wx.previewImage({
+      urls: [url],
+      current: url
+    })
+  },
+
   async goToConfirm() {
     const cartCount = this.getCartCount()
     if (cartCount <= 0) {

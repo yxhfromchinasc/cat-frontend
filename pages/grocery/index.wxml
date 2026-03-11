@@ -41,29 +41,39 @@
     <scroll-view class="product-scroll" scroll-y>
     <view class="product-list" wx:if="{{productList.length > 0}}">
       <view class="product-item" wx:for="{{productList}}" wx:key="productCode">
-        <image class="product-image" src="{{item.imageUrl || '/assets/tabbar/图片占位符.png'}}" mode="aspectFill"></image>
+        <view class="product-image-wrap" bindtap="previewImage" data-url="{{item.imageUrl || '/assets/tabbar/图片占位符.png'}}">
+          <image class="product-image" src="{{item.imageUrl || '/assets/tabbar/图片占位符.png'}}" mode="aspectFill"></image>
+          <view class="promo-badge" wx:if="{{item.originalPrice != null && item.originalPrice > item.price}}">促销</view>
+        </view>
         <view class="product-body">
-          <view class="product-row product-row-main">
+          <view class="product-row row-title">
             <text class="product-name">{{item.name}}</text>
-            <view class="product-price-wrap">
-              <text class="product-original-price" wx:if="{{item.originalPrice != null && item.originalPrice > 0 && (item.originalPrice > item.price)}}">￥{{item.originalPrice}}</text>
-              <view class="product-price-line" wx:if="{{item.originalPrice != null && item.originalPrice > 0 && (item.originalPrice > item.price)}}">
-                <text class="product-price product-price-promo">￥{{item.price}}</text>
-                <text class="product-promo-tag">促销</text>
-              </view>
-              <text class="product-price" wx:else>￥{{item.price}}</text>
+            <text class="promo-status" wx:if="{{item.originalPrice != null && item.originalPrice > item.price}}">优</text>
+          </view>
+          <view class="product-row row-desc">
+            <text class="product-desc">{{item.description || '暂无描述'}}</text>
+            <view class="stock-info">
+              <text class="product-stock">库存 {{item.stock != null ? item.stock : 0}}</text>
             </view>
           </view>
-          <view class="product-row product-row-desc" wx:if="{{item.description}}">
-            <text class="product-desc">{{item.description}}</text>
-          </view>
-          <view class="product-row product-row-footer">
-            <text class="product-stock">库存 {{item.stock != null ? item.stock : 0}}{{item.stock <= 0 ? ' 暂无' : ''}}</text>
-            <view class="product-stepper" wx:if="{{item.stock > 0}}">
+          <view class="product-divider"></view>
+          <view class="product-row row-bottom">
+            <view class="price-section">
+              <view class="current-price">
+                <text class="price-symbol">¥</text>
+                <text class="price-value">{{item.price}}</text>
+              </view>
+              <view class="original-price" wx:if="{{item.originalPrice != null && item.originalPrice > item.price}}">
+                <text class="price-symbol-old">¥</text>
+                <text class="price-value-old">{{item.originalPrice}}</text>
+              </view>
+            </view>
+            <view class="stepper-section" wx:if="{{item.stock > 0}}">
               <view class="stepper-btn stepper-minus {{cartMap[item.productCode] <= 0 ? 'disabled' : ''}}" bindtap="onMinus" data-code="{{item.productCode}}">-</view>
               <text class="stepper-num">{{cartMap[item.productCode] || 0}}</text>
               <view class="stepper-btn stepper-plus {{(cartMap[item.productCode] || 0) >= item.stock ? 'disabled' : ''}}" bindtap="onPlus" data-code="{{item.productCode}}" data-stock="{{item.stock}}">+</view>
             </view>
+            <view class="out-of-stock" wx:else>暂无库存</view>
           </view>
         </view>
       </view>
