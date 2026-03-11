@@ -34,8 +34,8 @@
 
     <!-- 上门时间 -->
     <view class="card">
-      <!-- 预约时间选择 -->
-      <view class="appointment-time-selector" bindtap="showTimePicker">
+      <!-- 预约时间选择：与快递/大件/杂货保持一致，未匹配回收点时样式置灰但点击仍会给出提示 -->
+      <view class="appointment-time-selector {{!selectedAddressId || !selectedRecyclingPointId ? 'disabled' : ''}}" bindtap="showTimePicker">
         <view class="time-icon">
           <image class="clock-icon" src="/assets/tabbar/预约.png" mode="aspectFit"></image>
         </view>

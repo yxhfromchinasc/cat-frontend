@@ -362,6 +362,18 @@ Page({
   },
 
   showTimePicker() {
+    const { canOpenTimePicker } = require('../../utils/timePickerGuard.js')
+    const ok = canOpenTimePicker({
+      hasAddress: !!this.data.selectedAddressId,
+      hasPoint: !!this.data.selectedRemovalPointId,
+      hasSlots: !!(this.data.dateOptions.length && this.data.timeSlotsByDay.length),
+      messages: {
+        noAddress: '请先选择收货地址',
+        noPoint: '该地址不在大件清运服务范围内或未匹配清运点',
+        noSlots: '当前暂无可预约时间，请稍后再试'
+      }
+    })
+    if (!ok) return
     this.setData({ showTimePickerModal: true })
   },
 

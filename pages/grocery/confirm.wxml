@@ -12,7 +12,7 @@
     <!-- 预约时间（与快递/回收/清运共用组件） -->
     <view class="card">
       <view class="card-title">预约时间</view>
-      <view class="appointment-time-selector" bindtap="showTimePicker">
+      <view class="appointment-time-selector {{!address || !groceryPoint ? 'disabled' : ''}}" bindtap="showTimePicker">
         <view class="time-icon">
           <image class="clock-icon" src="/assets/tabbar/预约.png" mode="aspectFit"></image>
         </view>

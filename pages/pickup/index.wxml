@@ -59,8 +59,8 @@
 
     <!-- 送达时间范围 -->
     <view class="card time-card" wx:if="{{!form.isUrgent}}">
-      <!-- 预约时间选择 -->
-      <view class="appointment-time-selector" bindtap="showTimePicker">
+      <!-- 预约时间选择：未选择地址/驿站时仅提示，不允许真正弹出时间选择器 -->
+      <view class="appointment-time-selector {{!selectedAddressId || !selectedStationId ? 'disabled' : ''}}" bindtap="showTimePicker">
         <view class="time-icon">
           <image class="clock-icon" src="/assets/tabbar/预约.png" mode="aspectFit"></image>
         </view>

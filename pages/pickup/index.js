@@ -100,17 +100,14 @@ Page({
     // 优先从URL参数获取预选地址ID
     let addressId = options.addressId ? parseInt(options.addressId) : null
     
-    // 加载用户地址列表
+    // 加载用户地址列表（内部会处理默认地址/预选地址，并在有地址时加载驿站）
     await this.loadUserAddresses(addressId)
     
-    // 如果有预选地址，加载其可服务的驿站
-    if (this.data.selectedAddressId) {
-      this.loadStationsByAddress(this.data.selectedAddressId)
+    // 只有在已选中驿站的前提下才初始化时间选择器
+    if (this.data.selectedStationId) {
+      await this.initTimeSlots()
     }
-    
-    // 初始化时间选择器
-    this.initTimeSlots()
-    
+
     // 如果有选中的驿站，检查当前时间是否在营业时间内
     if (this.data.selectedStationId) {
       this.checkIfInBusinessHours()
@@ -285,6 +282,17 @@ Page({
 
     // 初始化时间选择器（日期选项和时间段选项）
   async initTimeSlots() {
+    // 如果尚未选择驿站，则不初始化时间段，保持为空，等待用户先选驿站
+    if (!this.data.selectedStationId) {
+      this.setData({
+        dateOptions: [],
+        timeSlotsByDay: [],
+        timeSlotOptions: [],
+        selectedDateIndex: -1,
+        selectedTimeSlotIndex: -1
+      })
+      return
+    }
     const now = new Date()
     
     const allowedDays = this.data.allowedDays || ALLOWED_DAYS_PICKUP
@@ -1332,6 +1340,18 @@ Page({
 
   // 显示时间选择器弹窗
   showTimePicker() {
+    const { canOpenTimePicker } = require('../../utils/timePickerGuard.js')
+    const ok = canOpenTimePicker({
+      hasAddress: !!this.data.selectedAddressId,
+      hasPoint: !!this.data.selectedStationId,
+      hasSlots: !!(this.data.dateOptions.length && this.data.timeSlotsByDay.length),
+      messages: {
+        noAddress: '请先选择收货地址',
+        noPoint: '请先选择取件驿站',
+        noSlots: '当前暂无可预约时间，请稍后再试'
+      }
+    })
+    if (!ok) return
     this.setData({ showTimePickerModal: true })
   },
 

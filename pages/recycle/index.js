@@ -789,6 +789,18 @@ Page({
 
   // 显示时间选择器弹窗
   showTimePicker() {
+    const { canOpenTimePicker } = require('../../utils/timePickerGuard.js')
+    const ok = canOpenTimePicker({
+      hasAddress: !!this.data.selectedAddressId,
+      hasPoint: !!this.data.selectedRecyclingPointId,
+      hasSlots: !!(this.data.dateOptions.length && this.data.timeSlotsByDay.length),
+      messages: {
+        noAddress: '请先选择收货地址',
+        noPoint: '该地址不在服务范围内或未匹配回收点',
+        noSlots: '当前暂无可预约时间，请稍后再试'
+      }
+    })
+    if (!ok) return
     this.setData({ showTimePickerModal: true })
   },
 
