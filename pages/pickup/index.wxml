@@ -91,10 +91,10 @@
     <view class="card">
       <view class="card-title">包裹信息</view>
       
-      <!-- 取件手机尾号 -->
+      <!-- 取件手机号（完整） -->
       <view class="form-item">
-        <view class="label required">取件手机号后四位</view>
-        <input class="input" type="number" maxlength="4" placeholder="请输入后四位" value="{{form.phoneTail}}" bindinput="onInputPhoneTail" />
+        <view class="label required">取件手机号</view>
+        <input class="input" type="number" maxlength="11" placeholder="请输入完整手机号" value="{{form.phoneTail}}" bindinput="onInputPhoneTail" />
       </view>
 
       <!-- 取件码 -->

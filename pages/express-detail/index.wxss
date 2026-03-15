@@ -289,6 +289,61 @@
   background: #f0f0f0;
 }
 
+/* 快递计费明细表格（与回收一致） */
+.items-breakdown {
+  margin-top: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.items-table {
+  width: 100%;
+  font-size: 24rpx;
+}
+
+.items-row {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+
+.items-row:last-child {
+  border-bottom: none;
+}
+
+.items-header {
+  font-weight: 500;
+  color: #333;
+  border-bottom: 2rpx solid #e5e6eb;
+  padding-bottom: 12rpx;
+  margin-bottom: 4rpx;
+}
+
+.items-cell {
+  flex: 1;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.items-cell.category {
+  flex: 1.2;
+  text-align: left;
+  padding-right: 8rpx;
+}
+
+.items-cell.price,
+.items-cell.weight {
+  flex: 0.9;
+}
+
+.items-cell.amount {
+  flex: 1;
+  color: #ff4757;
+  font-weight: 500;
+}
+
 /* 价格组成信息 */
 .price-breakdown {
   margin-top: 24rpx;

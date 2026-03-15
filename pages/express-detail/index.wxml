@@ -63,7 +63,7 @@
             <text class="info-value">{{event.data.stationName}}</text>
           </view>
           <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.phoneTail}}">
-            <text class="info-label">取件尾号：</text>
+            <text class="info-label">取件手机号：</text>
             <text class="info-value">{{event.data.phoneTail}}</text>
           </view>
           <view class="info-item" wx:if="{{event.type === 'CREATED' && event.data.startTime && event.data.endTime}}">
@@ -98,11 +98,7 @@
             <text class="info-value">{{event.data.courierNickname}}</text>
           </view>
           
-          <!-- GET事件的数据 -->
-          <view class="info-item" wx:if="{{event.type === 'GET' && event.data.expressCount}}">
-            <text class="info-label">取件数量：</text>
-            <text class="info-value">{{event.data.expressCount}}件</text>
-          </view>
+          <!-- GET事件：计费明细在下方价格组成中展示 -->
           <view class="info-item" wx:if="{{event.type === 'GET' && event.data.expressPrice}}">
             <text class="info-label">快递费用：</text>
             <text class="info-value price">￥{{event.data.expressPrice}}</text>
@@ -188,15 +184,28 @@
     </view>
 
     <!-- 价格组成信息 -->
-    <view class="price-breakdown" wx:if="{{orderDetail.expressBaseAmount}}">
+    <view class="price-breakdown" wx:if="{{orderDetail.expressBaseAmount || (orderDetail.expressItems && orderDetail.expressItems.length > 0)}}">
       <view class="breakdown-title">价格组成</view>
-      <view class="breakdown-item" wx:if="{{orderDetail.expressCount && orderDetail.expressPricePerItem}}">
-        <text class="breakdown-label">计费基准：</text>
-        <text class="breakdown-value">{{orderDetail.expressCount}}件 × ￥{{orderDetail.expressPricePerItem}}/件</text>
-      </view>
-      <view class="breakdown-item">
-        <text class="breakdown-label">快递代取费：</text>
-        <text class="breakdown-value">￥{{orderDetail.expressBaseAmount}}</text>
+      <!-- 有明细时展示表格（与回收一致） -->
+      <view class="items-breakdown" wx:if="{{orderDetail.expressItems && orderDetail.expressItems.length > 0}}">
+        <view class="items-table">
+          <view class="items-row items-header">
+            <text class="items-cell category">类别</text>
+            <text class="items-cell price">单价(元)</text>
+            <text class="items-cell weight">数量</text>
+            <text class="items-cell amount">小计(元)</text>
+          </view>
+          <view class="items-row" wx:for="{{orderDetail.expressItems}}" wx:key="index" wx:for-item="row">
+            <text class="items-cell category">{{row.category}}</text>
+            <text class="items-cell price">￥{{row.unitPrice}}</text>
+            <text class="items-cell weight">{{row.quantity}}</text>
+            <text class="items-cell amount">￥{{row.amount}}</text>
+          </view>
+        </view>
+        <view class="breakdown-item" wx:if="{{orderDetail.expressBaseAmount}}" style="margin-top: 16rpx;">
+          <text class="breakdown-label">项目小计：</text>
+          <text class="breakdown-value">￥{{orderDetail.expressBaseAmount}}</text>
+        </view>
       </view>
       <view class="breakdown-item" wx:if="{{orderDetail.expressUrgentFee && orderDetail.expressUrgentFee > 0}}">
         <text class="breakdown-label">加急费用：</text>
@@ -205,10 +214,6 @@
       <view class="breakdown-item" wx:if="{{orderDetail.expressUrgentFeeZeroReason}}">
         <text class="breakdown-label">加急说明：</text>
         <text class="breakdown-value reason">{{orderDetail.expressUrgentFeeZeroReason}}</text>
-      </view>
-      <view class="breakdown-item" wx:if="{{orderDetail.expressOvertimeCompensation && orderDetail.expressOvertimeCompensation > 0}}">
-        <text class="breakdown-label">超时补偿：</text>
-        <text class="breakdown-value negative">-￥{{orderDetail.expressOvertimeCompensation}}</text>
       </view>
       <view class="breakdown-item" wx:if="{{orderDetail.expressCouponDiscount && orderDetail.expressCouponDiscount > 0}}">
         <text class="breakdown-label">代金券抵扣：</text>

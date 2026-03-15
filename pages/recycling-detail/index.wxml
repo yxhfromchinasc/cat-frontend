@@ -125,10 +125,6 @@
               <text class="breakdown-label">项目小计：</text>
               <text class="breakdown-value">￥{{event.data.baseAmount}}</text>
             </view>
-            <view class="breakdown-item" wx:if="{{event.data.overtimeCompensation > 0}}">
-              <text class="breakdown-label">超时补偿：</text>
-              <text class="breakdown-value positive">+￥{{event.data.overtimeCompensation}}</text>
-            </view>
             <view class="breakdown-item" wx:if="{{event.data.price}}">
               <text class="breakdown-label">合计：</text>
               <text class="breakdown-value price">￥{{event.data.price}}</text>
@@ -144,10 +140,6 @@
             <view class="breakdown-item" wx:if="{{event.data.baseAmount}}">
               <text class="breakdown-label">基础金额：</text>
               <text class="breakdown-value">￥{{event.data.baseAmount}}</text>
-            </view>
-            <view class="breakdown-item" wx:if="{{event.data.overtimeCompensation > 0}}">
-              <text class="breakdown-label">超时补偿：</text>
-              <text class="breakdown-value positive">+￥{{event.data.overtimeCompensation}}</text>
             </view>
             <view class="breakdown-item" wx:if="{{event.data.urgentFee > 0}}">
               <text class="breakdown-label">加急费用：</text>
@@ -204,10 +196,6 @@
               <text class="breakdown-label">项目小计：</text>
               <text class="breakdown-value">￥{{event.data.baseAmount}}</text>
             </view>
-            <view class="breakdown-item" wx:if="{{event.data.overtimeCompensation > 0}}">
-              <text class="breakdown-label">超时补偿：</text>
-              <text class="breakdown-value positive">+￥{{event.data.overtimeCompensation}}</text>
-            </view>
             <view class="breakdown-item" wx:if="{{event.data.price}}">
               <text class="breakdown-label">结算金额：</text>
               <text class="breakdown-value price">￥{{event.data.price}}</text>
@@ -223,10 +211,6 @@
             <view class="breakdown-item" wx:if="{{event.data.baseAmount}}">
               <text class="breakdown-label">基础金额：</text>
               <text class="breakdown-value">￥{{event.data.baseAmount}}</text>
-            </view>
-            <view class="breakdown-item" wx:if="{{event.data.overtimeCompensation > 0}}">
-              <text class="breakdown-label">超时补偿：</text>
-              <text class="breakdown-value positive">+￥{{event.data.overtimeCompensation}}</text>
             </view>
             <view class="breakdown-item" wx:if="{{event.data.urgentFee > 0}}">
               <text class="breakdown-label">加急费用：</text>

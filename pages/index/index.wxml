@@ -47,13 +47,13 @@
           </view>
         </view>
         
-        <!-- 第二行：酒水直达（独占整行） -->
+        <!-- 第二行：回收小铺（独占整行） -->
         <view class="biz-row biz-row-full">
           <view class="biz-card biz-card-grocery biz-card-full" bindtap="goToGrocery">
             <view class="biz-card-content">
               <view class="biz-card-left">
-                <view class="biz-title">酒水直达 超级促销</view>
-                <view class="biz-grocery-btn">次日速达</view>
+                <view class="biz-title">回收小铺 次日上门</view>
+                <view class="biz-grocery-btn">次日上门</view>
               </view>
               <view class="biz-card-right">
                 <image class="biz-card-image" src="/assets/tabbar/商店门店.png" mode="aspectFit"></image>

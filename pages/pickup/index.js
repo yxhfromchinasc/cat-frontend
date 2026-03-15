@@ -40,7 +40,7 @@ Page({
     
     // 表单数据
     form: {
-      phoneTail: '', // 取件手机尾号
+      phoneTail: '', // 取件手机号（完整11位，提交字段名仍为 phoneTail）
       pickPics: [], // 取件照片列表
       pickCodes: '', // 取件码（多个用顿号分隔）
       itemDescription: '', // 物品备注
@@ -647,12 +647,13 @@ Page({
     }
   },
 
-  // 输入手机尾号
+  // 输入取件手机号（完整11位）
   onInputPhoneTail(e) {
+    const raw = e.detail.value.replace(/\D/g, '')
+    const value = raw.length > 11 ? raw.slice(0, 11) : raw
     this.setData({
-      'form.phoneTail': e.detail.value.replace(/\D/g, '') // 只保留数字
+      'form.phoneTail': value
     })
-    // 更新提交状态
     this.updateCanSubmit()
   },
 
@@ -1133,17 +1134,17 @@ Page({
   updateCanSubmit() {
     const hasStation = !!this.data.selectedStationId
     const hasAddress = !!this.data.selectedAddressId
-    const hasPhoneTail = this.data.form.phoneTail && this.data.form.phoneTail.length === 4
+    const hasPhone = this.data.form.phoneTail && this.data.form.phoneTail.length === 11
     const hasTime = !!(this.data.form.startTime && this.data.form.endTime)
     
     // 如果是加急订单，不需要时间验证
-    const canSubmit = hasStation && hasAddress && hasPhoneTail && (this.data.form.isUrgent || hasTime)
+    const canSubmit = hasStation && hasAddress && hasPhone && (this.data.form.isUrgent || hasTime)
     
     // 生成未完成项提示
     const missingItems = []
     if (!hasStation) missingItems.push('取件驿站')
     if (!hasAddress) missingItems.push('收货地址')
-    if (!hasPhoneTail) missingItems.push('手机尾号')
+    if (!hasPhone) missingItems.push('取件手机号')
     if (!this.data.form.isUrgent && !hasTime) missingItems.push('预约时间')
     
     const submitTip = missingItems.length > 0 ? `请完成：${missingItems.join('、')}` : ''
@@ -1166,8 +1167,9 @@ Page({
       return false
     }
     
-    if (!this.data.form.phoneTail || this.data.form.phoneTail.length !== 4) {
-      wx.showToast({ title: '请输入正确的手机尾号（4位）', icon: 'none' })
+    const phone = (this.data.form.phoneTail || '').trim()
+    if (phone.length !== 11 || !/^1\d{10}$/.test(phone)) {
+      wx.showToast({ title: '请输入正确的11位手机号', icon: 'none' })
       return false
     }
     
