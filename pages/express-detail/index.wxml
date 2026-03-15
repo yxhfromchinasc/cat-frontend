@@ -98,7 +98,23 @@
             <text class="info-value">{{event.data.courierNickname}}</text>
           </view>
           
-          <!-- GET事件：计费明细在下方价格组成中展示 -->
+          <!-- GET事件：展示快递计费明细 + 费用 -->
+          <view class="items-breakdown" wx:if="{{event.type === 'GET' && event.data.items && event.data.items.length > 0}}">
+            <view class="items-table">
+              <view class="items-row items-header">
+                <text class="items-cell category">类别</text>
+                <text class="items-cell price">单价(元)</text>
+                <text class="items-cell weight">数量</text>
+                <text class="items-cell amount">小计(元)</text>
+              </view>
+              <view class="items-row" wx:for="{{event.data.items}}" wx:key="index" wx:for-item="row">
+                <text class="items-cell category">{{row.category}}</text>
+                <text class="items-cell price">￥{{row.unitPrice}}</text>
+                <text class="items-cell weight">{{row.quantity}}</text>
+                <text class="items-cell amount">￥{{row.amount}}</text>
+              </view>
+            </view>
+          </view>
           <view class="info-item" wx:if="{{event.type === 'GET' && event.data.expressPrice}}">
             <text class="info-label">快递费用：</text>
             <text class="info-value price">￥{{event.data.expressPrice}}</text>
@@ -117,7 +133,23 @@
             </view>
           </view>
           
-          <!-- SEND_SUC事件的数据 -->
+          <!-- SEND_SUC事件的数据：展示送达计费明细 + 送达信息 -->
+          <view class="items-breakdown" wx:if="{{event.type === 'SEND_SUC' && event.data.items && event.data.items.length > 0}}">
+            <view class="items-table">
+              <view class="items-row items-header">
+                <text class="items-cell category">类别</text>
+                <text class="items-cell price">单价(元)</text>
+                <text class="items-cell weight">数量</text>
+                <text class="items-cell amount">小计(元)</text>
+              </view>
+              <view class="items-row" wx:for="{{event.data.items}}" wx:key="index" wx:for-item="row">
+                <text class="items-cell category">{{row.category}}</text>
+                <text class="items-cell price">￥{{row.unitPrice}}</text>
+                <text class="items-cell weight">{{row.quantity}}</text>
+                <text class="items-cell amount">￥{{row.amount}}</text>
+              </view>
+            </view>
+          </view>
           <view class="info-item" wx:if="{{event.type === 'SEND_SUC' && event.data.addressDetail}}">
             <text class="info-label">送达地址：</text>
             <text class="info-value">{{event.data.addressDetail}}</text>

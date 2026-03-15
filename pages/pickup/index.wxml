@@ -72,19 +72,27 @@
       </view>
     </view>
 
-    <!-- 快递计价说明 -->
-    <view class="card price-card" wx:if="{{expressPricePerItem}}">
-      <view class="price-header">
+    <!-- 快递计价说明（新价格模式） -->
+    <view class="card price-card price-card-new">
+      <view class="price-card-title">
         <view class="price-dot"></view>
-        <text class="price-label">快递计价说明</text>
+        <text>价格说明</text>
       </view>
-      <view class="price-main">
-        <text class="price-value">{{expressPricePerItem}}</text>
-        <text class="price-unit">元/件</text>
+      <view class="price-rules">
+        <view class="price-rule-item">
+          <text class="price-rule-label">轻件（小于5公斤）</text>
+          <text class="price-rule-value">2元/件</text>
+        </view>
+        <view class="price-rule-item">
+          <text class="price-rule-label">重件（大于5公斤）</text>
+          <text class="price-rule-value">5元/件</text>
+        </view>
       </view>
-      <view class="price-desc">
-        {{expressPriceDesc}}
+      <view class="price-min-tip">
+        <text class="price-min-label">起送门槛：</text>
+        <text class="price-min-value">5元起，不满5元按5元收取</text>
       </view>
+      <view class="price-card-desc">实际费用以小哥取件时按件称重/计件为准，送达后按明细结算</view>
     </view>
 
     <!-- 包裹信息 -->
