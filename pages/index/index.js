@@ -266,12 +266,10 @@ Page({
   // 加载首页下方促销卡片配置（两个系统配置：home_promo_card_1_image, home_promo_card_2_image）
   async loadPromoCardConfig() {
     try {
-      const resultList = await Promise.all([
+      const [r1, r2] = await Promise.all([
         api.getConfigValue('home_promo_card_1_image'),
         api.getConfigValue('home_promo_card_2_image')
       ])
-      const r1 = resultList && resultList[0]
-      const r2 = resultList && resultList[1]
       const url1 = (r1 && r1.success && r1.data && String(r1.data).trim()) || ''
       const url2 = (r2 && r2.success && r2.data && String(r2.data).trim()) || ''
       this.setData({

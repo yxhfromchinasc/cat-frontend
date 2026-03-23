@@ -1,4 +1,9 @@
 {
   "navigationBarTitleText": "聊天",
-  "usingComponents": {}
+  "usingComponents": {},
+  "safeArea": {
+    "bottom": {
+      "offset": "auto"
+    }
+  }
 }

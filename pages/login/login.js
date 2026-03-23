@@ -167,12 +167,8 @@ Page({
               // 需要授权手机号
               await this.requestPhoneAuth(userInfo)
             } else {
-              // 其他错误：优先展示后端返回的业务文案
+              // 其他错误
               console.error('微信登录失败')
-              wx.showToast({
-                title: result.message || result.error || '微信登录失败',
-                icon: 'none'
-              })
             }
           }
         } catch (error) {
@@ -184,11 +180,7 @@ Page({
             await this.requestPhoneAuth(userInfo)
           } else {
             console.error('微信登录失败')
-            // 兜底：展示后端返回的错误文案，避免被页面逻辑吞掉
-            wx.showToast({
-              title: error?.message || error?.error || '微信登录失败',
-              icon: 'none'
-            })
+            // 其他错误提示已在API工具中处理
           }
         }
       },
@@ -295,10 +287,6 @@ Page({
             })
           } else {
             console.error('重新登录失败')
-            wx.showToast({
-              title: result.message || result.error || '重新登录失败',
-              icon: 'none'
-            })
           }
         } else {
           this.setData({ loading: false })
@@ -329,7 +317,7 @@ Page({
       this.setData({ loading: false })
       console.error('手机号快捷登录处理失败')
       wx.showToast({
-        title: error?.message || error?.error || '手机号快捷登录失败',
+        title: '手机号快捷登录失败',
         icon: 'none'
       })
     }
