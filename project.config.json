@@ -1,16 +1,16 @@
 {
   "compileType": "miniprogram",
-  "libVersion": "3.10.3",
+  "libVersion": "3.14.3",
   "packOptions": {
     "ignore": [],
     "include": []
   },
   "setting": {
     "coverView": true,
-    "es6": true,
+    "es6": false,
     "postcss": true,
     "minified": true,
-    "enhance": true,
+    "enhance": false,
     "showShadowRootInWxmlPanel": true,
     "packNpmRelationList": [],
     "babelSetting": {

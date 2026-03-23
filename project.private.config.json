@@ -17,8 +17,10 @@
     "showES6CompileOption": false,
     "bigPackageSizeSupport": false,
     "checkInvalidKey": true,
-    "ignoreDevUnusedFiles": true
+    "ignoreDevUnusedFiles": true,
+    "es6": false,
+    "enhance": false
   },
-  "libVersion": "3.11.2",
+  "libVersion": "3.14.3",
   "condition": {}
 }
