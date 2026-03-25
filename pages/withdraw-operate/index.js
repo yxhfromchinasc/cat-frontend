@@ -157,6 +157,23 @@ Page({
 
   // 调起确认收款页面（商家转账升级版）
   // 参考：https://pay.weixin.qq.com/doc/v3/merchant/4012716430
+  getBaseLibVersion() {
+    try {
+      if (wx.canIUse && wx.canIUse('getAppBaseInfo')) {
+        const appBaseInfo = wx.getAppBaseInfo()
+        if (appBaseInfo && appBaseInfo.SDKVersion) {
+          return appBaseInfo.SDKVersion
+        }
+      }
+    } catch (e) {}
+    try {
+      const systemInfo = wx.getSystemInfoSync()
+      return systemInfo && systemInfo.SDKVersion ? systemInfo.SDKVersion : '0.0.0'
+    } catch (e) {
+      return '0.0.0'
+    }
+  },
+
   async requestUserConfirmReceipt(packageInfoStr, mchId, appId) {
     return new Promise((resolve, reject) => {
       try {
@@ -172,8 +189,7 @@ Page({
 
         // 检查是否支持 requestMerchantTransfer API
         if (!wx.canIUse('requestMerchantTransfer')) {
-          const systemInfo = wx.getSystemInfoSync()
-          const SDKVersion = systemInfo.SDKVersion || '0.0.0'
+          const SDKVersion = this.getBaseLibVersion()
           reject(new Error(`当前微信版本不支持商家转账功能，请更新至最新版本。基础库版本: ${SDKVersion}`))
           return
         }

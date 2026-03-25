@@ -367,6 +367,7 @@
   border-top: 1rpx solid #e5e6eb;
   box-shadow: 0 -2rpx 16rpx rgba(0, 0, 0, 0.04);
   /* 添加底部安全区域适配，避免与iOS系统手势区域冲突 */
+  padding-bottom: calc(16rpx + constant(safe-area-inset-bottom));
   padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
 }
 
@@ -541,6 +542,7 @@
 .new-message-tip {
   position: fixed;
   right: 24rpx;
+  bottom: calc(160rpx + constant(safe-area-inset-bottom));
   bottom: calc(160rpx + env(safe-area-inset-bottom));
   background-color: #ff4757;
   color: #fff;
