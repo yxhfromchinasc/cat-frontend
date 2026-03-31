@@ -28,7 +28,7 @@ async function createOrder(amount) {
   const res = await api.createRecharge(amount)
   
   if (!res || !res.success || !res.data) {
-    throw { code: res?.code || 400, message: res?.message || '创建订单失败' }
+    throw { code: (res && res.code) || 400, message: (res && res.message) || '创建订单失败' }
   }
   
   return res.data 
@@ -355,8 +355,8 @@ async function pay(amount) {
     }
   } catch (e) {
     console.error('支付流程异常')
-    wx.showToast({ title: e?.message || '支付发起失败', icon: 'none' })
-    return { success: false, message: e?.message }
+    wx.showToast({ title: (e && e.message) || '支付发起失败', icon: 'none' })
+    return { success: false, message: e && e.message }
   } finally {
     api.hideLoadingToast()
     setPaying(false)

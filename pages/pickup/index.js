@@ -15,7 +15,7 @@ function buildDateOptions(allowedDays) {
   return allowedDays.map(label => ({
     label,
     isToday: label === '今天',
-    dayOffset: DAY_OFFSET_MAP[label] ?? 0
+    dayOffset: DAY_OFFSET_MAP[label] !== undefined ? DAY_OFFSET_MAP[label] : 0
   }))
 }
 
@@ -1258,9 +1258,9 @@ Page({
           // 2=快递代取，需要传递stationId
           const checkRes = await api.checkTimeSlotAvailability(2, this.data.form.startTime, this.data.form.endTime, this.data.selectedStationId, null, null)
           // 注意：checkRes.data 是 {available: true/false, message: "..."}
-          if (!checkRes.success || !checkRes.data?.available) {
+          if (!checkRes.success || !(checkRes.data && checkRes.data.available)) {
             wx.showToast({ 
-              title: checkRes.data?.message || checkRes.message || '该时间段已约满，请选择其他时间段', 
+              title: (checkRes.data && checkRes.data.message) || checkRes.message || '该时间段已约满，请选择其他时间段', 
               icon: 'none' 
             })
             // 重置选择
@@ -1298,7 +1298,7 @@ Page({
       const res = await api.createExpressOrder(orderData)
 
       if (res.success) {
-        const orderNo = res.data?.orderNo || res.data?.order?.orderNo || res.orderNo
+        const orderNo = (res.data && res.data.orderNo) || (res.data && res.data.order && res.data.order.orderNo) || res.orderNo
         // createExpressOrder 已经设置了 showSuccess: true，会自动显示成功提示
         // 但为了确保用户体验，我们仍然显示一次
         wx.showToast({ title: '提交成功', icon: 'success' })

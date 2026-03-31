@@ -105,7 +105,7 @@ Page({
           isFirstLoad: false
         })
       } else {
-        wx.showToast({ title: res?.message || '加载失败', icon: 'none' })
+        wx.showToast({ title: (res && res.message) || '加载失败', icon: 'none' })
         this.setData({ loading: false })
       }
     } catch (e) {

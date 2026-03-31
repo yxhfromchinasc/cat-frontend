@@ -149,9 +149,15 @@ Page({
 
   // 美化展示字段
   decorateCoupon(item) {
-    const type = item.type ?? item.couponType ?? item.templateType
-    const rawDiscount = item.discountValue ?? item.discount ?? item.value
-    const rawMin = item.minAmount ?? item.min ?? 0
+    const type = item.type !== undefined && item.type !== null
+      ? item.type
+      : (item.couponType !== undefined && item.couponType !== null ? item.couponType : item.templateType)
+    const rawDiscount = item.discountValue !== undefined && item.discountValue !== null
+      ? item.discountValue
+      : (item.discount !== undefined && item.discount !== null ? item.discount : item.value)
+    const rawMin = item.minAmount !== undefined && item.minAmount !== null
+      ? item.minAmount
+      : (item.min !== undefined && item.min !== null ? item.min : 0)
 
     const toNumber = (v, d = 0) => {
       const n = parseFloat(v)
@@ -194,9 +200,15 @@ Page({
   },
 
   decorateTemplate(item, userReceivedCount = 0) {
-    const type = item.type ?? item.couponType ?? item.templateType
-    const rawDiscount = item.discountValue ?? item.discount ?? item.value
-    const rawMin = item.minAmount ?? item.min ?? 0
+    const type = item.type !== undefined && item.type !== null
+      ? item.type
+      : (item.couponType !== undefined && item.couponType !== null ? item.couponType : item.templateType)
+    const rawDiscount = item.discountValue !== undefined && item.discountValue !== null
+      ? item.discountValue
+      : (item.discount !== undefined && item.discount !== null ? item.discount : item.value)
+    const rawMin = item.minAmount !== undefined && item.minAmount !== null
+      ? item.minAmount
+      : (item.min !== undefined && item.min !== null ? item.min : 0)
 
     const toNumber = (v, d = 0) => {
       const n = parseFloat(v)

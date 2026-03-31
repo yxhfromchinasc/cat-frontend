@@ -14,7 +14,7 @@ function buildDateOptions(allowedDays) {
   return allowedDays.map(label => ({
     label,
     isToday: label === '今天',
-    dayOffset: DAY_OFFSET_MAP[label] ?? 0
+    dayOffset: DAY_OFFSET_MAP[label] !== undefined ? DAY_OFFSET_MAP[label] : 0
   }))
 }
 

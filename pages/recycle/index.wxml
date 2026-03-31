@@ -61,10 +61,10 @@
         <text class="price-unit">元/公斤</text>
       </view>
       <view class="price-desc">
-        塑料瓶、易拉罐、金属等，单类超10公斤可找小哥议价
+        塑料瓶、易拉罐、金属等单类超10公斤可找小哥议价
       </view>
       <view class="price-notice">
-        <text class="price-notice-text">未整理成捆的装修废料按 <text class="price-notice-highlight">0.3 元/公斤</text> 结算</text>
+        <text class="price-notice-text">因业务调整，<text class="price-notice-highlight">纸类回收服务暂时暂停</text>，感谢您的理解与支持。</text>
       </view>
     </view>
 
@@ -72,9 +72,9 @@
     <view class="card">
       <view class="card-title">回收信息</view>
       
-      <!-- 拍照留念（选填） -->
+      <!-- 拍照留念（必填） -->
       <view class="form-item">
-        <view class="label">拍照留念</view>
+        <view class="label required">拍照留念</view>
         <view class="image-upload-container">
           <view class="image-list">
             <view class="image-item" wx:for="{{form.images}}" wx:key="index">

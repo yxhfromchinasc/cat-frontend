@@ -393,12 +393,12 @@ Page({
         }
         this.setData(updates)
       } else {
-        wx.showToast({ title: res?.message || '计算失败', icon: 'none' })
+        wx.showToast({ title: (res && res.message) || '计算失败', icon: 'none' })
       }
     } catch (e) {
       wx.hideLoading()
       console.error('计算优惠金额失败')
-      wx.showToast({ title: e?.message || '计算失败', icon: 'none' })
+      wx.showToast({ title: (e && e.message) || '计算失败', icon: 'none' })
     }
   },
 
@@ -455,10 +455,10 @@ Page({
           wx.showToast({ title: '支付成功', icon: 'success' })
           setTimeout(() => wx.navigateBack(), 1200)
         } else {
-          wx.showToast({ title: res?.message || '支付失败，请重试', icon: 'none' })
+          wx.showToast({ title: (res && res.message) || '支付失败，请重试', icon: 'none' })
         }
       } catch (e) {
-        wx.showToast({ title: e?.message || '支付失败，请重试', icon: 'none' })
+        wx.showToast({ title: (e && e.message) || '支付失败，请重试', icon: 'none' })
       }
       return
     }
@@ -605,7 +605,7 @@ Page({
         }
       } else {
         wx.showToast({ 
-          title: res?.message || '支付失败，请重试', 
+          title: (res && res.message) || '支付失败，请重试', 
           icon: 'none' 
         })
       }
@@ -613,7 +613,7 @@ Page({
       wx.hideLoading()
       console.error('支付异常')
       wx.showToast({ 
-        title: e?.message || '支付失败，请重试', 
+        title: (e && e.message) || '支付失败，请重试', 
         icon: 'none' 
       })
     }
@@ -650,7 +650,7 @@ Page({
               wx.navigateBack()
             }, 800)
           } else {
-            wx.showToast({ title: result?.message || '取消失败', icon: 'none' })
+            wx.showToast({ title: (result && result.message) || '取消失败', icon: 'none' })
           }
         } catch (e) {
           wx.hideLoading()

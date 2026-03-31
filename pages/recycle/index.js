@@ -15,7 +15,7 @@ function buildDateOptions(allowedDays) {
   return allowedDays.map(label => ({
     label,
     isToday: label === '今天',
-    dayOffset: DAY_OFFSET_MAP[label] ?? 0
+    dayOffset: DAY_OFFSET_MAP[label] !== undefined ? DAY_OFFSET_MAP[label] : 0
   }))
 }
 
@@ -133,12 +133,12 @@ Page({
         this.setData({ quickOptions: options || [] })
       } else {
         // 如果获取失败，使用默认值
-        this.setData({ quickOptions: ['易拉罐', '纸壳子', '旧家电', '金属', '塑料瓶', '旧衣服', '废旧电池'] })
+        this.setData({ quickOptions: ['易拉罐', '旧家电', '金属', '塑料瓶', '旧衣服', '废旧电池'] })
       }
     } catch (e) {
       console.error('加载备注快捷选项失败')
       // 如果获取失败，使用默认值
-      this.setData({ quickOptions: ['易拉罐', '纸壳子', '旧家电', '金属', '塑料瓶', '旧衣服', '废旧电池'] })
+      this.setData({ quickOptions: ['易拉罐', '旧家电', '金属', '塑料瓶', '旧衣服', '废旧电池'] })
     }
   },
 
@@ -205,15 +205,17 @@ Page({
     const hasAddress = !!this.data.selectedAddressId
     const hasRecyclingPoint = !!this.data.selectedRecyclingPointId
     const hasTime = !!(this.data.form.startTime && this.data.form.endTime)
+    const hasImages = Array.isArray(this.data.form.images) && this.data.form.images.length > 0
     const isImmediate = this.data.timeType === 'immediate'
     
     // 如果是立即上门，不需要时间验证；否则时间必填
-    const canSubmit = hasAddress && hasRecyclingPoint && (isImmediate || hasTime)
+    const canSubmit = hasAddress && hasRecyclingPoint && hasImages && (isImmediate || hasTime)
     
     // 生成未完成项提示
     const missingItems = []
     if (!hasAddress) missingItems.push('收货地址')
     if (!hasRecyclingPoint) missingItems.push('回收点')
+    if (!hasImages) missingItems.push('拍照留念')
     if (!isImmediate && !hasTime) missingItems.push('预约时间')
     
     const submitTip = missingItems.length > 0 ? `请完成：${missingItems.join('、')}` : ''
@@ -913,6 +915,7 @@ Page({
             if (uploadedUrls.length > 0) {
               const images = [...this.data.form.images, ...uploadedUrls]
               this.setData({ 'form.images': images })
+              this.updateCanSubmit()
               wx.showToast({ title: `成功上传${uploadedUrls.length}张图片`, icon: 'success' })
             } else {
               wx.showToast({ title: '图片上传失败', icon: 'none' })
@@ -947,6 +950,7 @@ Page({
     const index = parseInt(e.currentTarget.dataset.index)
     const images = this.data.form.images.filter((_, i) => i !== index)
     this.setData({ 'form.images': images })
+    this.updateCanSubmit()
   },
 
   // 输入物品备注
@@ -991,6 +995,11 @@ Page({
     
     if (!this.data.selectedRecyclingPointId) {
       wx.showToast({ title: '未找到服务该地址的回收点', icon: 'none' })
+      return false
+    }
+
+    if (!this.data.form.images || this.data.form.images.length === 0) {
+      wx.showToast({ title: '请先上传回收物图片', icon: 'none' })
       return false
     }
     
@@ -1082,9 +1091,9 @@ Page({
           // 3=上门回收，需要传递recyclingPointId
           const checkRes = await api.checkTimeSlotAvailability(3, this.data.form.startTime, this.data.form.endTime, null, this.data.selectedRecyclingPointId, null)
           // 注意：checkRes.data 是 {available: true/false, message: "..."}
-          if (!checkRes.success || !checkRes.data?.available) {
+          if (!checkRes.success || !(checkRes.data && checkRes.data.available)) {
             wx.showToast({ 
-              title: checkRes.data?.message || checkRes.message || '该时间段已约满，请选择其他时间段', 
+              title: (checkRes.data && checkRes.data.message) || checkRes.message || '该时间段已约满，请选择其他时间段', 
               icon: 'none' 
             })
             // 重置选择
@@ -1129,7 +1138,7 @@ Page({
       const res = await api.createRecyclingOrder(payload)
 
       if (res.success) {
-        const orderNo = res.data?.orderNo || res.data?.order?.orderNo || res.orderNo
+        const orderNo = (res.data && res.data.orderNo) || (res.data && res.data.order && res.data.order.orderNo) || res.orderNo
         // createRecyclingOrder 已经设置了 showSuccess: true，会自动显示成功提示
         // 但为了确保用户体验，我们仍然显示一次
         wx.showToast({ title: '提交成功', icon: 'success' })

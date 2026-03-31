@@ -139,7 +139,7 @@ Page({
           return
         }
         // 优先显示后端返回的错误信息（message 或 error）
-        const errorMsg = res?.message || res?.error || '创建订单失败'
+        const errorMsg = (res && res.message) || (res && res.error) || '创建订单失败'
         wx.showToast({ title: errorMsg, icon: 'none' })
         return
       }
@@ -171,7 +171,7 @@ Page({
         return
       }
       // 优先显示后端返回的错误信息（message 或 error）
-      const errorMsg = error?.message || error?.error || '创建订单失败，请重试'
+      const errorMsg = (error && error.message) || (error && error.error) || '创建订单失败，请重试'
       wx.showToast({ title: errorMsg, icon: 'none' })
     } finally {
       this.setData({ submitting: false })

@@ -43,7 +43,7 @@ Page({
           })
           return
         }
-        wx.showToast({ title: res?.message || '创建订单失败', icon: 'none' })
+        wx.showToast({ title: (res && res.message) || '创建订单失败', icon: 'none' })
         return
       }
       if (!res.data || !res.data.orderNo) {

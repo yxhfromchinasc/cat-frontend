@@ -16,7 +16,7 @@ Page({
   },
 
   onLoad(options) {
-    const orderNo = options?.orderNo || ''
+    const orderNo = (options && options.orderNo) || ''
     if (!orderNo) {
       wx.showToast({ title: '订单号不能为空', icon: 'none' })
       setTimeout(() => {
@@ -98,7 +98,7 @@ Page({
                 }, 1000)
               } else {
                 wx.hideLoading()
-                wx.showToast({ title: cancelRes?.message || '取消失败', icon: 'none' })
+                wx.showToast({ title: (cancelRes && cancelRes.message) || '取消失败', icon: 'none' })
               }
             } catch (e) {
               wx.hideLoading()
@@ -127,7 +127,7 @@ Page({
                 }, 1000)
               } else {
                 wx.hideLoading()
-                wx.showToast({ title: cancelRes?.message || '取消失败', icon: 'none' })
+                wx.showToast({ title: (cancelRes && cancelRes.message) || '取消失败', icon: 'none' })
               }
             } catch (e) {
               wx.hideLoading()

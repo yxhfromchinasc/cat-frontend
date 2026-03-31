@@ -13,7 +13,7 @@ Page({
   },
 
   onLoad(options) {
-    const orderNo = options?.orderNo || ''
+    const orderNo = (options && options.orderNo) || ''
     this.setData({ orderNo })
     this.loadDetail()
   },
@@ -90,7 +90,7 @@ Page({
                 }, 1000)
               } else {
                 wx.hideLoading()
-                wx.showToast({ title: cancelRes?.message || '取消失败', icon: 'none' })
+                wx.showToast({ title: (cancelRes && cancelRes.message) || '取消失败', icon: 'none' })
               }
             } catch (e) {
               wx.hideLoading()

@@ -31,7 +31,7 @@ Page({
   },
 
   onLoad(options) {
-    const orderNo = options?.orderNo || ''
+    const orderNo = (options && options.orderNo) || ''
     if (!orderNo) {
       wx.showToast({ title: '订单号不能为空', icon: 'none' })
       setTimeout(() => {
@@ -104,7 +104,7 @@ Page({
           this.startTransferRemainCountdown(transferExpireTime)
         }
       } else {
-        wx.showToast({ title: res?.message || '加载失败', icon: 'none' })
+        wx.showToast({ title: (res && res.message) || '加载失败', icon: 'none' })
         this.setData({ loading: false })
       }
     } catch (e) {
@@ -463,7 +463,7 @@ Page({
             // 刷新订单详情
             this.loadWithdrawDetail()
           } else {
-            wx.showToast({ title: cancelRes?.message || '取消失败', icon: 'none' })
+            wx.showToast({ title: (cancelRes && cancelRes.message) || '取消失败', icon: 'none' })
           }
         } catch (e) {
           wx.hideLoading()

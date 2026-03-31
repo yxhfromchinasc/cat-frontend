@@ -14,7 +14,7 @@ function buildDateOptions(allowedDays) {
   return allowedDays.map(label => ({
     label,
     isToday: label === '今天',
-    dayOffset: DAY_OFFSET_MAP[label] ?? 0
+    dayOffset: DAY_OFFSET_MAP[label] !== undefined ? DAY_OFFSET_MAP[label] : 0
   }))
 }
 
@@ -543,8 +543,8 @@ Page({
           null,
           this.data.selectedRemovalPointId
         )
-        if (!checkRes.success || !checkRes.data?.available) {
-          wx.showToast({ title: checkRes.data?.message || '该时间段已约满，请重新选择', icon: 'none' })
+        if (!checkRes.success || !(checkRes.data && checkRes.data.available)) {
+          wx.showToast({ title: (checkRes.data && checkRes.data.message) || '该时间段已约满，请重新选择', icon: 'none' })
           this.setData({
             selectedTimeSlotIndex: -1,
             'form.startTime': null,

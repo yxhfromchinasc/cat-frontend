@@ -224,7 +224,7 @@ Page({
                         setTimeout(() => wx.navigateBack(), 800)
                     } catch (error) {
                         wx.hideLoading()
-                        const errorMsg = error?.message || error?.data?.message || '删除失败，请重试'
+                        const errorMsg = (error && error.message) || (error && error.data && error.data.message) || '删除失败，请重试'
                         wx.showToast({ title: errorMsg, icon: 'none', duration: 2000 })
                     }
                 }
