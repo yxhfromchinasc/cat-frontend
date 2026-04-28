@@ -1,9 +1,9 @@
 // pages/recycle/index.js
 const { api } = require('../../utils/util.js')
 
-// 允许选择的天：上门回收可选今天、明天
-const ALLOWED_DAYS_RECYCLE = ['今天', '明天']
-const DAY_OFFSET_MAP = { '今天': 0, '明天': 1, '后天': 2 }
+// 允许选择的天：上门回收从明天开始，连续6天
+const ALLOWED_DAYS_RECYCLE = [1, 2, 3, 4, 5, 6]
+const WEEKDAY_TEXT = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
 function getDateStrByDayOffset(dayOffset) {
   const d = new Date()
@@ -11,11 +11,20 @@ function getDateStrByDayOffset(dayOffset) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function buildDateOptions(allowedDays) {
-  return allowedDays.map(label => ({
-    label,
-    isToday: label === '今天',
-    dayOffset: DAY_OFFSET_MAP[label] !== undefined ? DAY_OFFSET_MAP[label] : 0
+function buildDateLabelByDayOffset(dayOffset) {
+  const d = new Date()
+  d.setDate(d.getDate() + dayOffset)
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const weekday = WEEKDAY_TEXT[d.getDay()]
+  return `${month}-${day} ${weekday}`
+}
+
+function buildDateOptions(dayOffsets) {
+  return dayOffsets.map(dayOffset => ({
+    label: buildDateLabelByDayOffset(dayOffset),
+    isToday: dayOffset === 0,
+    dayOffset
   }))
 }
 
@@ -206,16 +215,18 @@ Page({
     const hasRecyclingPoint = !!this.data.selectedRecyclingPointId
     const hasTime = !!(this.data.form.startTime && this.data.form.endTime)
     const hasImages = Array.isArray(this.data.form.images) && this.data.form.images.length > 0
+    const hasRemark = !!(this.data.form.itemDescription && this.data.form.itemDescription.trim())
     const isImmediate = this.data.timeType === 'immediate'
     
     // 如果是立即上门，不需要时间验证；否则时间必填
-    const canSubmit = hasAddress && hasRecyclingPoint && hasImages && (isImmediate || hasTime)
+    const canSubmit = hasAddress && hasRecyclingPoint && hasImages && hasRemark && (isImmediate || hasTime)
     
     // 生成未完成项提示
     const missingItems = []
     if (!hasAddress) missingItems.push('收货地址')
     if (!hasRecyclingPoint) missingItems.push('回收点')
     if (!hasImages) missingItems.push('拍照留念')
+    if (!hasRemark) missingItems.push('备注')
     if (!isImmediate && !hasTime) missingItems.push('预约时间')
     
     const submitTip = missingItems.length > 0 ? `请完成：${missingItems.join('、')}` : ''
@@ -284,7 +295,6 @@ Page({
             'form.startTimeStr': ''
           })
           this.initTimeSlots()
-          this.checkAllTimeSlotsAvailability()
         }
         
         // 更新提交状态
@@ -489,9 +499,9 @@ Page({
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const startDate = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate())
     
-    // 判断是今天还是明天
-    const isToday = startDate.getTime() === today.getTime()
-    const dateLabel = isToday ? '今天' : '明天'
+    // 展示日期 + 星期（例如：04-29 周三）
+    const dayOffset = Math.max(0, Math.round((startDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000)))
+    const dateLabel = buildDateLabelByDayOffset(dayOffset)
     
     // 格式化显示时间（HH:mm）
     const formatDisplayTime = (date) => {
@@ -555,108 +565,50 @@ Page({
     const configStartMinutes = startHour * 60 + startMinute
     const configEndMinutes = endHour * 60 + endMinute
     
-    // 计算今天的起始时间
-    let todayStartHour = now.getHours()
-    let todayStartMinute = now.getMinutes()
-    let todayHasSlots = true
-    
-    // 计算今天的起始时间：从下一个半小时开始，但不能早于配置的开始时间
-    if (todayStartMinute > 0 && todayStartMinute < 30) {
-      todayStartMinute = 30
-    } else if (todayStartMinute >= 30) {
-      todayStartHour += 1
-      if (todayStartHour >= 24) {
-        todayHasSlots = false
-        todayStartHour = startHour
-        todayStartMinute = startMinute
-      } else {
-        todayStartMinute = 0
-      }
-    } else {
-      todayStartMinute = 30
-    }
-    
-    // 确保今天的起始时间不早于配置的开始时间
-    const todayStartMinutes = todayStartHour * 60 + todayStartMinute
-    if (todayStartMinutes < configStartMinutes) {
-      todayStartHour = startHour
-      todayStartMinute = startMinute
-    } else if (todayStartMinutes >= configEndMinutes) {
-      // 如果当前时间已经超过配置的结束时间，今天没有可选时间段
-      todayHasSlots = false
-    }
-    
     // 生成时间段选项（30分钟一个时间段）
-    // 今天的时间段
-    const todaySlots = []
-    if (todayHasSlots) {
-      const actualStartMinutes = Math.max(todayStartHour * 60 + todayStartMinute, configStartMinutes)
-      const actualStartHour = Math.floor(actualStartMinutes / 60)
-      const actualStartMin = actualStartMinutes % 60
-      
-      for (let hour = actualStartHour; hour <= endHour; hour++) {
-        const minStart = (hour === actualStartHour ? actualStartMin : 0)
-        const minEnd = (hour === endHour ? endMinute : 60)
-        
-        for (let minute = minStart; minute < minEnd; minute += 30) {
-          const startTime = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
-          let endHour = hour
-          let endMinute = minute + 30
-          if (endMinute >= 60) {
-            endHour += 1
-            endMinute = 0
-          }
-          // 如果结束时间超过配置的结束时间，跳过
-          const endMinutes = endHour * 60 + endMinute
-          if (endMinutes > configEndMinutes) {
-            break
-          }
-          const endTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`
-          todaySlots.push({
-            label: `${startTime} - ${endTime}`,
-            startTime: startTime,
-            endTime: endTime,
-            isToday: true,
-            available: true,
-            disabled: false
-          })
+    const buildSlotsByOffset = (dayOffset) => {
+      const daySlots = []
+      let dayStartMinutes = configStartMinutes
+
+      // 若某天改为包含今天，今天起始时间需要从下一半小时开始
+      if (dayOffset === 0) {
+        let currentMinutes = now.getHours() * 60 + now.getMinutes()
+        if (now.getMinutes() > 0 && now.getMinutes() < 30) {
+          currentMinutes = now.getHours() * 60 + 30
+        } else if (now.getMinutes() >= 30) {
+          currentMinutes = (now.getHours() + 1) * 60
+        } else {
+          currentMinutes = now.getHours() * 60 + 30
         }
+        dayStartMinutes = Math.max(configStartMinutes, currentMinutes)
       }
-    }
-    
-    // 明天的时间段（从配置的开始时间到结束时间）
-    const tomorrowSlots = []
-    for (let hour = startHour; hour <= endHour; hour++) {
-      const minStart = (hour === startHour ? startMinute : 0)
-      const minEnd = (hour === endHour ? endMinute : 60)
-      
-      for (let minute = minStart; minute < minEnd; minute += 30) {
-        const startTime = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
-        let endHour = hour
-        let endMinute = minute + 30
-        if (endMinute >= 60) {
-          endHour += 1
-          endMinute = 0
-        }
-        // 如果结束时间超过配置的结束时间，跳过
-        const endMinutes = endHour * 60 + endMinute
-        if (endMinutes > configEndMinutes) {
-          break
-        }
-        const endTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`
-        tomorrowSlots.push({
+
+      if (dayStartMinutes >= configEndMinutes) return daySlots
+
+      for (let startMinutes = dayStartMinutes; startMinutes < configEndMinutes; startMinutes += 30) {
+        const endMinutes = startMinutes + 30
+        if (endMinutes > configEndMinutes) break
+
+        const sHour = Math.floor(startMinutes / 60)
+        const sMin = startMinutes % 60
+        const eHour = Math.floor(endMinutes / 60)
+        const eMin = endMinutes % 60
+        const startTime = `${String(sHour).padStart(2, '0')}:${String(sMin).padStart(2, '0')}`
+        const endTime = `${String(eHour).padStart(2, '0')}:${String(eMin).padStart(2, '0')}`
+        daySlots.push({
           label: `${startTime} - ${endTime}`,
-          startTime: startTime,
-          endTime: endTime,
-          isToday: false,
+          startTime,
+          endTime,
+          isToday: dayOffset === 0,
           available: true,
           disabled: false
         })
       }
+      return daySlots
     }
-    
-    // 按 allowedDays 顺序组装 timeSlotsByDay（仅包含允许的天）
-    const timeSlotsByDay = allowedDays.map(label => label === '今天' ? todaySlots : label === '明天' ? tomorrowSlots : [])
+
+    // 按 dayOffset 顺序组装 timeSlotsByDay（明天起连续6天）
+    const timeSlotsByDay = dateOptions.map(opt => buildSlotsByOffset(opt.dayOffset))
     let defaultTimeSlotOptions = timeSlotsByDay[0] || []
     let defaultDateIndex = 0
     for (let i = 0; i < timeSlotsByDay.length; i++) {
@@ -689,8 +641,8 @@ Page({
   async checkAllTimeSlotsAvailability() {
     if (this.data.checkingAvailability) return
     if (!this.data.selectedRecyclingPointId) return
-    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_RECYCLE
-    const dateOptions = this.data.dateOptions.length ? this.data.dateOptions : buildDateOptions(allowedDays)
+    const dayOffsets = this.data.allowedDays || ALLOWED_DAYS_RECYCLE
+    const dateOptions = this.data.dateOptions.length ? this.data.dateOptions : buildDateOptions(dayOffsets)
     this.setData({ checkingAvailability: true })
 
     try {
@@ -773,7 +725,7 @@ Page({
     const dateOptions = this.data.dateOptions || []
     const selectedDate = dateOptions[this.data.selectedDateIndex]
     const dayOffset = selectedDate ? selectedDate.dayOffset : 0
-    const dateLabel = selectedDate ? selectedDate.label : '今天'
+    const dateLabel = selectedDate ? selectedDate.label : buildDateLabelByDayOffset(dayOffset)
     const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
     const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     const displayText = `${dateLabel} ${timeSlot.label}`
@@ -864,7 +816,7 @@ Page({
     const dateOptions = this.data.dateOptions || []
     const selectedDate = dateOptions[this.data.selectedDateIndex]
     const dayOffset = selectedDate ? selectedDate.dayOffset : 0
-    const dateLabel = selectedDate ? selectedDate.label : '今天'
+    const dateLabel = selectedDate ? selectedDate.label : buildDateLabelByDayOffset(dayOffset)
     const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
     const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     this.setData({
@@ -958,6 +910,7 @@ Page({
     this.setData({
       'form.itemDescription': e.detail.value
     })
+    this.updateCanSubmit()
   },
 
   // 添加快捷选项到物品备注
@@ -970,6 +923,7 @@ Page({
       this.setData({
         'form.itemDescription': quickText
       })
+      this.updateCanSubmit()
       return
     }
     
@@ -984,6 +938,7 @@ Page({
     this.setData({
       'form.itemDescription': newText
     })
+    this.updateCanSubmit()
   },
 
   // 验证表单
@@ -1000,6 +955,11 @@ Page({
 
     if (!this.data.form.images || this.data.form.images.length === 0) {
       wx.showToast({ title: '请先上传回收物图片', icon: 'none' })
+      return false
+    }
+
+    if (!this.data.form.itemDescription || !this.data.form.itemDescription.trim()) {
+      wx.showToast({ title: '请填写备注信息', icon: 'none' })
       return false
     }
     
@@ -1071,6 +1031,7 @@ Page({
         content: '该地址不在服务范围内，无法提交订单',
         showCancel: false
       })
+      this.setData({ isSubmitting: false })
       return
     }
     
@@ -1123,7 +1084,7 @@ Page({
         endTime: isUrgent ? null : this.data.form.endTime,
         // 后端需要这些字段，但前端已隐藏，传默认值
         estWeight: null,
-        itemDescription: this.data.form.itemDescription && this.data.form.itemDescription.trim() ? this.data.form.itemDescription.trim() : '废品回收',
+        itemDescription: this.data.form.itemDescription.trim(),
         // 回收点ID（如果前端没有选择，后端会根据地址自动选择第一个）
         recyclingPointId: this.data.selectedRecyclingPointId,
         // 是否加急（立即上门）

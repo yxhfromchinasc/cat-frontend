@@ -1,8 +1,8 @@
 const { api } = require('../../utils/util.js')
 
-// 允许选择的天：大件清运可选今天、明天
-const ALLOWED_DAYS_REMOVAL = ['今天', '明天']
-const DAY_OFFSET_MAP = { '今天': 0, '明天': 1, '后天': 2 }
+// 允许选择的天：大件清运从明天开始，连续6天
+const ALLOWED_DAYS_REMOVAL = [1, 2, 3, 4, 5, 6]
+const WEEKDAY_TEXT = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
 function getDateStrByDayOffset(dayOffset) {
   const d = new Date()
@@ -10,11 +10,20 @@ function getDateStrByDayOffset(dayOffset) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function buildDateOptions(allowedDays) {
-  return allowedDays.map(label => ({
-    label,
-    isToday: label === '今天',
-    dayOffset: DAY_OFFSET_MAP[label] !== undefined ? DAY_OFFSET_MAP[label] : 0
+function buildDateLabelByDayOffset(dayOffset) {
+  const d = new Date()
+  d.setDate(d.getDate() + dayOffset)
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const weekday = WEEKDAY_TEXT[d.getDay()]
+  return `${month}-${day} ${weekday}`
+}
+
+function buildDateOptions(dayOffsets) {
+  return dayOffsets.map(dayOffset => ({
+    label: buildDateLabelByDayOffset(dayOffset),
+    isToday: dayOffset === 0,
+    dayOffset
   }))
 }
 
@@ -221,7 +230,6 @@ Page({
             'form.startTimeStr': ''
           })
           this.initTimeSlots()
-          this.checkAllTimeSlotsAvailability()
         }
         this.updateCanSubmit()
       } else {
@@ -298,8 +306,8 @@ Page({
 
   // 初始化时间选择器：有清运点时从后端拉取（清运点营业时间 + 小哥排期）。允许选择的天由 allowedDays 控制
   initTimeSlots() {
-    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
-    const dateOptions = buildDateOptions(allowedDays)
+    const dayOffsets = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
+    const dateOptions = buildDateOptions(dayOffsets)
     if (!this.data.selectedRemovalPointId) {
       this.setData({
         dateOptions,
@@ -318,8 +326,8 @@ Page({
   // 按允许选择的天拉取时间段（仅请求 allowedDays 对应的日期）
   async checkAllTimeSlotsAvailability() {
     if (this.data.checkingAvailability || !this.data.selectedRemovalPointId) return
-    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
-    const dateOptions = this.data.dateOptions || buildDateOptions(allowedDays)
+    const dayOffsets = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
+    const dateOptions = this.data.dateOptions || buildDateOptions(dayOffsets)
     this.setData({ checkingAvailability: true })
     try {
       const serviceTypeRemoval = 5
@@ -407,7 +415,7 @@ Page({
     const dateOptions = this.data.dateOptions || []
     const selectedDate = dateOptions[this.data.selectedDateIndex]
     const dayOffset = selectedDate ? selectedDate.dayOffset : 0
-    const dateLabel = selectedDate ? selectedDate.label : '今天'
+    const dateLabel = selectedDate ? selectedDate.label : buildDateLabelByDayOffset(dayOffset)
     const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
     const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     this.setData({
@@ -433,7 +441,7 @@ Page({
     const dateOptions = this.data.dateOptions || []
     const selectedDate = dateOptions[this.data.selectedDateIndex]
     const dayOffset = selectedDate ? selectedDate.dayOffset : 0
-    const dateLabel = selectedDate ? selectedDate.label : '今天'
+    const dateLabel = selectedDate ? selectedDate.label : buildDateLabelByDayOffset(dayOffset)
     const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
     const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     this.setData({

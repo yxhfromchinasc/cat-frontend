@@ -47,20 +47,9 @@
           </view>
         </view>
         
-        <!-- 第三行：快递代取 + 大件清运（一行两卡，等宽） -->
-        <view class="biz-row biz-row-double">
-          <view class="biz-card biz-card-pickup" bindtap="goToPickup">
-            <view class="biz-card-content">
-              <view class="biz-card-left">
-                <view class="biz-title">快递代取</view>
-                <view class="biz-pickup-btn">先用后付</view>
-              </view>
-              <view class="biz-card-right">
-                <image class="biz-card-image" src="/assets/tabbar/首页_快递.png" mode="aspectFit"></image>
-              </view>
-            </view>
-          </view>
-          <view class="biz-card biz-card-removal" bindtap="goToRemoval">
+        <!-- 第二行：大件清运独占一整行 -->
+        <view class="biz-row biz-row-full">
+          <view class="biz-card biz-card-removal biz-card-full" bindtap="goToRemoval">
             <view class="biz-card-content">
               <view class="biz-card-left">
                 <view class="biz-title">大件清运</view>

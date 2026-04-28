@@ -21,9 +21,10 @@ Page({
       this.setData({ redirect: decodeURIComponent(options.redirect) })
     }
     
-    // 读取邀请码参数
-    if (options && options.referralCode) {
-      const referralCode = options.referralCode
+    // 读取邀请码参数（支持 referralCode 或 scene）
+    const referralCodeFromOptions = this.resolveReferralCode(options)
+    if (referralCodeFromOptions) {
+      const referralCode = referralCodeFromOptions
       this.setData({ referralCode })
       // 存储邀请码到本地，确保浏览其他页面后仍能使用
       wx.setStorageSync('pendingReferralCode', referralCode)
@@ -40,6 +41,25 @@ Page({
     
     // 检查是否已登录
     this.checkLoginStatus()
+  },
+
+  // 从页面参数解析邀请码（支持分享链接 referralCode 与小程序码 scene）
+  resolveReferralCode(options) {
+    if (!options) return ''
+    if (options.referralCode) return options.referralCode
+    if (!options.scene) return ''
+
+    try {
+      const scene = decodeURIComponent(options.scene)
+      // 约定 scene = rc_RICH123
+      if (scene.startsWith('rc_')) {
+        return scene.substring(3)
+      }
+      // 兼容 scene 直接放邀请码
+      return scene
+    } catch (e) {
+      return ''
+    }
   },
 
   // 检查登录状态

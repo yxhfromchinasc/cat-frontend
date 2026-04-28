@@ -60,11 +60,8 @@
         <text class="price-value">{{todayRecyclePriceMax}}</text>
         <text class="price-unit">元/公斤</text>
       </view>
-      <view class="price-desc">
-        塑料瓶、易拉罐、金属等单类超10公斤可找小哥议价
-      </view>
       <view class="price-notice">
-        <text class="price-notice-text">因业务调整，<text class="price-notice-highlight">纸类回收服务暂时暂停</text>，感谢您的理解与支持。</text>
+        <text class="price-notice-text">因业务调整，<text class="price-notice-highlight">纸类、塑料类回收服务暂停</text>，感谢您的理解与支持。</text>
       </view>
     </view>
 
@@ -88,9 +85,9 @@
         </view>
       </view>
 
-      <!-- 备注 -->
+      <!-- 备注（必填） -->
       <view class="form-item">
-        <view class="label">备注（选填）</view>
+        <view class="label required">备注</view>
         <textarea class="textarea item-remark-textarea" placeholder="请填写回收物品相关信息" value="{{form.itemDescription}}" bindinput="onInputItemRemark" maxlength="500"></textarea>
         
         <!-- 快捷选项 -->
