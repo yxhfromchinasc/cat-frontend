@@ -71,6 +71,20 @@ function isRemovalDayOffsetConfigured(dayOffset, allowedDays) {
   return Number.isFinite(dayOffset) && list.includes(dayOffset)
 }
 
+function getValidRemovalImageUrls(images) {
+  if (!Array.isArray(images)) return []
+  return images.filter(u => typeof u === 'string' && u.trim().length > 0)
+}
+
+function isRemovalAppointmentWindowValid(form, allowedDays) {
+  if (!form || !form.startTime || !form.endTime) return false
+  const off = getAppointmentDayOffsetFromFormStart(form.startTime)
+  if (!isRemovalDayOffsetConfigured(off, allowedDays)) return false
+  const sd = calendarDatePartFromFormDatetime(form.startTime)
+  const ed = calendarDatePartFromFormDatetime(form.endTime)
+  return !!(sd && ed && sd === ed)
+}
+
 Page({
   data: {
     defaultAddress: null,
@@ -607,15 +621,27 @@ Page({
     const hasAddress = !!this.data.selectedAddressId
     const hasPoint = !!this.data.selectedRemovalPointId
     const hasCategory = this.data.form.serviceCategory === 1 || this.data.form.serviceCategory === 2
-    const hasImages = !!(this.data.form.images && this.data.form.images.length > 0)
+    const validImageUrls = getValidRemovalImageUrls(this.data.form.images)
+    const hasImages = validImageUrls.length > 0
     const hasTime = !!(this.data.form.startTime && this.data.form.endTime)
-    const canSubmit = hasAddress && hasPoint && hasCategory && hasImages && hasTime && !this.data.isSubmitting
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
+    const appointmentWindowOk = hasTime && isRemovalAppointmentWindowValid(this.data.form, allowedDays)
+
+    const canSubmit =
+      hasAddress &&
+      hasPoint &&
+      hasCategory &&
+      hasImages &&
+      hasTime &&
+      appointmentWindowOk &&
+      !this.data.isSubmitting
     const missing = []
     if (!hasAddress) missing.push('地址')
     if (!hasPoint) missing.push('清运点')
     if (!hasCategory) missing.push('清运类型')
     if (!hasImages) missing.push('现场照片')
     if (!hasTime) missing.push('预约时间')
+    if (hasTime && !appointmentWindowOk) missing.push('合法预约时间')
     const submitTip = canSubmit ? '' : (missing.length ? `请完成：${missing.join('、')}` : '')
     this.setData({
       canSubmitData: canSubmit,
@@ -629,19 +655,22 @@ Page({
     if (this._removalSubmitSyncLock) return
 
     const allowedDays = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
-    const apptDayOffset = getAppointmentDayOffsetFromFormStart(this.data.form.startTime)
-    if (!isRemovalDayOffsetConfigured(apptDayOffset, allowedDays)) {
-      wx.showToast({
-        title: '大件清运仅支持预约明天起的时段，请重新选择时间',
-        icon: 'none'
-      })
+    if (!isRemovalAppointmentWindowValid(this.data.form, allowedDays)) {
+      const off = getAppointmentDayOffsetFromFormStart(this.data.form.startTime)
+      if (!isRemovalDayOffsetConfigured(off, allowedDays)) {
+        wx.showToast({
+          title: '大件清运仅支持预约明天起的时段，请重新选择时间',
+          icon: 'none'
+        })
+      } else {
+        wx.showToast({ title: '预约开始与结束须为同一天，请重新选择', icon: 'none' })
+      }
       return
     }
 
-    const startDatePart = calendarDatePartFromFormDatetime(this.data.form.startTime)
-    const endDatePart = calendarDatePartFromFormDatetime(this.data.form.endTime)
-    if (!startDatePart || !endDatePart || startDatePart !== endDatePart) {
-      wx.showToast({ title: '预约开始与结束须为同一天，请重新选择', icon: 'none' })
+    const imageUrls = getValidRemovalImageUrls(this.data.form.images)
+    if (imageUrls.length === 0) {
+      wx.showToast({ title: '请先上传现场照片', icon: 'none' })
       return
     }
 
@@ -682,7 +711,7 @@ Page({
         startTime: this.data.form.startTime,
         endTime: this.data.form.endTime,
         serviceCategory: this.data.form.serviceCategory,
-        images: this.data.form.images,
+        images: imageUrls,
         remark: this.data.form.remark,
         // 加急标记由后端根据配置和场景决定，这里固定为false
         isUrgent: false

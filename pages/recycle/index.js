@@ -75,6 +75,21 @@ function isRecycleDayOffsetConfigured(dayOffset, allowedDays) {
   return Number.isFinite(dayOffset) && list.includes(dayOffset)
 }
 
+function getValidRecycleImageUrls(images) {
+  if (!Array.isArray(images)) return []
+  return images.filter(u => typeof u === 'string' && u.trim().length > 0)
+}
+
+/** 预约上门：日期须在允许偏移内，且起止同一天 */
+function isRecycleAppointmentWindowValid(form, allowedDays) {
+  if (!form || !form.startTime || !form.endTime) return false
+  const off = getAppointmentDayOffsetFromFormStart(form.startTime)
+  if (!isRecycleDayOffsetConfigured(off, allowedDays)) return false
+  const sd = calendarDatePartFromFormDatetime(form.startTime)
+  const ed = calendarDatePartFromFormDatetime(form.endTime)
+  return !!(sd && ed && sd === ed)
+}
+
 Page({
   data: {
     // 地址相关（只显示默认地址）
@@ -262,12 +277,23 @@ Page({
     const hasAddress = !!this.data.selectedAddressId
     const hasRecyclingPoint = !!this.data.selectedRecyclingPointId
     const hasTime = !!(this.data.form.startTime && this.data.form.endTime)
-    const hasImages = Array.isArray(this.data.form.images) && this.data.form.images.length > 0
+    const validImageUrls = getValidRecycleImageUrls(this.data.form.images)
+    const hasImages = validImageUrls.length > 0
     const hasRemark = !!(this.data.form.itemDescription && this.data.form.itemDescription.trim())
     const isImmediate = this.data.timeType === 'immediate'
-    
-    // 如果是立即上门，不需要时间验证；否则时间必填
-    const canSubmit = hasAddress && hasRecyclingPoint && hasImages && hasRemark && (isImmediate || hasTime)
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_RECYCLE
+
+    let appointmentWindowOk = true
+    if (!isImmediate) {
+      appointmentWindowOk = hasTime && isRecycleAppointmentWindowValid(this.data.form, allowedDays)
+    }
+
+    const canSubmit =
+      hasAddress &&
+      hasRecyclingPoint &&
+      hasImages &&
+      hasRemark &&
+      (isImmediate || appointmentWindowOk)
     
     // 生成未完成项提示
     const missingItems = []
@@ -276,6 +302,7 @@ Page({
     if (!hasImages) missingItems.push('拍照留念')
     if (!hasRemark) missingItems.push('备注')
     if (!isImmediate && !hasTime) missingItems.push('预约时间')
+    if (!isImmediate && hasTime && !appointmentWindowOk) missingItems.push('预约须选明天起的可选时段')
     
     const submitTip = missingItems.length > 0 ? `请完成：${missingItems.join('、')}` : ''
     
@@ -1033,7 +1060,7 @@ Page({
       return false
     }
 
-    if (!this.data.form.images || this.data.form.images.length === 0) {
+    if (getValidRecycleImageUrls(this.data.form.images).length === 0) {
       wx.showToast({ title: '请先上传回收物图片', icon: 'none' })
       return false
     }
@@ -1050,21 +1077,17 @@ Page({
         return false
       }
 
-      // 上门回收仅允许配置的日期（默认明天至第7天本地自然日），禁止当天等不良数据
-      const apptDayOffset = getAppointmentDayOffsetFromFormStart(this.data.form.startTime)
       const allowedDays = this.data.allowedDays || ALLOWED_DAYS_RECYCLE
-      if (!isRecycleDayOffsetConfigured(apptDayOffset, allowedDays)) {
-        wx.showToast({
-          title: '回收仅支持预约明天起的时段，请重新选择时间',
-          icon: 'none'
-        })
-        return false
-      }
-
-      const startDatePart = calendarDatePartFromFormDatetime(this.data.form.startTime)
-      const endDatePart = calendarDatePartFromFormDatetime(this.data.form.endTime)
-      if (!startDatePart || !endDatePart || startDatePart !== endDatePart) {
-        wx.showToast({ title: '预约开始与结束须为同一天，请重新选择', icon: 'none' })
+      if (!isRecycleAppointmentWindowValid(this.data.form, allowedDays)) {
+        const apptDayOffset = getAppointmentDayOffsetFromFormStart(this.data.form.startTime)
+        if (!isRecycleDayOffsetConfigured(apptDayOffset, allowedDays)) {
+          wx.showToast({
+            title: '回收仅支持预约明天起的时段，请重新选择时间',
+            icon: 'none'
+          })
+        } else {
+          wx.showToast({ title: '预约开始与结束须为同一天，请重新选择', icon: 'none' })
+        }
         return false
       }
       
@@ -1147,6 +1170,12 @@ Page({
     
     // 同步调用 requestSubscribeMessage
     await this.requestSubscribeMessage()
+
+    // 订阅弹窗关闭后状态可能变化，提交前再校验一遍（图片、预约日等）
+    if (!this.validateForm()) {
+      this._releaseRecycleSubmit()
+      return
+    }
     
     const isUrgent = this.data.timeType === 'immediate'
     
@@ -1184,6 +1213,13 @@ Page({
     try {
       wx.showLoading({ title: '提交中...' })
       
+      const imageUrls = getValidRecycleImageUrls(this.data.form.images)
+      if (imageUrls.length === 0) {
+        wx.showToast({ title: '请先上传回收物图片', icon: 'none' })
+        this._releaseRecycleSubmit()
+        return
+      }
+
       const payload = {
         addressId: this.data.selectedAddressId,
         // 加急订单不传时间，后端自动计算
@@ -1195,12 +1231,8 @@ Page({
         // 回收点ID（如果前端没有选择，后端会根据地址自动选择第一个）
         recyclingPointId: this.data.selectedRecyclingPointId,
         // 是否加急（立即上门）
-        isUrgent: isUrgent
-      }
-      
-      // 如果有图片，添加到请求中
-      if (this.data.form.images && this.data.form.images.length > 0) {
-        payload.images = this.data.form.images
+        isUrgent: isUrgent,
+        images: imageUrls
       }
       
       const res = await api.createRecyclingOrder(payload)
