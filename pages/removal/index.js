@@ -27,6 +27,50 @@ function buildDateOptions(dayOffsets) {
   }))
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+function startOfLocalDay(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+function dayOffsetFromTodayForDatePart(datePart) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart || '')
+  if (!m) return NaN
+  const y = Number(m[1])
+  const mo = Number(m[2])
+  const day = Number(m[3])
+  const chosen = new Date(y, mo - 1, day)
+  const today = startOfLocalDay(new Date())
+  return Math.round((chosen.getTime() - today.getTime()) / MS_PER_DAY)
+}
+
+function getAppointmentDayOffsetFromFormStart(formStartTime) {
+  if (!formStartTime || typeof formStartTime !== 'string') return NaN
+  const s = formStartTime.trim()
+  let datePart = ''
+  const tIdx = s.indexOf('T')
+  if (tIdx !== -1) datePart = s.slice(0, tIdx)
+  else {
+    const q = /^(\d{4}-\d{2}-\d{2})/.exec(s)
+    datePart = q ? q[1] : ''
+  }
+  return dayOffsetFromTodayForDatePart(datePart)
+}
+
+function calendarDatePartFromFormDatetime(formTime) {
+  if (!formTime || typeof formTime !== 'string') return ''
+  const s = formTime.trim()
+  const tIdx = s.indexOf('T')
+  if (tIdx !== -1) return s.slice(0, tIdx)
+  const q = /^(\d{4}-\d{2}-\d{2})/.exec(s)
+  return q ? q[1] : ''
+}
+
+function isRemovalDayOffsetConfigured(dayOffset, allowedDays) {
+  const list = Array.isArray(allowedDays) && allowedDays.length ? allowedDays : ALLOWED_DAYS_REMOVAL
+  return Number.isFinite(dayOffset) && list.includes(dayOffset)
+}
+
 Page({
   data: {
     defaultAddress: null,
@@ -392,6 +436,7 @@ Page({
   selectDate(e) {
     const index = parseInt(e.detail.index, 10)
     const timeSlotsByDay = this.data.timeSlotsByDay || []
+    if (!Number.isInteger(index) || index < 0 || index >= timeSlotsByDay.length) return
     const timeSlotOptions = timeSlotsByDay[index] || []
     this.setData({
       selectedDateIndex: index,
@@ -406,16 +451,33 @@ Page({
 
   selectTimeSlot(e) {
     const index = parseInt(e.detail.index, 10)
-    const timeSlot = this.data.timeSlotOptions[index]
+    const slotOptions = this.data.timeSlotOptions || []
+    if (!Number.isInteger(index) || index < 0 || index >= slotOptions.length) return
+    const timeSlot = slotOptions[index]
     if (!timeSlot) return
     if (timeSlot.disabled || !timeSlot.available) {
       wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
       return
     }
+    const dateIdx = this.data.selectedDateIndex
     const dateOptions = this.data.dateOptions || []
-    const selectedDate = dateOptions[this.data.selectedDateIndex]
-    const dayOffset = selectedDate ? selectedDate.dayOffset : 0
-    const dateLabel = selectedDate ? selectedDate.label : buildDateLabelByDayOffset(dayOffset)
+    if (
+      !Number.isInteger(dateIdx) ||
+      dateIdx < 0 ||
+      dateIdx >= dateOptions.length ||
+      !dateOptions[dateIdx]
+    ) {
+      wx.showToast({ title: '请先选择预约日期', icon: 'none' })
+      return
+    }
+    const selectedDate = dateOptions[dateIdx]
+    const dayOffset = selectedDate.dayOffset
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
+    if (!Number.isFinite(dayOffset) || !allowedDays.includes(dayOffset)) {
+      wx.showToast({ title: '该日期不可预约，请重新选择', icon: 'none' })
+      return
+    }
+    const dateLabel = selectedDate.label
     const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
     const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     this.setData({
@@ -428,20 +490,34 @@ Page({
   },
 
   confirmTimeSelection() {
-    if (this.data.selectedDateIndex < 0 || this.data.selectedTimeSlotIndex < 0) {
+    const dsi = this.data.selectedDateIndex
+    const tsi = this.data.selectedTimeSlotIndex
+    if (!Number.isInteger(dsi) || dsi < 0 || !Number.isInteger(tsi) || tsi < 0) {
       wx.showToast({ title: '请选择日期和时间段', icon: 'none' })
       return
     }
-    const timeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
+    const timeSlot = this.data.timeSlotOptions[tsi]
     if (!timeSlot) return
     if (timeSlot.disabled || !timeSlot.available) {
       wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
       return
     }
     const dateOptions = this.data.dateOptions || []
-    const selectedDate = dateOptions[this.data.selectedDateIndex]
-    const dayOffset = selectedDate ? selectedDate.dayOffset : 0
-    const dateLabel = selectedDate ? selectedDate.label : buildDateLabelByDayOffset(dayOffset)
+    if (
+      dsi >= dateOptions.length ||
+      !dateOptions[dsi]
+    ) {
+      wx.showToast({ title: '请选择预约日期', icon: 'none' })
+      return
+    }
+    const selectedDate = dateOptions[dsi]
+    const dayOffset = selectedDate.dayOffset
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
+    if (!Number.isFinite(dayOffset) || !allowedDays.includes(dayOffset)) {
+      wx.showToast({ title: '该日期不可预约', icon: 'none' })
+      return
+    }
+    const dateLabel = selectedDate.label
     const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
     const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     this.setData({
@@ -455,7 +531,8 @@ Page({
 
   formatDateTimeByDayOffset(timeStr, dayOffset) {
     const d = new Date()
-    d.setDate(d.getDate() + (dayOffset || 0))
+    const delta = Number.isFinite(dayOffset) ? dayOffset : 0
+    d.setDate(d.getDate() + delta)
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${timeStr}:00`
   },
 
@@ -513,6 +590,13 @@ Page({
     this.updateCanSubmit()
   },
 
+  _releaseRemovalSubmit() {
+    this._removalSubmitSyncLock = false
+    if (this.data.isSubmitting) {
+      this.setData({ isSubmitting: false })
+    }
+  },
+
   previewImage(e) {
     const url = e.currentTarget.dataset.url
     const urls = this.data.form.images
@@ -541,33 +625,57 @@ Page({
 
   async submitOrder() {
     if (!this.data.canSubmitData || this.data.isSubmitting) return
-    if (!this.data.form.isUrgent && this.data.form.startTime && this.data.form.endTime) {
-      try {
-        const checkRes = await api.checkTimeSlotAvailability(
-          5,
-          this.data.form.startTime,
-          this.data.form.endTime,
-          null,
-          null,
-          this.data.selectedRemovalPointId
-        )
-        if (!checkRes.success || !(checkRes.data && checkRes.data.available)) {
-          wx.showToast({ title: (checkRes.data && checkRes.data.message) || '该时间段已约满，请重新选择', icon: 'none' })
-          this.setData({
-            selectedTimeSlotIndex: -1,
-            'form.startTime': null,
-            'form.endTime': null,
-            'form.startTimeStr': ''
-          })
-          this.updateCanSubmit()
-          return
-        }
-      } catch (e) {
-        console.error('检查时间段可用性失败', e)
-      }
+    if (this.data.showTimePickerModal) return
+    if (this._removalSubmitSyncLock) return
+
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_REMOVAL
+    const apptDayOffset = getAppointmentDayOffsetFromFormStart(this.data.form.startTime)
+    if (!isRemovalDayOffsetConfigured(apptDayOffset, allowedDays)) {
+      wx.showToast({
+        title: '大件清运仅支持预约明天起的时段，请重新选择时间',
+        icon: 'none'
+      })
+      return
     }
+
+    const startDatePart = calendarDatePartFromFormDatetime(this.data.form.startTime)
+    const endDatePart = calendarDatePartFromFormDatetime(this.data.form.endTime)
+    if (!startDatePart || !endDatePart || startDatePart !== endDatePart) {
+      wx.showToast({ title: '预约开始与结束须为同一天，请重新选择', icon: 'none' })
+      return
+    }
+
+    this._removalSubmitSyncLock = true
     this.setData({ isSubmitting: true })
+
     try {
+      if (!this.data.form.isUrgent && this.data.form.startTime && this.data.form.endTime) {
+        try {
+          const checkRes = await api.checkTimeSlotAvailability(
+            5,
+            this.data.form.startTime,
+            this.data.form.endTime,
+            null,
+            null,
+            this.data.selectedRemovalPointId
+          )
+          if (!checkRes.success || !(checkRes.data && checkRes.data.available)) {
+            wx.showToast({ title: (checkRes.data && checkRes.data.message) || '该时间段已约满，请重新选择', icon: 'none' })
+            this.setData({
+              selectedTimeSlotIndex: -1,
+              'form.startTime': null,
+              'form.endTime': null,
+              'form.startTimeStr': ''
+            })
+            this.updateCanSubmit()
+            this._releaseRemovalSubmit()
+            return
+          }
+        } catch (e) {
+          console.error('检查时间段可用性失败', e)
+        }
+      }
+
       const payload = {
         addressId: this.data.selectedAddressId,
         removalPointId: this.data.selectedRemovalPointId,
@@ -591,11 +699,14 @@ Page({
         wx.redirectTo({
           url: `/pages/removal-detail/index?orderNo=${orderNo}`
         })
+      } else {
+        wx.showToast({ title: (res && res.message) || '提交失败', icon: 'none' })
       }
     } catch (e) {
       console.error('创建大件清运订单失败', e)
+      wx.showToast({ title: (e && (e.message || e.error)) || '提交失败', icon: 'none' })
     } finally {
-      this.setData({ isSubmitting: false })
+      this._releaseRemovalSubmit()
       this.updateCanSubmit()
     }
   }

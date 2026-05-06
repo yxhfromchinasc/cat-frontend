@@ -47,21 +47,20 @@
       </view>
     </view>
 
-    <!-- 今日回收价格提示 -->
+    <!-- 今日衣服回收价格说明 -->
     <view class="card price-card" wx:if="{{todayRecyclePriceText}}">
       <view class="price-header">
         <view class="price-dot"></view>
-        <text class="price-label">今日回收价格</text>
+        <text class="price-label">{{todayRecyclePriceText}}</text>
       </view>
       <view class="price-main">
         <text class="price-value">{{todayRecyclePrice}}</text>
-        <text class="price-unit">元</text>
         <text class="price-separator">-</text>
         <text class="price-value">{{todayRecyclePriceMax}}</text>
         <text class="price-unit">元/公斤</text>
       </view>
       <view class="price-notice">
-        <text class="price-notice-text">因业务调整，<text class="price-notice-highlight">纸类、塑料类回收服务暂停</text>，感谢您的理解与支持。</text>
+        <text class="price-notice-text">{{todayRecyclePriceNotice}}</text>
       </view>
     </view>
 

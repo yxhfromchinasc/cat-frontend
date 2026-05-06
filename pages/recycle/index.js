@@ -28,6 +28,53 @@ function buildDateOptions(dayOffsets) {
   }))
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+function startOfLocalDay(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+/** 预约日期字符串 YYYY-MM-DD 相对本地「今天 0 点」的天数差：当天=0，明天=1 */
+function dayOffsetFromTodayForDatePart(datePart) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart || '')
+  if (!m) return NaN
+  const y = Number(m[1])
+  const mo = Number(m[2])
+  const day = Number(m[3])
+  const chosen = new Date(y, mo - 1, day)
+  const today = startOfLocalDay(new Date())
+  return Math.round((chosen.getTime() - today.getTime()) / MS_PER_DAY)
+}
+
+function getAppointmentDayOffsetFromFormStart(formStartTime) {
+  if (!formStartTime || typeof formStartTime !== 'string') return NaN
+  const s = formStartTime.trim()
+  let datePart = ''
+  const tIdx = s.indexOf('T')
+  if (tIdx !== -1) datePart = s.slice(0, tIdx)
+  else {
+    const q = /^(\d{4}-\d{2}-\d{2})/.exec(s)
+    datePart = q ? q[1] : ''
+  }
+  return dayOffsetFromTodayForDatePart(datePart)
+}
+
+/** 表单里的开始/结束时间可能是 `T` 拼接或空格分隔，取日历日期部分 YYYY-MM-DD */
+function calendarDatePartFromFormDatetime(formTime) {
+  if (!formTime || typeof formTime !== 'string') return ''
+  const s = formTime.trim()
+  const tIdx = s.indexOf('T')
+  if (tIdx !== -1) return s.slice(0, tIdx)
+  const q = /^(\d{4}-\d{2}-\d{2})/.exec(s)
+  return q ? q[1] : ''
+}
+
+/** 是否与当前页配置的上门回收预约日列表一致（默认可选明天起连续6天） */
+function isRecycleDayOffsetConfigured(dayOffset, allowedDays) {
+  const list = Array.isArray(allowedDays) && allowedDays.length ? allowedDays : ALLOWED_DAYS_RECYCLE
+  return Number.isFinite(dayOffset) && list.includes(dayOffset)
+}
+
 Page({
   data: {
     // 地址相关（只显示默认地址）
@@ -72,10 +119,11 @@ Page({
     showTimePickerModal: false, // 是否显示时间选择器弹窗
     urgentTipText: '', // 立即上门提示文案
 
-    // 今日回收价格（从系统设置获取）
-    todayRecyclePrice: null, // 最低价格（从后端获取）
-    todayRecyclePriceMax: '5', // 最高价格（固定值）
+    // 今日衣服回收价格：最低价 recycling_price_per_kg（后端），最高价与说明为固定文案
+    todayRecyclePrice: '0.6',
+    todayRecyclePriceMax: '1',
     todayRecyclePriceText: '',
+    todayRecyclePriceNotice: '手机，电脑，空调，电视，洗衣机，冰箱按个现场结算',
     
     // 提交状态标记，防止重复提交
     isSubmitting: false
@@ -339,34 +387,30 @@ Page({
     }
   },
 
-  // 加载今日回收价格
+  // 今日衣服回收价格：最低价读配置 recycling_price_per_kg；其余文案固定
   async loadTodayRecyclePrice() {
+    const fixedTitle = '今日衣服回收价格'
+    const fixedMax = '1'
+    const fixedNotice = '手机，电脑，空调，电视，洗衣机，冰箱按个现场结算'
+    const fallbackMin = '0.6'
+
+    let minPrice = fallbackMin
     try {
-      // 配置键：recycling_price_per_kg（与后端系统配置保持一致）
       const res = await api.getConfigValue('recycling_price_per_kg')
-      if (res && res.success && res.data) {
+      if (res && res.success && res.data != null && res.data !== '') {
         const value = String(res.data).trim()
-        if (value) {
-          this.setData({
-            todayRecyclePrice: value,
-            todayRecyclePriceText: '今日回收价格'
-          })
-          return
-        }
+        if (value) minPrice = value
       }
-      // 未配置价格时，使用默认值0.65
-      this.setData({
-        todayRecyclePrice: '0.65',
-        todayRecyclePriceText: '今日回收价格'
-      })
     } catch (e) {
-      console.error('加载今日回收价格失败')
-      // 获取失败时使用默认值
-      this.setData({
-        todayRecyclePrice: '0.65',
-        todayRecyclePriceText: '今日回收价格'
-      })
+      console.error('加载衣服回收底价失败')
     }
+
+    this.setData({
+      todayRecyclePrice: minPrice,
+      todayRecyclePriceMax: fixedMax,
+      todayRecyclePriceText: fixedTitle,
+      todayRecyclePriceNotice: fixedNotice
+    })
   },
 
   // 显示立即上门提示
@@ -704,7 +748,7 @@ Page({
 
   // 时间段选择变化
   onTimeSlotChange(e) {
-    const index = parseInt(e.detail.value)
+    const index = parseInt(e.detail.value, 10)
     const timeSlot = this.data.timeSlotOptions[index]
     if (!timeSlot) return
     
@@ -722,10 +766,25 @@ Page({
       return
     }
     
+    const dateIdx = this.data.selectedDateIndex
     const dateOptions = this.data.dateOptions || []
-    const selectedDate = dateOptions[this.data.selectedDateIndex]
-    const dayOffset = selectedDate ? selectedDate.dayOffset : 0
-    const dateLabel = selectedDate ? selectedDate.label : buildDateLabelByDayOffset(dayOffset)
+    if (
+      !Number.isInteger(dateIdx) ||
+      dateIdx < 0 ||
+      dateIdx >= dateOptions.length ||
+      !dateOptions[dateIdx]
+    ) {
+      wx.showToast({ title: '请先选择预约日期', icon: 'none' })
+      return
+    }
+    const selectedDate = dateOptions[dateIdx]
+    const dayOffset = selectedDate.dayOffset
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_RECYCLE
+    if (!Number.isFinite(dayOffset) || !allowedDays.includes(dayOffset)) {
+      wx.showToast({ title: '该日期不可预约，请重新选择', icon: 'none' })
+      return
+    }
+    const dateLabel = selectedDate.label
     const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
     const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     const displayText = `${dateLabel} ${timeSlot.label}`
@@ -770,8 +829,9 @@ Page({
 
   // 选择日期（弹窗中，来自时间选择组件）
   selectDate(e) {
-    const index = parseInt(e.detail.index)
+    const index = parseInt(e.detail.index, 10)
     const timeSlotsByDay = this.data.timeSlotsByDay || []
+    if (!Number.isInteger(index) || index < 0 || index >= timeSlotsByDay.length) return
     const timeSlotOptions = timeSlotsByDay[index] || []
     this.setData({
       selectedDateIndex: index,
@@ -786,8 +846,10 @@ Page({
 
   // 选择时间段（弹窗中，仅更新选中状态，不更新时间数据，来自时间选择组件）
   selectTimeSlot(e) {
-    const index = parseInt(e.detail.index)
-    const timeSlot = this.data.timeSlotOptions[index]
+    const index = parseInt(e.detail.index, 10)
+    const options = this.data.timeSlotOptions || []
+    if (!Number.isInteger(index) || index < 0 || index >= options.length) return
+    const timeSlot = options[index]
     if (!timeSlot) return
     
     // 检查是否已约满
@@ -804,7 +866,9 @@ Page({
 
   // 确认时间选择
   confirmTimeSelection() {
-    if (this.data.selectedDateIndex < 0 || this.data.selectedTimeSlotIndex < 0) {
+    const dsi = this.data.selectedDateIndex
+    const tsi = this.data.selectedTimeSlotIndex
+    if (!Number.isInteger(dsi) || dsi < 0 || !Number.isInteger(tsi) || tsi < 0) {
       wx.showToast({ title: '请选择日期和时间段', icon: 'none' })
       return
     }
@@ -813,10 +877,25 @@ Page({
       wx.showToast({ title: '该时间段已约满，请选择其他时间段', icon: 'none' })
       return
     }
+    const idx = this.data.selectedDateIndex
     const dateOptions = this.data.dateOptions || []
-    const selectedDate = dateOptions[this.data.selectedDateIndex]
-    const dayOffset = selectedDate ? selectedDate.dayOffset : 0
-    const dateLabel = selectedDate ? selectedDate.label : buildDateLabelByDayOffset(dayOffset)
+    if (
+      !Number.isInteger(idx) ||
+      idx < 0 ||
+      idx >= dateOptions.length ||
+      !dateOptions[idx]
+    ) {
+      wx.showToast({ title: '请选择预约日期', icon: 'none' })
+      return
+    }
+    const selectedDate = dateOptions[idx]
+    const dayOffset = selectedDate.dayOffset
+    const allowedDays = this.data.allowedDays || ALLOWED_DAYS_RECYCLE
+    if (!Number.isFinite(dayOffset) || !allowedDays.includes(dayOffset)) {
+      wx.showToast({ title: '该日期不可预约', icon: 'none' })
+      return
+    }
+    const dateLabel = selectedDate.label
     const startTime = this.formatDateTimeByDayOffset(timeSlot.startTime, dayOffset)
     const endTime = this.formatDateTimeByDayOffset(timeSlot.endTime, dayOffset)
     this.setData({
@@ -830,7 +909,8 @@ Page({
 
   formatDateTimeByDayOffset(timeStr, dayOffset) {
     const d = new Date()
-    d.setDate(d.getDate() + (dayOffset || 0))
+    const delta = Number.isFinite(dayOffset) ? dayOffset : 0
+    d.setDate(d.getDate() + delta)
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${timeStr}:00`
   },
 
@@ -969,6 +1049,24 @@ Page({
         wx.showToast({ title: '请选择上门时间范围', icon: 'none' })
         return false
       }
+
+      // 上门回收仅允许配置的日期（默认明天至第7天本地自然日），禁止当天等不良数据
+      const apptDayOffset = getAppointmentDayOffsetFromFormStart(this.data.form.startTime)
+      const allowedDays = this.data.allowedDays || ALLOWED_DAYS_RECYCLE
+      if (!isRecycleDayOffsetConfigured(apptDayOffset, allowedDays)) {
+        wx.showToast({
+          title: '回收仅支持预约明天起的时段，请重新选择时间',
+          icon: 'none'
+        })
+        return false
+      }
+
+      const startDatePart = calendarDatePartFromFormDatetime(this.data.form.startTime)
+      const endDatePart = calendarDatePartFromFormDatetime(this.data.form.endTime)
+      if (!startDatePart || !endDatePart || startDatePart !== endDatePart) {
+        wx.showToast({ title: '预约开始与结束须为同一天，请重新选择', icon: 'none' })
+        return false
+      }
       
       // 检查选择的时间段是否已约满
       const selectedTimeSlot = this.data.timeSlotOptions[this.data.selectedTimeSlotIndex]
@@ -1009,19 +1107,27 @@ Page({
     })
   },
 
+  // 同步解锁提交（setData 异步，仅靠 isSubmitting 无法拦住极快双击）
+  _releaseRecycleSubmit() {
+    this._recycleSubmitSyncLock = false
+    if (this.data.isSubmitting) {
+      this.setData({ isSubmitting: false })
+    }
+  },
+
   // 提交订单
   async submitOrder() {
-    // 防止重复提交
-    if (this.data.isSubmitting) return
-
     // 如果时间选择器弹窗显示，不允许提交
     if (this.data.showTimePickerModal) return
+
+    // 同步互斥：防止用户在 setData 生效前双击触发两次下单
+    if (this._recycleSubmitSyncLock) return
     
     if (!this.validateForm()) {
       return
     }
-    
-    // 设置提交状态，禁用按钮
+
+    this._recycleSubmitSyncLock = true
     this.setData({ isSubmitting: true })
     
     // 如果地址不在服务范围内，提示用户
@@ -1031,7 +1137,7 @@ Page({
         content: '该地址不在服务范围内，无法提交订单',
         showCancel: false
       })
-      this.setData({ isSubmitting: false })
+      this._releaseRecycleSubmit()
       return
     }
     
@@ -1065,6 +1171,7 @@ Page({
               'form.startTimeStr': ''
             })
             this.updateCanSubmit()
+            this._releaseRecycleSubmit()
             return
           }
         } catch (e) {
@@ -1122,8 +1229,7 @@ Page({
           icon: 'none',
           duration: 2000
         })
-        // 重置提交状态，允许重新提交
-        this.setData({ isSubmitting: false })
+        this._releaseRecycleSubmit()
       }
     } catch (e) {
       console.error('提交订单异常')
@@ -1134,8 +1240,7 @@ Page({
         icon: 'none',
         duration: 2000
       })
-      // 重置提交状态，允许重新提交
-      this.setData({ isSubmitting: false })
+      this._releaseRecycleSubmit()
     } finally {
       wx.hideLoading()
     }
